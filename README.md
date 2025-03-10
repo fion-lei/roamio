@@ -7,8 +7,13 @@
 - JavaScript
 - TypeScript
 
+##### Frameworks:
+- Tailwind CSS
+- Bootstrap CSS
+
 #### Developer Tools
 - Android Studio
+- Visual Studio Code
 - GitHub
 
 
