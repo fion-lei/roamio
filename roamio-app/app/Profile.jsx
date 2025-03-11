@@ -1,77 +1,69 @@
 import React from "react";
 import { View, Text, Image, Pressable, StyleSheet } from "react-native";
 import { Colors } from "../constants/Colors";
+import { useRouter } from "expo-router";
+import { FontAwesome } from "@expo/vector-icons";
 
-
-export default function Profile()
-{
+export default function Profile() {
+  const router = useRouter();
   return (
     <View style={styles.container}>
-     
+      {/* Profile Header */}
       <View style={styles.profileHeader}>
-       
         <Image
           source={require("../assets/images/profilePicture.png")}
           style={styles.avatar}
         />
-
         <Text style={styles.name}>Wendy Wanderer</Text>
 
-        <Text style={styles.subtitle}>Solo Traveler | Digital Nomad</Text>
+        {/* Traveler Type with Icon */}
+        <View style={styles.infoRow}>
+          <FontAwesome name="globe" size={18} color={Colors.coral} />
+          <Text style={styles.subtitle}>Solo Traveler</Text>
+        </View>
 
-        <Text style={styles.email}>wendy.wanderer@email.com</Text>
+        {/* Email with Icon */}
+        <View style={styles.infoRow}>
+          <FontAwesome name="envelope" size={18} color={Colors.coral} />
+          <Text style={styles.email}>wendy.wanderer@email.com</Text>
+        </View>
 
+        {/* Phone Number with Icon */}
+        <View style={styles.infoRow}>
+          <FontAwesome name="phone" size={18} color={Colors.coral} />
+          <Text style={styles.phoneNumber}>123-456-7890</Text>
+        </View>
       </View>
 
+      {/* Bio Section */}
       <View style={styles.bioContainer}>
-
         <Text style={styles.bio}>
-          28, a digital nomad from Los Angeles who thrives on spontaneous adventures.
-          Whether it's a quirky café in Calgary or an offbeat hiking trail, she’s all about
-          budget-friendly experiences and authentic local vibes.
+          Hey, I’m Wendy! I’m 28, a digital nomad from Los Angeles who thrives on spontaneous adventures. Whether it’s a hidden café or an offbeat hiking trail, I’m all about budget-friendly experiences and soaking in local vibes.
         </Text>
-
       </View>
 
-      <View style={styles.infoContainer}>
-
-        <Text style={styles.info}>
-          Exploring Calgary’s quirkiest spots
-          Finding budget-friendly stays & tours  
-          Prefers the road less traveled  
-          Tech-savvy & always connected  
-        </Text>
-
-      </View>
-
-      <Pressable style={styles.button} onPress={() => console.log("Edit Profile Clicked!")}>
+      {/* Edit Profile Button */}
+      <Pressable style={styles.button} onPress={() => router.replace("../EditProfile")}>
         <Text style={styles.buttonText}>Edit Profile</Text>
       </Pressable>
-
     </View>
   );
 }
 
-
 // Styles
 const styles = StyleSheet.create({
-  container:
-  {
+  container: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: Colors.white,
     padding: 20,
-  }
-  ,
-  profileHeader:
-  {
+  },
+  profileHeader: {
     alignItems: "center",
     marginBottom: 20,
-  }
-  ,
-  avatar:
-  {
+  },
+  avatar: {
     width: 200,
     height: 280,
     borderRadius: 90,
@@ -81,107 +73,58 @@ const styles = StyleSheet.create({
     shadowColor: Colors.coral,
     shadowOpacity: 0.4,
     shadowRadius: 8,
-  }
-  ,
-  name:
-  {
+  },
+  name: {
     fontSize: 28,
     fontFamily: "quicksand-bold",
     color: Colors.primary,
-  }
-  ,
-  subtitle:
-  {
-    fontSize: 16,
-    fontFamily: "quicksand-medium",
-    color: Colors.grey,
-  }
-  ,
-  email:
-  {
+  },
+  infoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 5,
+    gap: 8,
+  },
+  subtitle: {
     fontSize: 14,
     fontFamily: "quicksand-semibold",
-    color: Colors.coral,
-    marginTop: 5,
-  }
-  ,
-  bioContainer:
-  {
+    color: Colors.grey,
+  },
+  email: {
+    fontSize: 14,
+    fontFamily: "quicksand-semibold",
+    color: Colors.grey,
+  },
+  phoneNumber: {
+    fontSize: 14,
+    fontFamily: "quicksand-semibold",
+    color: Colors.grey,
+  },
+  bioContainer: {
     width: "90%",
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.palestPink,
     padding: 15,
     borderRadius: 10,
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    borderColor: Colors.peachySalmon,
+    borderWidth: 5,
     marginBottom: 20,
-  }
-  ,
-  bio:
-  {
-    fontSize: 16,
+  },
+  bio: {
+    fontSize: 14,
     fontFamily: "quicksand-semibold",
     color: Colors.primary,
     textAlign: "center",
-  }
-  ,
-  infoContainer:
-  {
-    width: "90%",
-    backgroundColor: Colors.palePink,
-    padding: 15,
-    borderRadius: 10,
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowRadius: 3,
-    marginBottom: 20,
-  }
-  ,
-  info:
-  {
-    fontSize: 16,
-    fontFamily: "quicksand-semibold",
-    color: Colors.primary,
-    textAlign: "left",
-    lineHeight: 24,
-  }
-  ,
-  button:
-  {
+  },
+  button: {
     backgroundColor: Colors.coral,
     padding: 14,
     borderRadius: 8,
     alignItems: "center",
     width: "60%",
-  }
-  ,
-  buttonText:
-  {
+  },
+  buttonText: {
     color: Colors.white,
     fontSize: 18,
     fontFamily: "quicksand-bold",
   },
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
