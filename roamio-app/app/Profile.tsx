@@ -100,9 +100,8 @@ const styles = StyleSheet.create({
   email:
   {
     fontSize: 14,
-    fontFamily: "quicksand-light",
+    fontFamily: "quicksand-semibold",
     color: Colors.coral,
-    fontStyle: "italic",
     marginTop: 5,
   }
   ,
@@ -122,10 +121,9 @@ const styles = StyleSheet.create({
   bio:
   {
     fontSize: 16,
-    fontFamily: "quicksand-regular",
+    fontFamily: "quicksand-semibold",
     color: Colors.primary,
     textAlign: "center",
-    fontStyle: "italic",
   }
   ,
   infoContainer:
@@ -144,7 +142,7 @@ const styles = StyleSheet.create({
   info:
   {
     fontSize: 16,
-    fontFamily: "quicksand-regular",
+    fontFamily: "quicksand-semibold",
     color: Colors.primary,
     textAlign: "left",
     lineHeight: 24,
