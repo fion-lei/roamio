@@ -1,21 +1,32 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Dimensions } from 'react-native';
+import React, { useLayoutEffect, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, Dimensions, Pressable } from 'react-native';
 import { Colors } from "@/constants/Colors";
+import { FontAwesome } from "@expo/vector-icons";
 
-import { useLayoutEffect } from 'react';
-import { useNavigation } from 'expo-router';
+import { useNavigation, useRouter } from 'expo-router';
 
 // for ensuring timeslot sizes/positions are consistent. E.g. each hour chunk = 60px in height
 const pixelsForHour = 60;
 
 const DetailedItinerary = () => {
 
-  // for hiding the top bar showing screens/DetailedItinerary
   const navigation = useNavigation();
-  useLayoutEffect(() => {
-    navigation.setOptions({ headerShown: false });
-  }, [navigation]);
+  const router = useRouter();
+  const [isEditMode, setIsEditMode] = useState(false);
 
+  // for top nav bar
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerTitle: "",
+      headerRight: () => (
+        <Pressable onPress={() => setIsEditMode(!isEditMode)}>
+          <Text style={{ color: Colors.coral, marginRight: 15, fontSize: 20 }}>
+            {isEditMode ? "Done" : "Edit"}
+          </Text>
+        </Pressable>
+      ),
+    });
+  }, [navigation, isEditMode]);
 
   // making time slots for 24 hours in AM and PM format
   const timeSlots = Array.from({ length: 24 }, (_, i) => {
@@ -96,6 +107,50 @@ const DetailedItinerary = () => {
     };
   };
 
+  // event content 
+  const renderEventContent = (item: any, index: number) => (
+    <View style={styles.eventContent}>
+      <View style={styles.eventTextContainer}>
+        <Text style={styles.activityText}>{item.activity}</Text>
+        <Text style={styles.durationText}>
+          {`${formatTimeToAMPM(item.time)} (${item.duration}h)`}
+        </Text>
+      </View>
+      {/* If in edit mode, show delete button */}
+      {isEditMode ? (
+        <Pressable 
+          style={styles.deleteButton}
+          onPress={() => {/* delete functionality here */}}
+        >
+          <View style={styles.iconContainer}>
+            <FontAwesome
+              name="minus"
+              size={16}
+              color={Colors.peachySalmon}
+            />
+          </View>
+        </Pressable>
+      ) : (
+      
+        // If not in edit mode, show dots on events to see the details
+        <Pressable 
+          style={styles.dotsContainer}
+          onPress={() => router.push({
+            pathname: "/screens/EventDetails",
+            params: { 
+              activity: item.activity,
+              time: item.time,
+              duration: item.duration
+            }
+          })}
+        >
+          <View style={styles.dot} />
+          <View style={styles.dot} />
+        </Pressable>
+      )}
+    </View>
+  );
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.timelineContainer}>
@@ -118,10 +173,7 @@ const DetailedItinerary = () => {
                 getEventStyle(item.time, item.duration)
               ]}
             >
-              <Text style={styles.activityText}>{item.activity}</Text>
-              <Text style={styles.durationText}>
-                {`${formatTimeToAMPM(item.time)} (${item.duration}h)`}
-              </Text>
+              {renderEventContent(item, index)}
             </View>
           ))}
         </View>
@@ -186,6 +238,43 @@ const styles = StyleSheet.create({
     fontFamily: "quicksand-semibold",
     color: Colors.grey,
     marginTop: 4,
+  },
+  eventContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  eventTextContainer: {
+    flex: 1,
+  },
+  dotsContainer: {
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingRight: 5,
+    height: 24,
+  },
+  dot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: Colors.grey,
+    marginVertical: 2,
+  },
+  deleteButton: {
+    padding: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  iconContainer: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: Colors.white,
+    borderWidth: 2,
+    borderColor: Colors.peachySalmon,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 
