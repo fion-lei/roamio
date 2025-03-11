@@ -1,8 +1,7 @@
 import React from "react";
 import { View, Text, FlatList, TouchableOpacity } from "react-native";
 
-interface ItineraryItem 
-{
+interface ItineraryItem {
   id: string;
   title: string;
   date: string;
@@ -19,24 +18,26 @@ const itineraryData: ItineraryItem[] =
 
 const Itinerary = () => 
 {
-  return  (
+  return (
+    
     <View>
-
+      
       <Text>My Itinerary</Text>
-
+      
       <FlatList
+        
         data={itineraryData}
-
         keyExtractor={(item) => item.id}
-
         renderItem={({ item }) => (
-
           <View>
-
             <Text>{item.title}</Text>
             <Text>{item.date}</Text>
             <Text>{item.description}</Text>
 
+            {/* Button - This feature has not yet been implemented. */}
+            <TouchableOpacity>
+              <Text>View Details</Text>
+            </TouchableOpacity>
 
           </View>
         )}
