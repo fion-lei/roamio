@@ -2,8 +2,11 @@ import React from "react";
 import { View, Text, Image, StyleSheet, TextInput, Pressable, SafeAreaView, } from "react-native";
 import { Colors } from "@/constants/Colors"; // Ensure Colors file exists
 import { FontAwesome } from "@expo/vector-icons"; // For password icon
+import { useRouter } from "expo-router";
 
 export default function Login() {
+  const router = useRouter();
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Logo */}
@@ -29,7 +32,7 @@ export default function Login() {
         </View>
 
         {/* Login Button */}
-        <Pressable style={styles.loginButton}>
+        <Pressable onPress={() => router.replace("../(tabs)/Trip")} style={styles.loginButton} >
           <Text style={styles.buttonText}>Login</Text>
           <FontAwesome name="arrow-right" size={18} color="white" style={styles.arrowIcon} />
         </Pressable>
@@ -133,7 +136,7 @@ const styles = StyleSheet.create({
     fontFamily: "quicksand-semibold",
   },
   boldText: {
-    fontWeight: "bold",
     color: Colors.black,
+    fontFamily: "quicksand-bold",
   },
 });

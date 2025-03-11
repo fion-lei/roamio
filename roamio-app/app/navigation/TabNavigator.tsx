@@ -3,8 +3,8 @@
 
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import HomeScreen from "../Home";
-import ProfileScreen from "../Profile";
+import Trip from "../(tabs)/Trip";
+import Friends from "../(tabs)/Friends";
 import { FontAwesome } from "@expo/vector-icons";
 
 const Tab = createBottomTabNavigator();
@@ -20,7 +20,7 @@ export default function TabNavigator() {
     >
       <Tab.Screen
         name="Home"
-        component={HomeScreen}
+        component={Trip}
         options={{
           tabBarIcon: ({ color, size }) => (
             <FontAwesome name="home" color={color} size={size} />
@@ -29,7 +29,7 @@ export default function TabNavigator() {
       />
       <Tab.Screen
         name="Profile"
-        component={ProfileScreen}
+        component={Friends}
         options={{
           tabBarIcon: ({ color, size }) => (
             <FontAwesome name="user" color={color} size={size} />
