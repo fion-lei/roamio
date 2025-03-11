@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     width: "100%",
-    height: 400,
+    height: 350,
     justifyContent: "center",
     alignItems: "center",
   },
