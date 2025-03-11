@@ -9,6 +9,15 @@
 5. Launch emulator
 6. Start project 'npx expo start'
 
+#### Troubleshooting
+Issues with dependencies?
+- rm -rf node_modules package-lock.json yarn.lock
+- npm install
+
+Issues with Expo? Reload the cache
+- npx expo start --clear
+
+
 #### roamio-app File Structure
 ---
 app

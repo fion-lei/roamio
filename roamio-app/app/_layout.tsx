@@ -1,25 +1,44 @@
 import { Stack } from "expo-router";
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native'; // Light mode, Dark mode
-import { Quicksand_300Light, Quicksand_400Regular, Quicksand_500Medium, Quicksand_600SemiBold, Quicksand_700Bold, useFonts } from "@expo-google-fonts/quicksand";
-
+import { ThemeProvider } from "@react-navigation/native";
+import { useFonts } from "expo-font";
+import { useEffect, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Appearance, useColorScheme } from "react-native";
+import { LightTheme, DarkTheme } from "@/utilities/themeOptions"; // Import custom themes
 
 export default function RootLayout() {
-  // Set up app fonts
-  useFonts({
-    'quicksand-light': Quicksand_300Light,
-    'quicksand-regular': Quicksand_400Regular, 
-    'quicksand-medium': Quicksand_500Medium,
-    'quicksand-semibold':Quicksand_600SemiBold,
-    'quicksand-bold': Quicksand_700Bold
-  })
+  const { colorScheme, setColorScheme } = useColorScheme();
+  const systemColorScheme = Appearance.getColorScheme(); // Get system theme
 
-  return (  
-  <Stack> 
-    <Stack.Screen name = "index"/>
-  </Stack>
+  useEffect(() => {
+    const loadTheme = async () => {
+      // await AsyncStorage.removeItem('theme');
+      const stored = (await AsyncStorage.getItem("theme")) as ThemeOptions;
+      if (stored) {
+        setColorScheme(stored);
+      } else {
+        // Default to light if nothing or unexpected value is stored
+        setColorScheme("light");
+      }
+    };
+
+    loadTheme();
+  }, [colorScheme]);
+
+  // Load fonts
+  const [fontsLoaded] = useFonts({
+    "quicksand-light": require('./../assets/fonts/Quicksand-Light.ttf'),
+    "quicksand-regular": require('./../assets/fonts/Quicksand-Regular.ttf'),
+    "quicksand-medium": require('./../assets/fonts/Quicksand-Medium.ttf'),
+    "quicksand-semibold":require('./../assets/fonts/Quicksand-SemiBold.ttf'),
+    "quicksand-bold": require('./../assets/fonts/Quicksand-Bold.ttf'),
+  });
+
+  return (
+    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : LightTheme}>
+      <Stack>
+        <Stack.Screen name="index" options={{headerShown: false}} />
+      </Stack>
+    </ThemeProvider>
   );
-  // <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-
-  {/* </ThemeProvider> */}
-
 }
