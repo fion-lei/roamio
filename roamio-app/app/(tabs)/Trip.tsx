@@ -2,9 +2,13 @@ import React from "react";
 import { View, Text, Image, TextInput, SafeAreaView, StyleSheet, Pressable, ScrollView } from "react-native";
 import { Colors } from "@/constants/Colors"; 
 import { FontAwesome } from "@expo/vector-icons"; // For the search and category icons **for now** 
+import { useRouter } from "expo-router";
 
 export default function Home() {
+  const router = useRouter(); // ✅ Get router instance for navigation
+  
   return (
+    
     <SafeAreaView style={styles.safeContainer}> 
     
     {/* Search Bar Section */}
@@ -36,7 +40,8 @@ export default function Home() {
       <ScrollView style={styles.cardsContainer}>
         
         {/* [1st]. Elgin Hill */}
-        <Pressable style={styles.tripCard}>
+        <Pressable style={styles.tripCard}
+          onPress = {() => router.push("/Add-Itinerary-1")}> 
           {/* Placeholder Image */}
           <Image source={require("@/assets/images/camp.png")}
           style={styles.cardImage}/> 
@@ -47,7 +52,8 @@ export default function Home() {
           </Pressable> 
         
         {/* [2nd]. OEB Restaurant */}
-        <Pressable style={styles.tripCard}>
+        <Pressable style={styles.tripCard}
+          onPress = {() => router.push("/Add-Itinerary-2")}> 
           {/* Placeholder Image */}
           <Image source={require("@/assets/images/food.png")}
           style={styles.cardImage}/> 
