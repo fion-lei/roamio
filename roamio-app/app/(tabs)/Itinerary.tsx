@@ -11,7 +11,8 @@ interface ItineraryItem {
 }
 
 // Sample Data
-const itineraryData: ItineraryItem[] = [
+const itineraryData: ItineraryItem[] = 
+[
   { id: "1", title: "Arrival & Check-in", date: "March 20, 2025", description: "Check-in at the hotel and explore the surrounding areas." },
   { id: "2", title: "City Tour", date: "March 21, 2025", description: "Guided tour of historical landmarks and local markets of the city." },
   { id: "3", title: "Beach Day", date: "March 22, 2025", description: "Relax at the beach and enjoy water sports." },
@@ -32,7 +33,8 @@ const ItineraryItemComponent = ({ item }: { item: ItineraryItem }) => (
   </View>
 );
 
-const Itinerary = () => {
+const Itinerary = () => 
+  {
   const [fontsLoaded] = useFonts({
     "Quicksand-Bold": require("../../assets/fonts/Quicksand-Bold.ttf"),
   });
@@ -53,22 +55,29 @@ const Itinerary = () => {
 
 // Styles
 const styles = StyleSheet.create({
-  safeContainer: {
+  safeContainer: 
+  {
     flex: 1,
     backgroundColor: "#FAFAFA",
-  },
-  scrollContent: {
+  }
+  ,
+  scrollContent: 
+  {
     flexGrow: 1,
-    paddingBottom: 20, // Adds padding to ensure smooth scrolling
-  },
-  header: {
+    paddingBottom: 20, 
+  }
+  ,
+  header: 
+  {
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 20,
     textAlign: "center",
-    fontFamily: "Quicksand-Bold",
-  },
-  box: {
+    fontFamily: "quicksand-bold",
+  }
+  ,
+  box: 
+  {
     backgroundColor: Colors.white,
     padding: 15,
     marginBottom: 10,
@@ -78,32 +87,43 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 3,
     elevation: 3,
-  },
-  title: {
+  }
+  ,
+  title: 
+  {
     fontSize: 18,
     fontWeight: "bold",
-    fontFamily: "Quicksand-Bold",
-  },
-  date: {
+    fontFamily: "quicksand-bold",
+  }
+  ,
+  date: 
+  {
     fontSize: 14,
     color: Colors.grey,
     marginBottom: 5,
-  },
-  description: {
+  }
+  ,
+  description: 
+  {
     fontSize: 14,
     marginBottom: 10,
-  },
-  button: {
+  }
+  ,
+  button: 
+  {
     backgroundColor: Colors.peachySalmon,
     padding: 10,
     borderRadius: 5,
     alignItems: "center",
-  },
-  buttonText: {
+  }
+  ,
+  buttonText: 
+  {
     color: Colors.white,
     fontSize: 14,
     fontWeight: "bold",
-  },
+  }
+  ,
 });
 
 export default Itinerary;
