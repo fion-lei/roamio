@@ -1,17 +1,26 @@
 import React, { useState } from "react";
-import { View, Text, Image, StyleSheet, TextInput, Pressable, SafeAreaView } from "react-native";
-import { Picker } from "@react-native-picker/picker";
+import { View, Text, TextInput, Pressable, SafeAreaView, StyleSheet } from "react-native";
+import { Dropdown } from "react-native-element-dropdown";
 import { Colors } from "@/constants/Colors"; // Ensure Colors file exists
-import { FontAwesome } from "@expo/vector-icons"; // For icons
+import { FontAwesome } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 
 export default function SignUpDetails() {
   const router = useRouter();
-  const [travellerType, setTravellerType] = useState(""); // State for dropdown selection
+  const [travellerType, setTravellerType] = useState(null);
+
+  // Traveller options with Quicksand font
+  const travellerOptions = [
+    { label: "Solo Traveler", value: "solo" },
+    { label: "Group Traveler", value: "group" },
+    { label: "Local Traveler", value: "local" },
+    { label: "International Traveler", value: "international" },
+    { label: "Business Traveler", value: "business" },
+    { label: "Retiree Traveler", value: "retiree" },
+  ];
 
   return (
     <SafeAreaView style={styles.container}>
-
       {/* Sign Up Details Section */}
       <View style={styles.signUpContainer}>
         <Text style={styles.signUpTitle}>Sign Up Details</Text>
@@ -40,22 +49,27 @@ export default function SignUpDetails() {
 
         {/* Traveller Type Dropdown */}
         <View style={styles.pickerContainer}>
-          <Picker
-            selectedValue={travellerType}
-            onValueChange={(itemValue) => setTravellerType(itemValue)}
-            style={styles.picker}
-          >
-            <Picker.Item label="Select Traveller Type" value="" />
-            <Picker.Item label="Solo Traveler" value="solo" />
-            <Picker.Item label="Family" value="family" />
-            <Picker.Item label="Business Traveler" value="business" />
-            <Picker.Item label="Backpacker" value="backpacker" />
-            <Picker.Item label="Luxury Traveler" value="luxury" />
-          </Picker>
+          <Dropdown
+            data={travellerOptions}
+            labelField="label"
+            valueField="value"
+            placeholder="Select Traveller Type"
+            value={travellerType}
+            onChange={(item) => setTravellerType(item.value)}
+            style={styles.dropdown}
+            selectedTextStyle={styles.selectedText}
+            placeholderStyle={styles.placeholderText}
+            itemTextStyle={styles.itemText}
+            dropdownStyle={styles.dropdownStyle} // ✅ Prevents dropdown from exceeding the screen
+            dropdownPosition="top" // ✅ Forces it to open upwards when close to the bottom
+          />
         </View>
 
+        {/* Invisible Spacer to Limit Dropdown */}
+        <View style={styles.bottomSpacer} />
+
         {/* Continue Button */}
-        <Pressable onPress={() => router.replace("../Home")} style={styles.continueButton}>
+        <Pressable onPress={() => router.replace("../(tabs)/Trip")} style={styles.continueButton}>
           <Text style={styles.buttonText}>Continue</Text>
           <FontAwesome name="arrow-right" size={18} color="white" style={styles.arrowIcon} />
         </Pressable>
@@ -77,7 +91,6 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
     padding: 20,
     borderRadius: 30,
-    elevation: 0,
     borderColor: Colors.peachySalmon,
     borderWidth: 10,
   },
@@ -115,13 +128,38 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderColor: Colors.peachySalmon,
     borderRadius: 10,
-    marginBottom: 15,
-    overflow: "hidden", // Keeps the rounded edges of the Picker
+    paddingHorizontal: 10,
+    paddingVertical: 12,
+    marginBottom: 10, // ✅ Creates spacing above the dropdown
+    overflow: "hidden",
   },
-  picker: {
+  dropdown: {
+    padding: 10,
+    borderWidth: 0,
+    borderRadius: 10,
+    backgroundColor: Colors.white,
+  },
+  dropdownStyle: {
+    maxHeight: 200, // ✅ Limits dropdown height
+    alignSelf: "center",
+  },
+  placeholderText: {
+    fontSize: 16,
+    fontFamily: "quicksand-semibold",
+    color: Colors.grey,
+  },
+  selectedText: {
+    fontSize: 16,
+    fontFamily: "quicksand-bold",
+    color: Colors.black,
+  },
+  itemText: {
     fontSize: 16,
     fontFamily: "quicksand-semibold",
     color: Colors.black,
+  },
+  bottomSpacer: {
+    height: 0, 
   },
   continueButton: {
     width: "100%",
