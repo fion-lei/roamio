@@ -1,45 +1,73 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
-import { Platform } from 'react-native';
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import Trip from "./Trip";
+import Itinerary from "./Itinerary";
+import Friends from "./Friends";
+import { FontAwesome } from "@expo/vector-icons";
+import { Colors } from "@/constants/Colors";
 
-import { HapticTab } from '@/components/HapticTab';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import TabBarBackground from '@/components/ui/TabBarBackground';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+const Tab = createBottomTabNavigator();
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
   return (
-    <Tabs
+    <Tab.Navigator
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        tabBarStyle: { 
+          backgroundColor: Colors.palePink, 
+          height: 65, 
+          position: "absolute",
+          marginHorizontal: 20, 
+          marginBottom: 15, 
+          borderRadius: 15, 
+          shadowColor: "grey", 
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.1,
+          shadowRadius: 5,
+          elevation: 3, 
+          paddingTop: 5,
+          paddingBottom: 5, 
+        },
+        tabBarActiveTintColor: Colors.coral,
+        tabBarLabelStyle: {
+          fontFamily: "quicksand-bold",
+          fontSize: 14,
+        },
+        tabBarAllowFontScaling: true,
         headerShown: false,
-        tabBarButton: HapticTab,
-        tabBarBackground: TabBarBackground,
-        tabBarStyle: Platform.select({
-          ios: {
-            // Use a transparent background on iOS to show the blur effect
-            position: 'absolute',
-          },
-          default: {},
-        }),
-      }}>
-      <Tabs.Screen
-        name="index"
+        
+      }}
+    >
+      <Tab.Screen
+        name="Trip"
+        component={Trip}
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          title: "Trip",
+          tabBarIcon: ({ color, size }) => (
+            <FontAwesome name="suitcase" color={color} size={size} />
+          ),
         }}
       />
-      <Tabs.Screen
-        name="explore"
+
+      <Tab.Screen
+        name="Itinerary"
+        component={Itinerary}
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          title: "Itinerary",
+          tabBarIcon: ({ color, size }) => (
+            <FontAwesome name="calendar" color={color} size={size} />
+          ),
         }}
       />
-    </Tabs>
+
+      <Tab.Screen
+        name="Friends"
+        component={Friends}
+        options={{
+          title: "Friends",
+          tabBarIcon: ({ color, size }) => (
+            <FontAwesome name="users" color={color} size={size} />
+          ),
+        }}
+      />
+    </Tab.Navigator>
   );
 }
