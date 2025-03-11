@@ -3,7 +3,8 @@ import { View, Text, Pressable, ScrollView, StyleSheet, SafeAreaView } from "rea
 import { useFonts } from "expo-font";
 import { Colors } from "../../constants/Colors";
 
-interface ItineraryItem {
+interface ItineraryItem 
+{
   id: string;
   title: string;
   date: string;
@@ -23,32 +24,45 @@ const itineraryData: ItineraryItem[] =
 
 // Itinerary Item Component
 const ItineraryItemComponent = ({ item }: { item: ItineraryItem }) => (
+
   <View style={styles.box}>
+
     <Text style={styles.title}>{item.title}</Text>
+
     <Text style={styles.date}>{item.date}</Text>
+
     <Text style={styles.description}>{item.description}</Text>
+
     <Pressable style={styles.button} onPress={() => console.log("Button Clicked!")}>
       <Text style={styles.buttonText}>View Details</Text>
     </Pressable>
+
   </View>
+
 );
 
 const Itinerary = () => 
   {
   const [fontsLoaded] = useFonts({
-    "Quicksand-Bold": require("../../assets/fonts/Quicksand-Bold.ttf"),
+    "quicksand-bold": require("../../assets/fonts/Quicksand-Bold.ttf"),
   });
 
   if (!fontsLoaded) return null;
 
   return (
+
     <SafeAreaView style={styles.safeContainer}>
+
       <ScrollView contentContainerStyle={styles.scrollContent}>
+
         <Text style={styles.header}>My Itinerary</Text>
+
         {itineraryData.map((item) => (
           <ItineraryItemComponent key={item.id} item={item} />
         ))}
+
       </ScrollView>
+
     </SafeAreaView>
   );
 };
