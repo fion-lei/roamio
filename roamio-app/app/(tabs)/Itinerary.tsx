@@ -6,16 +6,19 @@ import {
   ScrollView,
   StyleSheet,
   SafeAreaView,
+  Dimensions,
 } from "react-native";
 import { Colors } from "../../constants/Colors";
+
+const { height } = Dimensions.get("window"); // ✅ Get screen height dynamically
 
 export default function Itinerary() {
   return (
     <SafeAreaView style={styles.safeContainer}>
       <View style={styles.container}>
         <Text style={styles.header}>Trip Itineraries</Text>
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent} 
           showsVerticalScrollIndicator={false}
         >
           {itineraryData.map((item) => (
@@ -40,42 +43,39 @@ export default function Itinerary() {
 const itineraryData = [
   {
     id: "1",
-    title: "Arrival & Check-in",
-    date: "March 20, 2025",
-    description: "Check-in at the hotel and explore the surrounding areas.",
+    title: "Calgary",
+    date: "March 20 - March 23, 2025",
+    description: "Explore downtown Calgary, visit the Calgary Tower, and walk along Stephen Avenue. Enjoy a day at the Calgary Zoo and relax at Prince’s Island Park.",
   },
   {
     id: "2",
-    title: "City Tour",
-    date: "March 21, 2025",
-    description:
-      "Guided tour of historical landmarks and local markets of the city.",
+    title: "Banff",
+    date: "March 24 - March 27, 2025",
+    description: "Take the Banff Gondola for stunning mountain views and soak in the Banff Hot Springs. Hike through Johnston Canyon and spot wildlife along the scenic trails.",
   },
   {
     id: "3",
-    title: "Beach Day",
-    date: "March 22, 2025",
-    description: "Relax at the beach and enjoy water sports.",
+    title: "Canmore",
+    date: "March 28 - March 30, 2025",
+    description: "Enjoy breathtaking views at Grassi Lakes and explore Quarry Lake. Discover local cafés, art galleries, and scenic biking trails around the town.",
   },
   {
     id: "4",
-    title: "Cultural Performances",
-    date: "March 22, 2025",
-    description:
-      "Enjoy a traditional cultural performance with music and dance.",
+    title: "Lake Louise",
+    date: "March 31 - April 2, 2025",
+    description: "Canoe on the stunning turquoise waters of Lake Louise and hike to the Lake Agnes Tea House. Stay at the Fairmont Chateau for an unforgettable experience.",
   },
   {
     id: "5",
-    title: "Hiking Adventure",
-    date: "March 23, 2025",
-    description:
-      "Hike to a scenic viewpoint and experience breathtaking views.",
+    title: "Kananaskis",
+    date: "April 3 - April 6, 2025",
+    description: "Go horseback riding through Kananaskis Valley and take a scenic hike at Ptarmigan Cirque. Unwind at the Kananaskis Nordic Spa under the night sky.",
   },
   {
     id: "6",
-    title: "Departure",
-    date: "March 24, 2025",
-    description: "Check-out from the hotel and return home.",
+    title: "Cochrane",
+    date: "April 7 - April 9, 2025",
+    description: "Stroll through historic downtown Cochrane and enjoy homemade ice cream at MacKay’s. Relax with a picnic at Cochrane Ranche and take in the peaceful surroundings.",
   },
 ];
 
@@ -83,17 +83,15 @@ const styles = StyleSheet.create({
   safeContainer: {
     flex: 1,
     paddingTop: 20,
-    justifyContent: "center",
-    alignItems: "center",
     backgroundColor: Colors.white,
   },
   container: {
     flex: 1,
     paddingHorizontal: 20,
-    paddingBottom: 20,
   },
   scrollContent: {
     paddingBottom: 80,
+    flexGrow: 1, // ✅ Ensures ScrollView items fit dynamically
   },
   header: {
     fontSize: 24,
@@ -111,6 +109,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 3,
     elevation: 3,
+    minHeight: 120, // ✅ Ensures all boxes have the same size
+    justifyContent: "space-between",
   },
   title: {
     fontSize: 18,
