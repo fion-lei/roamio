@@ -8,7 +8,7 @@ export default function Intro() {
       {/* Logo Container */}
       <View style={styles.logoContainer}>
         <Image 
-          source={require("../assets/images/1.png")} 
+          source={require("../assets/images/logo_coral.png")} 
           style={styles.logo} 
         />
       </View>
@@ -18,7 +18,7 @@ export default function Intro() {
 
       {/* Title & Subtitle */}
       <View style={styles.textContainer}>
-        <Text style={styles.title}>Get started!</Text>
+        <Text style={styles.title}>Get Started</Text>
         <Text style={styles.subtitle}>Start your stress-free travel journey!</Text>
       </View>
 
@@ -28,7 +28,7 @@ export default function Intro() {
           <Text style={styles.buttonText}>Sign up</Text>
         </Pressable>
         <Pressable style={styles.loginButton}>
-          <Text style={styles.loginText}>Log in ⌄</Text>
+          <Text style={styles.loginText}>Log in</Text>
         </Pressable>
       </View>
     </SafeAreaView>
@@ -49,8 +49,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   logo: {
-    width: "90%",  
-    height: "90%",
+    width: "80%",  
+    height: "80%",
     resizeMode: "contain",
   },
   separator: {
