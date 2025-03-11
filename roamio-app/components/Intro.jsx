@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
   },
   separator: {
     width: "50%",  // 🔥 Adjust width as needed
-    height: 2, // 🔥 Controls line thickness
+    height: 3, // 🔥 Controls line thickness
     backgroundColor: Colors.coral, // 🔥 Line color matches theme
     marginVertical: 20, // 🔥 Spacing between logo & text
   },
