@@ -54,10 +54,10 @@ const styles = StyleSheet.create({
     resizeMode: "contain",
   },
   separator: {
-    width: "50%",  // 🔥 Adjust width as needed
-    height: 2, // 🔥 Controls line thickness
-    backgroundColor: Colors.coral, // 🔥 Line color matches theme
-    marginVertical: 20, // 🔥 Spacing between logo & text
+    width: "50%",  
+    height: 4, 
+    backgroundColor: Colors.coral, 
+    marginVertical: 20, 
   },
   textContainer: {
     alignItems: "center",
