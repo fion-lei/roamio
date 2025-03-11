@@ -8,7 +8,7 @@ export const LightTheme = {
   colors: {
     ...NavigationLightTheme.colors,
     background: "#ffffff", // Primary color for light mode
-    card: "#ff989a", // Secondary color
+    card: "#f55e61", // Secondary color
     text: "#333333",
     border: "#ffd9d9",
     primary: "#f55e61", // Accent color

@@ -1,26 +1,23 @@
 import React from "react";
-import {
-  View,
-  Text,
-  Image,
-  StyleSheet,
-  TextInput,
-  Pressable,
-  SafeAreaView,
-} from "react-native";
+import { View, Text, Image, StyleSheet, TextInput, Pressable, SafeAreaView, } from "react-native";
 import { Colors } from "@/constants/Colors"; // Ensure Colors file exists
 import { FontAwesome } from "@expo/vector-icons"; // For password icon
+import { useRouter } from "expo-router";
 
 export default function Login() {
+  const router = useRouter();
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Logo */}
       <View style={styles.logoContainer}>
-        <Image source={require("../assets/images/logo_coral.png")} style={styles.logo} />
+        <Image 
+        source={require("../assets/images/logo_coral.png")} 
+        style={styles.logo} />
       </View>
 
-{/* Login Section */}
-<View style={styles.loginContainer}>
+      {/* Login Section */}
+      <View style={styles.loginContainer}>
         {/* Login Title */}
         <Text style={styles.loginTitle}>Login</Text>
 
@@ -35,7 +32,7 @@ export default function Login() {
         </View>
 
         {/* Login Button */}
-        <Pressable style={styles.loginButton}>
+        <Pressable onPress={() => router.replace("../(tabs)/Trip")} style={styles.loginButton} >
           <Text style={styles.buttonText}>Login</Text>
           <FontAwesome name="arrow-right" size={18} color="white" style={styles.arrowIcon} />
         </Pressable>
@@ -63,13 +60,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   logoContainer: {
-    width: "100%",  
-    height: 400,  
+    width: "100%",
+    height: 350,
     justifyContent: "center",
     alignItems: "center",
   },
   logo: {
-    width: "80%",  
+    width: "80%",
     height: "80%",
     resizeMode: "contain",
   },
@@ -117,7 +114,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginTop: 10,
-    
+
   },
   buttonText: {
     color: Colors.coral,
@@ -139,7 +136,7 @@ const styles = StyleSheet.create({
     fontFamily: "quicksand-semibold",
   },
   boldText: {
-    fontWeight: "bold",
     color: Colors.black,
+    fontFamily: "quicksand-bold",
   },
 });

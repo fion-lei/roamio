@@ -1,13 +1,5 @@
 import React from "react";
-import {
-  View,
-  Text,
-  Image,
-  StyleSheet,
-  TextInput,
-  Pressable,
-  SafeAreaView,
-} from "react-native";
+import {View,Text,Image,StyleSheet,TextInput,Pressable,SafeAreaView,} from "react-native";
 import { Colors } from "@/constants/Colors"; // Ensure Colors file exists
 import { FontAwesome } from "@expo/vector-icons"; // For password icon
 
@@ -19,8 +11,8 @@ export default function Login() {
         <Image source={require("../assets/images/logo_white.png")} style={styles.logo} />
       </View>
 
-{/* Login Section */}
-<View style={styles.signUpContainer}>
+      {/* Login Section */}
+      <View style={styles.signUpContainer}>
         {/* Login Title */}
         <Text style={styles.signUpTitle}>Sign Up</Text>
 
@@ -60,19 +52,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   logoContainer: {
-    width: "100%",  
-    height: 400,  
+    width: "100%",
+    height: 350,
     justifyContent: "center",
     alignItems: "center",
   },
   logo: {
-    width: "80%",  
+    width: "80%",
     height: "80%",
     resizeMode: "contain",
   },
   signUpContainer: {
     width: "100%",
-    backgroundColor: Colors.white, 
+    backgroundColor: Colors.white,
     padding: 20,
     borderRadius: 30,
     elevation: 0,

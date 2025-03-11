@@ -1,9 +1,13 @@
 import React from "react";
 import { View, Text, Image, StyleSheet, Pressable, SafeAreaView } from "react-native";
 import { Colors } from "@/constants/Colors"; // Ensure Colors file exists
+import { useRouter } from "expo-router"; 
 
 export default function Intro() {
+  const router = useRouter(); // ✅ Get router instance for navigation
+
   return (
+    
     <SafeAreaView style={styles.container}>
       {/* Logo Container */}
       <View style={styles.logoContainer}>
@@ -24,10 +28,11 @@ export default function Intro() {
 
       {/* Buttons */}
       <View style={styles.buttonContainer}>
-        <Pressable style={styles.signUpButton}>
+        
+        <Pressable style={styles.signUpButton} onPress={() => router.push("/SignUp")}>
           <Text style={styles.buttonText}>Sign up</Text>
         </Pressable>
-        <Pressable style={styles.loginButton}>
+        <Pressable style={styles.loginButton} onPress={() => router.push("Login")}>
           <Text style={styles.loginText}>Log in</Text>
         </Pressable>
       </View>
