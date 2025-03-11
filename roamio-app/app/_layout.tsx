@@ -1,39 +1,44 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
-import 'react-native-reanimated';
-
-import { useColorScheme } from '@/hooks/useColorScheme';
-
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
+import { Stack } from "expo-router";
+import { ThemeProvider } from "@react-navigation/native";
+import { useFonts } from "expo-font";
+import { useEffect, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Appearance, useColorScheme } from "react-native";
+import { LightTheme, DarkTheme } from "@/utilities/themeOptions"; // Import custom themes
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
+  const { colorScheme, setColorScheme } = useColorScheme();
+  const systemColorScheme = Appearance.getColorScheme(); // Get system theme
 
   useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
+    const loadTheme = async () => {
+      // await AsyncStorage.removeItem('theme');
+      const stored = (await AsyncStorage.getItem("theme")) as ThemeOptions;
+      if (stored) {
+        setColorScheme(stored);
+      } else {
+        // Default to light if nothing or unexpected value is stored
+        setColorScheme("light");
+      }
+    };
 
-  if (!loaded) {
-    return null;
-  }
+    loadTheme();
+  }, [colorScheme]);
+
+  // Load fonts
+  const [fontsLoaded] = useFonts({
+    "quicksand-light": require('./../assets/fonts/Quicksand-Light.ttf'),
+    "quicksand-regular": require('./../assets/fonts/Quicksand-Regular.ttf'),
+    "quicksand-medium": require('./../assets/fonts/Quicksand-Medium.ttf'),
+    "quicksand-semibold":require('./../assets/fonts/Quicksand-SemiBold.ttf'),
+    "quicksand-bold": require('./../assets/fonts/Quicksand-Bold.ttf'),
+  });
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : LightTheme}>
       <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
+        <Stack.Screen name="index" options={{headerShown: false}} />
       </Stack>
-      <StatusBar style="auto" />
     </ThemeProvider>
   );
 }
