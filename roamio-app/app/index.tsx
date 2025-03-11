@@ -1,14 +1,8 @@
 import { Text, View } from "react-native";
+import StackNavigator from "@/app/navigation/StackNavigator";
 
-import SignUp from './screens/SignUp'
+// Entry point in app
+
 export default function Index() {
-  return (
-    <View
-      style={{
-        flex: 1,
-      }}
-    >
-     <SignUp/>
-    </View>
-  );
+  return <StackNavigator />;
 }

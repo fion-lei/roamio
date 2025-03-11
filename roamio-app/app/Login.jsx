@@ -1,13 +1,5 @@
 import React from "react";
-import {
-  View,
-  Text,
-  Image,
-  StyleSheet,
-  TextInput,
-  Pressable,
-  SafeAreaView,
-} from "react-native";
+import { View, Text, Image, StyleSheet, TextInput, Pressable, SafeAreaView, } from "react-native";
 import { Colors } from "@/constants/Colors"; // Ensure Colors file exists
 import { FontAwesome } from "@expo/vector-icons"; // For password icon
 
@@ -16,13 +8,15 @@ export default function Login() {
     <SafeAreaView style={styles.container}>
       {/* Logo */}
       <View style={styles.logoContainer}>
-        <Image source={require("../assets/images/logo_white.png")} style={styles.logo} />
+        <Image 
+        source={require("../assets/images/logo_coral.png")} 
+        style={styles.logo} />
       </View>
 
-{/* Login Section */}
-<View style={styles.signUpContainer}>
+      {/* Login Section */}
+      <View style={styles.loginContainer}>
         {/* Login Title */}
-        <Text style={styles.signUpTitle}>Sign Up</Text>
+        <Text style={styles.loginTitle}>Login</Text>
 
         {/* Input Fields */}
         <View style={styles.inputContainer}>
@@ -31,21 +25,24 @@ export default function Login() {
 
         <View style={styles.inputContainer}>
           <TextInput placeholder="Password" style={styles.input} secureTextEntry />
-        </View>
-
-        <View style={styles.inputContainer}>
-          <TextInput placeholder="Confirm Password" style={styles.input} secureTextEntry />
-          <FontAwesome name="lock" size={20} color={Colors.coral} style={styles.icon} />
+          <FontAwesome name="lock" size={20} color={Colors.peachySalmon} style={styles.icon} />
         </View>
 
         {/* Login Button */}
-        <Pressable style={styles.signUpButton}>
+        <Pressable style={styles.loginButton}>
           <Text style={styles.buttonText}>Login</Text>
           <FontAwesome name="arrow-right" size={18} color="white" style={styles.arrowIcon} />
         </Pressable>
 
         {/* Forgot Password & Create Account */}
-
+        <View style={styles.footerContainer}>
+          <Text style={styles.footerText}>
+            Forgot password? <Text style={styles.boldText}>Get new</Text>
+          </Text>
+          <Text style={styles.footerText}>
+            Don't have an account? <Text style={styles.boldText}>Create new</Text>
+          </Text>
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -54,33 +51,33 @@ export default function Login() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.coral,
+    backgroundColor: Colors.white,
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 20,
   },
   logoContainer: {
-    width: "100%",  
-    height: 400,  
+    width: "100%",
+    height: 400,
     justifyContent: "center",
     alignItems: "center",
   },
   logo: {
-    width: "80%",  
+    width: "80%",
     height: "80%",
     resizeMode: "contain",
   },
-  signUpContainer: {
+  loginContainer: {
     width: "100%",
-    backgroundColor: Colors.white, 
+    backgroundColor: Colors.coral, // Optional: Can change for contrast
     padding: 20,
     borderRadius: 30,
     elevation: 0,
   },
-  signUpTitle: {
+  loginTitle: {
     fontSize: 25,
     fontFamily: "quicksand-bold",
-    color: Colors.coral,
+    color: Colors.white,
     alignSelf: "flex-start",
     marginBottom: 15,
   },
@@ -105,7 +102,7 @@ const styles = StyleSheet.create({
   icon: {
     marginLeft: 10,
   },
-  signUpButton: {
+  loginButton: {
     width: "100%",
     backgroundColor: Colors.palePink,
     paddingVertical: 15,

@@ -34,11 +34,11 @@ export default function RootLayout() {
     "quicksand-bold": require('./../assets/fonts/Quicksand-Bold.ttf'),
   });
 
+  if (!fontsLoaded) return null
+
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : LightTheme}>
-      <Stack>
-        <Stack.Screen name="index" options={{headerShown: false}} />
-      </Stack>
+      <Stack screenOptions={{ headerShown: false }} />
     </ThemeProvider>
   );
 }
