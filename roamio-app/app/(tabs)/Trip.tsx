@@ -10,11 +10,11 @@ export default function Home() {
     {/* Search Bar Section */}
     <View style={styles.searchContainer}>
       <FontAwesome name="search" size={18} color="grey" style={styles.searchIcon}/>
-      <TextInput placeholder="Search..." style={styles.searchInput} />
+      <TextInput placeholder="Search Activity..." style={styles.searchInput} />
     </View>
 
     {/* Header */}
-    <Text style={styles.header}>Upcoming Trips</Text>
+    <Text style={styles.header}>Activity Categories</Text>
 
     {/* Activity Categories Section */}
     <View style={styles.categoriesContainer}>
@@ -22,7 +22,7 @@ export default function Home() {
       <FontAwesome name="tree" size={24} color={Colors.peachySalmon}/>
       </Pressable>
       <Pressable style={[styles.categoryIcon, {backgroundColor: Colors.peachySalmon}]}>
-        <FontAwesome name="skyatlas" size={24} color={Colors.palePink} /> 
+        <FontAwesome name="heart" size={24} color={Colors.palePink} /> 
       </Pressable>
       <Pressable style={[styles.categoryIcon, {backgroundColor: Colors.palePink}]}>
         <FontAwesome name="fire" size={24} color={Colors.peachySalmon}/> 
@@ -32,28 +32,28 @@ export default function Home() {
       </Pressable>
       </View>
 
-      {/* Trip Cards Section */}
+      {/* Activity Cards Section */}
       <ScrollView style={styles.cardsContainer}>
         
-        {/* [1st]. Calgary Outdoors */}
+        {/* [1st]. Elgin Hill */}
         <Pressable style={styles.tripCard}>
           {/* Placeholder Image */}
           <Image source={require("@/assets/images/camp.png")}
           style={styles.cardImage}/> 
         <View style={styles.cardInfo}>
-          <Text style={styles.cardDetails}>Alberta, Calgary - 2 Weeks</Text>
-          <Text style={styles.cardTitle}>Calgary Outdoors</Text>
+          <Text style={styles.cardDetails}>180 McKenzie Towne Dr SE</Text>
+          <Text style={styles.cardTitle}>Elgin Hill</Text>
           </View>
           </Pressable> 
         
-        {/* [2nd]. Calgary Food Tour */}
+        {/* [2nd]. OEB Restaurant */}
         <Pressable style={styles.tripCard}>
           {/* Placeholder Image */}
           <Image source={require("@/assets/images/food.png")}
           style={styles.cardImage}/> 
         <View style={styles.cardInfo}>
-          <Text style={styles.cardDetails}>Alberta, Calgary - 1 Week</Text>
-          <Text style={styles.cardTitle}>Calgary Food Tour</Text>
+          <Text style={styles.cardDetails}>2207 4 St SW</Text>
+          <Text style={styles.cardTitle}>OEB Breakfast Co.</Text>
           </View>
           </Pressable>
 
@@ -79,7 +79,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#F9F9F9", // Off-white 
     borderColor: Colors.grey,
     marginTop: 20, 
-
   },
   searchIcon: {
     marginRight: 10, 
@@ -135,7 +134,6 @@ const styles = StyleSheet.create({
   cardInfo: {
     padding: 10,
     marginLeft: 10,
-
   }, 
   cardTitle: {
     fontSize: 18,
