@@ -76,6 +76,8 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 30,
     elevation: 0,
+    borderColor: Colors.peachySalmon,
+    borderWidth: 10,
   },
   loginTitle: {
     fontSize: 25,

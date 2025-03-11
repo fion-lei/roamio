@@ -4,15 +4,15 @@ import { useFonts } from "expo-font";
 import { useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Appearance, useColorScheme } from "react-native";
-import { LightTheme, DarkTheme } from "@/utilities/themeOptions"; 
-import { Colors } from "@/constants/Colors"; 
+import { LightTheme, DarkTheme } from "@/utilities/themeOptions";
+import { Colors } from "@/constants/Colors";
 import { Pressable } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 
 export default function RootLayout() {
   const { colorScheme, setColorScheme } = useColorScheme();
-  const systemColorScheme = Appearance.getColorScheme(); 
+  const systemColorScheme = Appearance.getColorScheme();
   const router = useRouter();
 
   useEffect(() => {
@@ -43,52 +43,61 @@ export default function RootLayout() {
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : LightTheme}>
       <Stack
         screenOptions={{
-          headerStyle: { backgroundColor: Colors.palePink }, 
-          headerTintColor: Colors.coral, 
+          headerStyle: { backgroundColor: Colors.palePink },
+          headerTintColor: Colors.coral,
           headerShadowVisible: false,
+          title: "",
         }}
-      >        {/* Hide header on Intro */}
+      >
+        {/* Hide header on Intro */}
         <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="Intro" options={{ title: "Intro", headerShown: false }} />
+        <Stack.Screen
+          name="Intro"
+          options={{ title: "Intro", headerShown: false }}
+        />
 
         {/* Login and Signup */}
-        <Stack.Screen 
-          name="Login" 
-          options={{ 
-            headerStyle: { backgroundColor: Colors.white }, 
-            headerTintColor: Colors.coral, 
+        <Stack.Screen
+          name="Login"
+          options={{
+            headerStyle: { backgroundColor: Colors.white },
+            headerTintColor: Colors.coral,
             headerTitle: "",
             headerShadowVisible: false,
-          }} 
+          }}
         />
-        <Stack.Screen 
-          name="SignUp" 
-          options={{ 
-            headerStyle: { backgroundColor: Colors.coral }, 
-            headerTintColor: Colors.white, 
+        <Stack.Screen
+          name="SignUp"
+          options={{
+            headerStyle: { backgroundColor: Colors.coral },
+            headerTintColor: Colors.white,
             headerTitle: "",
             headerShadowVisible: false,
-          }} 
+          }}
         />
-
-        <Stack.Screen 
-          name="(tabs)"  
-          options={{ 
-            headerTitle: "", 
-            headerShadowVisible: false, 
+        <Stack.Screen
+          name="SignUpDetails"
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="(tabs)"
+          options={{
+            headerTitle: "",
+            headerShadowVisible: false,
             headerRight: () => (
               <Pressable onPress={() => router.push("/Profile")}>
                 <FontAwesome
                   name="user"
                   size={24}
-                  color= {Colors.coral}
+                  color={Colors.coral}
                   style={{ marginRight: 15 }}
                 />
               </Pressable>
-            ), 
+            ),
           }}
         />
-        
         {/* Profile Page */}
         <Stack.Screen name="Profile" />
       </Stack>
