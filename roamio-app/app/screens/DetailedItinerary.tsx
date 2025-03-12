@@ -13,11 +13,28 @@ const DetailedItinerary = () => {
   const navigation = useNavigation();
   const router = useRouter();
   const [isEditMode, setIsEditMode] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(false);
 
   // for top nav bar
   useLayoutEffect(() => {
     navigation.setOptions({
-      headerTitle: "",
+      headerTitle: () => (
+        <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, justifyContent: 'center' }}>
+          <Pressable 
+            onPress={() => setShowCalendar(!showCalendar)} 
+            style={{ alignItems: 'center' }}
+          >
+            <FontAwesome
+              name="calendar"
+              size={24}
+              color={Colors.coral}
+            />
+          </Pressable>
+          <Text style={{ color: Colors.coral, marginLeft: 8, fontSize: 20 }}>
+            Nov. 3, 2025 {/* placeholder date */}
+          </Text>
+        </View>
+      ),
       headerRight: () => (
         <Pressable onPress={() => setIsEditMode(!isEditMode)}>
           <Text style={{ color: Colors.coral, marginRight: 15, fontSize: 20 }}>
