@@ -1,15 +1,21 @@
-import React, { useLayoutEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Dimensions, Pressable } from 'react-native';
+import React, { useLayoutEffect, useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Dimensions,
+  Pressable,
+} from "react-native";
 import { Colors } from "@/constants/Colors";
 import { FontAwesome } from "@expo/vector-icons";
 
-import { useNavigation, useRouter } from 'expo-router';
+import { useNavigation, useRouter } from "expo-router";
 
 // for ensuring timeslot sizes/positions are consistent. E.g. each hour chunk = 60px in height
 const pixelsForHour = 60;
 
 const DetailedItinerary = () => {
-
   const navigation = useNavigation();
   const router = useRouter();
   const [isEditMode, setIsEditMode] = useState(false);
@@ -19,16 +25,19 @@ const DetailedItinerary = () => {
   useLayoutEffect(() => {
     navigation.setOptions({
       headerTitle: () => (
-        <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, justifyContent: 'center' }}>
-          <Pressable 
-            onPress={() => setShowCalendar(!showCalendar)} 
-            style={{ alignItems: 'center' }}
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            flex: 1,
+            justifyContent: "center",
+          }}
+        >
+          <Pressable
+            onPress={() => setShowCalendar(!showCalendar)}
+            style={{ alignItems: "center" }}
           >
-            <FontAwesome
-              name="calendar"
-              size={24}
-              color={Colors.coral}
-            />
+            <FontAwesome name="calendar" size={24} color={Colors.coral} />
           </Pressable>
           <Text style={{ color: Colors.coral, marginLeft: 8, fontSize: 20 }}>
             Nov. 3, 2025 {/* placeholder date */}
@@ -48,75 +57,73 @@ const DetailedItinerary = () => {
   // making time slots for 24 hours in AM and PM format
   const timeSlots = Array.from({ length: 24 }, (_, i) => {
     const hour = i;
-    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const ampm = hour >= 12 ? "PM" : "AM";
 
     let displayHour;
     if (hour === 0) {
       displayHour = 12; // 0 = 12am
     } else if (hour > 12) {
-      displayHour = hour - 12;  // PM
+      displayHour = hour - 12; // PM
     } else {
-      displayHour = hour;  // AM
+      displayHour = hour; // AM
     }
     return `${displayHour}:00 ${ampm}`;
   });
 
   // so that itinerary items will be in AM and PM format
   const formatTimeToAMPM = (time: string) => {
-    const [hours, minutes] = time.split(':').map(Number);
-    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const [hours, minutes] = time.split(":").map(Number);
+    const ampm = hours >= 12 ? "PM" : "AM";
 
     let displayHour;
     if (hours === 0) {
       displayHour = 12;
     } else if (hours > 12) {
-      displayHour = hours - 12;  
+      displayHour = hours - 12;
     } else {
       displayHour = hours;
     }
-    return `${displayHour}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+    return `${displayHour}:${minutes.toString().padStart(2, "0")} ${ampm}`;
   };
 
   const itineraryItems = [
     {
-      time: '09:00',
+      time: "09:00",
       duration: 1, // in hours
-      activity: 'Breakfast at Hotel'
+      activity: "Breakfast at Hotel",
     },
     {
-      time: '13:00',
+      time: "13:00",
       duration: 1.5,
-      activity: 'Lunch at Restaurant'
+      activity: "Lunch at Restaurant",
     },
     {
-      time: '15:00',
+      time: "15:00",
       duration: 2,
-      activity: 'Art gallery Visit'
+      activity: "Art gallery Visit",
     },
     {
-      time: '19:30',
+      time: "19:30",
       duration: 1.5,
-      activity: 'Dinner at Restaurant'
-
+      activity: "Dinner at Restaurant",
     },
 
     {
       // activity going into the next day test
-      time: '23:30',
+      time: "23:30",
       duration: 1,
-      activity: 'test'
-
-    }
+      activity: "test",
+    },
   ];
 
   // for calculating position and height of an event based on time
   const getEventStyle = (time: string, duration: number) => {
-    const [hours, minutes] = time.split(':').map(Number);
-    const topPosition = (hours + (minutes / 60)) * pixelsForHour;
+    const [hours, minutes] = time.split(":").map(Number);
+    const topPosition = (hours + minutes / 60) * pixelsForHour;
     const height = duration * pixelsForHour;
 
     return {
-      position: 'absolute' as const,
+      position: "absolute" as const,
       top: topPosition,
       left: 70, // left padding so that we can see the time on the left
       right: 10,
@@ -124,7 +131,7 @@ const DetailedItinerary = () => {
     };
   };
 
-  // event content 
+  // event content
   const renderEventContent = (item: any, index: number) => (
     <View style={styles.eventContent}>
       <View style={styles.eventTextContainer}>
@@ -135,31 +142,30 @@ const DetailedItinerary = () => {
       </View>
       {/* If in edit mode, show delete button */}
       {isEditMode ? (
-        <Pressable 
+        <Pressable
           style={styles.deleteButton}
-          onPress={() => {/* delete functionality here */}}
+          onPress={() => {
+            /* delete functionality here */
+          }}
         >
           <View style={styles.iconContainer}>
-            <FontAwesome
-              name="minus"
-              size={16}
-              color={Colors.peachySalmon}
-            />
+            <FontAwesome name="minus" size={16} color={Colors.peachySalmon} />
           </View>
         </Pressable>
       ) : (
-      
         // If not in edit mode, show dots on events to see the details
-        <Pressable 
+        <Pressable
           style={styles.dotsContainer}
-          onPress={() => router.push({
-            pathname: "/screens/EventDetails",
-            params: { 
-              activity: item.activity,
-              time: item.time,
-              duration: item.duration
-            }
-          })}
+          onPress={() =>
+            router.replace({
+              pathname: "/screens/EventDetails",
+              params: {
+                activity: item.activity,
+                time: item.time,
+                duration: item.duration,
+              },
+            })
+          }
         >
           <View style={styles.dot} />
           <View style={styles.dot} />
@@ -187,7 +193,7 @@ const DetailedItinerary = () => {
               key={index}
               style={[
                 styles.eventBubble,
-                getEventStyle(item.time, item.duration)
+                getEventStyle(item.time, item.duration),
               ]}
             >
               {renderEventContent(item, index)}
@@ -205,25 +211,25 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
   },
   timelineContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     paddingTop: 0,
     height: 24 * pixelsForHour, // shows full 24 hours in the timeline
   },
   timeMarkers: {
     width: 60,
-    position: 'absolute',
+    position: "absolute",
     left: 0,
   },
   timeSlot: {
     height: pixelsForHour,
-    justifyContent: 'center',
+    justifyContent: "center",
     paddingLeft: 10,
     borderBottomWidth: 1,
     borderBottomColor: Colors.grey,
   },
   eventsContainer: {
     flex: 1,
-    position: 'relative',
+    position: "relative",
   },
   eventBubble: {
     backgroundColor: Colors.white,
@@ -257,17 +263,17 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   eventContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
   },
   eventTextContainer: {
     flex: 1,
   },
   dotsContainer: {
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
     paddingRight: 5,
     height: 24,
   },
@@ -280,8 +286,8 @@ const styles = StyleSheet.create({
   },
   deleteButton: {
     padding: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   iconContainer: {
     width: 30,
@@ -290,8 +296,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
     borderWidth: 2,
     borderColor: Colors.peachySalmon,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
 
