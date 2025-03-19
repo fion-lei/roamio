@@ -9,6 +9,7 @@ import {
   Dimensions,
 } from "react-native";
 import { Colors } from "../../constants/Colors";
+import { router } from "expo-router";
 
 const { height } = Dimensions.get("window"); // ✅ Get screen height dynamically
 
@@ -28,7 +29,7 @@ export default function Itinerary() {
               <Text style={styles.description}>{item.description}</Text>
               <Pressable
                 style={styles.button}
-                onPress={() => console.log("Button Clicked!")}
+                onPress={() => router.replace("../screens/DetailedItinerary")}
               >
                 <Text style={styles.buttonText}>View Details</Text>
               </Pressable>
