@@ -33,7 +33,7 @@ export default function Intro() {
           <Text style={styles.buttonText}>Sign up</Text>
         </Pressable>
         <Pressable style={styles.loginButton} onPress={() => router.push("Login")}>
-          <Text style={styles.loginText}>Log in</Text>
+          <Text style={styles.loginText}>Login</Text>
         </Pressable>
       </View>
     </SafeAreaView>

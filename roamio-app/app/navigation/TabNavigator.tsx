@@ -4,8 +4,9 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Trip from "../(tabs)/Trip";
-import Friends from "../(tabs)/Friends";
 import { FontAwesome } from "@expo/vector-icons";
+import FriendsStackNavigator from "../navigation/FriendsStackNavigator"; 
+
 
 const Tab = createBottomTabNavigator();
 
@@ -29,13 +30,11 @@ export default function TabNavigator() {
       />
       <Tab.Screen
         name="Profile"
-        component={Friends}
-        options={{
-          tabBarIcon: ({ color, size }) => (
-            <FontAwesome name="user" color={color} size={size} />
-          ),
-        }}
+        component={FriendsStackNavigator}
+        options={{ headerShown: false }} // Hides the hot pink bar
+
       />
+
     </Tab.Navigator>
   );
 }
