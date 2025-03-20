@@ -144,7 +144,9 @@ export default function Itinerary() {
             onPress={() => setModalVisible(true)}
             style={styles.addButton}
           >
-            <AntDesign name="pluscircle" size={28} color={Colors.coral} />
+            <AntDesign name="pluscircle" size={30} color={Colors.coral} 
+            
+            />
           </Pressable>
         </View>
 
@@ -188,7 +190,6 @@ export default function Itinerary() {
                   }
                 />
               </View>
-              /* TODO: Add Header for input fields */
               {/* Date Pickers */}
               <View style={styles.dateContainer}>
                 <View style={styles.dateInputContainer}>
