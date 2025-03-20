@@ -14,8 +14,9 @@ import {
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Colors } from "../../constants/Colors";
 import { AntDesign } from "@expo/vector-icons";
-
+import { router } from "expo-router";
 const { height } = Dimensions.get("window");
+
 
 // Function to format dates in "MMM DD, YYYY" format
 const formatDate = (date: Date | null) => {
@@ -26,6 +27,35 @@ const formatDate = (date: Date | null) => {
     year: "numeric",
   });
 };
+
+export default function Itinerary() {
+  return (
+    <SafeAreaView style={styles.safeContainer}>
+      <View style={styles.container}>
+        <Text style={styles.header}>Trip Itineraries</Text>
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent} 
+          showsVerticalScrollIndicator={false}
+        >
+          {itineraryData.map((item) => (
+            <View key={item.id} style={styles.box}>
+              <Text style={styles.title}>{item.title}</Text>
+              <Text style={styles.date}>{item.date}</Text>
+              <Text style={styles.description}>{item.description}</Text>
+              <Pressable
+                style={styles.button}
+                onPress={() => router.replace("../screens/DetailedItinerary")}
+              >
+                <Text style={styles.buttonText}>View Details</Text>
+              </Pressable>
+            </View>
+          ))}
+        </ScrollView>
+      </View>
+    </SafeAreaView>
+  );
+}
+
 
 
 // Initial Itinerary Data with Fixed Date Format
