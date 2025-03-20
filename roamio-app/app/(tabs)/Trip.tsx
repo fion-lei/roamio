@@ -72,6 +72,7 @@ const activityCategories: ActivityCategory[] = [
 // Holds all activity cards
 // Category array? card can belong to multiple categories 
 // Add reviews to activity cards? 
+// Add ratings to activity cards? 
 const activityCards: ActivityCard[] = [ 
   { 
     id: "elgin", 
