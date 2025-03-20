@@ -122,7 +122,9 @@ export default function Itinerary() {
               <Text style={styles.title}>{item.title}</Text>
               <Text style={styles.date}>{item.date}</Text>
               <Text style={styles.description}>{item.description}</Text>
-              <Pressable style={styles.button} onPress={() => console.log("View Details Clicked!")}>
+              <Pressable style={styles.button} 
+              
+              onPress={() => router.replace("../screens/DetailedItinerary")}>
                 <Text style={styles.buttonText}>View Details</Text>
               </Pressable>
             </View>
