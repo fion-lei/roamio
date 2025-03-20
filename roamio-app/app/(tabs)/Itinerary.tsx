@@ -156,8 +156,8 @@ export default function Itinerary() {
           {itineraryList.map((item) => (
             <View key={item.id} style={styles.box}>
               <Text style={styles.title}>{item.title}</Text>
-              <View style = {styles.dateView}> 
-              <Text style={styles.date}>{item.date}</Text>
+              <View style={styles.dateView}>
+                <Text style={styles.date}>{item.date}</Text>
               </View>
               <View style={styles.descriptionView}>
                 <Text style={styles.description}>{item.description}</Text>
@@ -262,16 +262,16 @@ export default function Itinerary() {
               </View>
               <View style={styles.modalButtonContainer}>
                 <Pressable
-                  style={[styles.button, styles.doneButton]}
-                  onPress={handleAddTrip}
-                >
-                  <Text style={styles.buttonText}>Done</Text>
-                </Pressable>
-                <Pressable
                   style={[styles.button, styles.cancelButton]}
                   onPress={() => setModalVisible(false)}
                 >
                   <Text style={styles.buttonText}>Cancel</Text>
+                </Pressable>
+                <Pressable
+                  style={[styles.button, styles.doneButton]}
+                  onPress={handleAddTrip}
+                >
+                  <Text style={styles.buttonText}>Done</Text>
                 </Pressable>
               </View>
             </View>
@@ -313,12 +313,11 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.palestPink,
     padding: 15,
     marginBottom: 20,
-    borderRadius: 10,
+    borderRadius: 12,
     elevation: 3,
     justifyContent: "space-between",
   },
   title: {
-    
     fontSize: 18,
     fontFamily: "quicksand-bold",
   },
@@ -391,6 +390,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 10,
     paddingVertical: 12,
+    fontSize: 16,
     fontFamily: "quicksand-semibold",
   },
   textArea: {
