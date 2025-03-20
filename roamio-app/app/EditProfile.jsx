@@ -21,7 +21,7 @@ export default function EditProfile() {
     const [name, setName] = useState("Wendy Wanderer");
     const [email, setEmail] = useState("wendy.wanderer@email.com");
     const [phone, setPhone] = useState("123-456-7890");
-    const [bio, setBio] = useState("");
+    const [bio, setBio] = useState("Hi, I’m Wendy! I’m 28, a digital nomad from Los Angeles. Whether it’s a hidden café or an offbeat hiking trail, I’m all about budget-friendly experiences and soaking in local vibes.");
     const [profileImage, setProfileImage] = useState(null); // For profile picture
     const [travellerType, setTravellerType] = useState("solo");
 
@@ -45,11 +45,12 @@ export default function EditProfile() {
             aspect: [1, 1],
             quality: 1,
         });
-
-        if (!result.canceled) {
-            setProfileImage(result.assets[0].uri);
+    
+        if (!result.canceled && result.assets.length > 0) {
+            setProfileImage(result.assets[0].uri); // Update state with new image URI
         }
     };
+    
 
     return (
         <SafeAreaView style={styles.container}>
@@ -60,13 +61,16 @@ export default function EditProfile() {
 
             {/* Profile Picture Section */}
             <Pressable onPress={pickImage} style={styles.profileImageContainer}>
-                {profileImage ? (
-                    <Image source={{ uri: profileImage }} style={styles.profileImage} />
-                ) : (
-                    <FontAwesome name="user-circle" size={80} color={Colors.grey} />
-                )}
+                <Image 
+                    source={
+                        profileImage ? { uri: profileImage } : require("../assets/images/profilePicture.png")
+                    } 
+                    style={styles.profileImage} 
+                />
+
                 <Text style={styles.changePhotoText}>Change Photo</Text>
             </Pressable>
+
 
             {/* Editable Fields */}
             <View style={styles.inputContainer}>
@@ -190,8 +194,8 @@ const styles = StyleSheet.create({
         borderWidth: 2,
         borderColor: Colors.peachySalmon,
         borderRadius: 10,
-        paddingHorizontal: 10,
-        paddingVertical: 12,
+        paddingHorizontal: 8,
+        paddingVertical: 10,
         marginBottom: 15,
     },
     input: {
@@ -199,6 +203,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: Colors.black,
         fontFamily: "quicksand-semibold",
+        paddingVertical: 4,
     },
     icon: {
         marginLeft: 10,
@@ -209,8 +214,8 @@ const styles = StyleSheet.create({
         borderWidth: 2,
         borderColor: Colors.peachySalmon,
         borderRadius: 10,
-        paddingHorizontal: 10,
-        paddingVertical: 12,
+        paddingHorizontal: 8,
+        paddingVertical: 10,
         marginBottom: 10,
     },
     bioInput: {
@@ -218,6 +223,7 @@ const styles = StyleSheet.create({
         color: Colors.black,
         fontFamily: "quicksand-semibold",
         textAlignVertical: "top",
+        paddingVertical: 4,
     },
     charCounter: {
         textAlign: "right",
@@ -231,8 +237,8 @@ const styles = StyleSheet.create({
         borderWidth: 2,
         borderColor: Colors.peachySalmon,
         borderRadius: 10,
-        paddingHorizontal: 10,
-        paddingVertical: 12,
+        paddingHorizontal: 8,
+        paddingVertical: 10,
         marginBottom: 15,
         overflow: "hidden",
     },
@@ -278,4 +284,3 @@ const styles = StyleSheet.create({
     },
     
 });
-
