@@ -28,34 +28,6 @@ const formatDate = (date: Date | null) => {
   });
 };
 
-export default function Itinerary() {
-  return (
-    <SafeAreaView style={styles.safeContainer}>
-      <View style={styles.container}>
-        <Text style={styles.header}>Trip Itineraries</Text>
-        <ScrollView 
-          contentContainerStyle={styles.scrollContent} 
-          showsVerticalScrollIndicator={false}
-        >
-          {itineraryData.map((item) => (
-            <View key={item.id} style={styles.box}>
-              <Text style={styles.title}>{item.title}</Text>
-              <Text style={styles.date}>{item.date}</Text>
-              <Text style={styles.description}>{item.description}</Text>
-              <Pressable
-                style={styles.button}
-                onPress={() => router.replace("../screens/DetailedItinerary")}
-              >
-                <Text style={styles.buttonText}>View Details</Text>
-              </Pressable>
-            </View>
-          ))}
-        </ScrollView>
-      </View>
-    </SafeAreaView>
-  );
-}
-
 
 
 // Initial Itinerary Data with Fixed Date Format
@@ -79,7 +51,7 @@ const itineraryData = [
     description: "Enjoy breathtaking views at Grassi Lakes and explore Quarry Lake. Discover local cafés, art galleries, and scenic biking trails around the town.",
   },
 ];
-
+rnf
 export default function Itinerary() {
   const [modalVisible, setModalVisible] = useState(false);
   const [showFromDatePicker, setShowFromDatePicker] = useState(false);
