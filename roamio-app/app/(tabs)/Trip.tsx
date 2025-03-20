@@ -22,6 +22,7 @@ interface ActivityCategory {
 
 // Category array? card can belong to multiple categories 
 // Add reviews for activity cards? 
+// Add ratings for activity cards? 
 interface ActivityCard {
   id: string;
   title: string;
@@ -83,6 +84,7 @@ const activityCards: ActivityCard[] = [
     category: "outdoors", 
     tags: ["#Nature", "#Relax", "#Park", "#Pet-Friendly", "#Leisure"],
   },
+  
   { 
     id: "oeb", 
     title: "OEB Breakfast Co.", 
@@ -126,8 +128,6 @@ const activityCards: ActivityCard[] = [
   return (
     
     <SafeAreaView style={styles.safeContainer}> 
-      
-      <ScrollView contentContainerStyle={styles.contentContainer}>
     
       {/* Search Bar Section */}
       <View style={styles.searchContainer}>
@@ -144,34 +144,36 @@ const activityCards: ActivityCard[] = [
       <Text style={styles.header}>Activity Categories</Text>
 
       {/* Activity Categories Section */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoriesScrollView}>
-        <View style={styles.categoriesContainer}>
-          {activityCategories.map((category) => (
-            <Pressable 
-              key={category.id}
-              style={[
-                styles.categoryItem,
-                { backgroundColor: category.color },
-                // Selected category should be indicated when selected 
-                selectedCategory === category.id && styles.selectedCategory
-              ]} 
-              onPress={() => handleCategoryPress(category.id)}
-            >
-              <FontAwesome 
-                name={category.icon} 
-                size={24} 
-                color={category.iconColor}
-              />
+      <View style={styles.categoriesWrapper}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoriesScrollView}>
+          <View style={styles.categoriesContainer}>
+            {activityCategories.map((category) => (
+              <Pressable 
+                key={category.id}
+                style={[
+                  styles.categoryItem,
+                  { backgroundColor: category.color },
+                  // Selected category should be indicated when selected 
+                  selectedCategory === category.id && styles.selectedCategory
+                ]} 
+                onPress={() => handleCategoryPress(category.id)}
+              >
+                <FontAwesome 
+                  name={category.icon} 
+                  size={24} 
+                  color={category.iconColor}
+                />
               
-              {/* Keep category label on category icons? */}
-              <Text style={styles.categoryLabel}>{category.label}</Text>
-            </Pressable>
-          ))}
+                {/* Keep category label on category icons? */}
+                <Text style={styles.categoryLabel}>{category.label}</Text>
+              </Pressable>
+            ))}
+          </View>
+        </ScrollView>
         </View>
-      </ScrollView>
 
       {/* Activity Cards Section */}
-      <View style={styles.cardsContainer}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.cardsContainer}>
         {filteredActivities.length > 0 ? (
           filteredActivities.map((activity) => (
             <Pressable 
@@ -206,9 +208,8 @@ const activityCards: ActivityCard[] = [
           // In the case search does not yield activity results 
           <View style={styles.invalidSearchContainer}>
             <Text style={styles.invalidSearchText}>No activities found...</Text>
-            </View>
+          </View>
         )}
-        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -218,10 +219,7 @@ const styles = StyleSheet.create({
   safeContainer: {
     flex: 1, 
     backgroundColor: Colors.white, 
-  },
-  contentContainer: {
     paddingHorizontal: 16, 
-    marginBottom: 30,
   },
   searchContainer: {
     width: "100%",  
@@ -247,8 +245,7 @@ const styles = StyleSheet.create({
   invalidSearchContainer: {
     flex: 1,
     alignItems: "center", 
-    justifyContent: "center",
-    marginTop: 30,  
+    marginTop: 16,  
   },
   invalidSearchText: {
     fontSize: 16,
@@ -260,12 +257,16 @@ const styles = StyleSheet.create({
     fontFamily: "quicksand-bold",
     marginTop: 20,
   },
+  categoriesWrapper: {
+    minHeight: 85, 
+    marginTop: 16,  
+  },
   categoriesContainer: {
     flexDirection: "row", 
     marginRight: 15,
   },
   categoriesScrollView: {
-    marginTop: 16,
+    flex: 1, 
   },
   categoryItem: {
     width: 80,
@@ -288,11 +289,7 @@ const styles = StyleSheet.create({
     borderColor: Colors.coral,
   },
   cardsContainer: {
-    flex: 1, 
-    marginTop: 20,
-  }, 
-  cardsScrollContainer: {
-    marginBottom: 50,
+    flexGrow: 1,
   },
   tripCard: {
     backgroundColor: Colors.white, 
