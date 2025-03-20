@@ -17,38 +17,44 @@ import { AntDesign } from "@expo/vector-icons";
 import { router } from "expo-router";
 const { height } = Dimensions.get("window");
 
-
 // Function to format dates in "MMM DD, YYYY" format
 const formatDate = (date: Date | null) => {
   if (!date) return "MM DD, YYYY"; // Default placeholder
   return date.toLocaleDateString("en-US", {
-    month: "2-digit", 
+    month: "2-digit",
     day: "2-digit",
     year: "numeric",
   });
 };
-
-
 
 // Initial Itinerary Data with Fixed Date Format
 const itineraryData = [
   {
     id: "1",
     title: "Calgary",
-    date: `${formatDate(new Date("2025-03-20"))} - ${formatDate(new Date("2025-03-23"))}`,
-    description: "Explore downtown Calgary, visit the Calgary Tower, and walk along Stephen Avenue. Enjoy a day at the Calgary Zoo and relax at Prince’s Island Park.",
+    date: `${formatDate(new Date("2025-03-20"))} - ${formatDate(
+      new Date("2025-03-23")
+    )}`,
+    description:
+      "Explore downtown Calgary, visit the Calgary Tower, and walk along Stephen Avenue. Enjoy a day at the Calgary Zoo and relax at Prince’s Island Park.",
   },
   {
     id: "2",
     title: "Banff",
-    date: `${formatDate(new Date("2025-03-24"))} - ${formatDate(new Date("2025-03-27"))}`,
-    description: "Take the Banff Gondola for stunning mountain views and soak in the Banff Hot Springs. Hike through Johnston Canyon and spot wildlife along the scenic trails.",
+    date: `${formatDate(new Date("2025-03-24"))} - ${formatDate(
+      new Date("2025-03-27")
+    )}`,
+    description:
+      "Take the Banff Gondola for stunning mountain views and soak in the Banff Hot Springs. Hike through Johnston Canyon and spot wildlife along the scenic trails.",
   },
   {
     id: "3",
     title: "Canmore",
-    date: `${formatDate(new Date("2025-03-28"))} - ${formatDate(new Date("2025-03-30"))}`,
-    description: "Enjoy breathtaking views at Grassi Lakes and explore Quarry Lake. Discover local cafés, art galleries, and scenic biking trails around the town.",
+    date: `${formatDate(new Date("2025-03-28"))} - ${formatDate(
+      new Date("2025-03-30")
+    )}`,
+    description:
+      "Enjoy breathtaking views at Grassi Lakes and explore Quarry Lake. Discover local cafés, art galleries, and scenic biking trails around the town.",
   },
 ];
 
@@ -72,7 +78,11 @@ export default function Itinerary() {
   });
 
   // Handle date selection
-  const handleDateChange = (event: unknown, selectedDate?: Date, type?: "from" | "to") => {
+  const handleDateChange = (
+    event: unknown,
+    selectedDate?: Date,
+    type?: "from" | "to"
+  ) => {
     if (selectedDate && type) {
       setNewTrip((prevTrip) => ({
         ...prevTrip,
@@ -89,13 +99,20 @@ export default function Itinerary() {
 
   // Handle adding a new trip
   const handleAddTrip = () => {
-    if (newTrip.title && newTrip.fromDate && newTrip.toDate && newTrip.description) {
+    if (
+      newTrip.title &&
+      newTrip.fromDate &&
+      newTrip.toDate &&
+      newTrip.description
+    ) {
       setItineraryList([
         ...itineraryList,
         {
           id: Date.now().toString(),
           title: newTrip.title,
-          date: `${formatDate(newTrip.fromDate)} - ${formatDate(newTrip.toDate)}`,
+          date: `${formatDate(newTrip.fromDate)} - ${formatDate(
+            newTrip.toDate
+          )}`,
           description: newTrip.description,
         },
       ]);
@@ -110,21 +127,28 @@ export default function Itinerary() {
         {/* Header with Plus Icon */}
         <View style={styles.headerContainer}>
           <Text style={styles.header}>Trip Itineraries</Text>
-          <Pressable onPress={() => setModalVisible(true)} style={styles.addButton}>
+          <Pressable
+            onPress={() => setModalVisible(true)}
+            style={styles.addButton}
+          >
             <AntDesign name="pluscircle" size={28} color={Colors.coral} />
           </Pressable>
         </View>
 
         {/* Itinerary List */}
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
           {itineraryList.map((item) => (
             <View key={item.id} style={styles.box}>
               <Text style={styles.title}>{item.title}</Text>
               <Text style={styles.date}>{item.date}</Text>
               <Text style={styles.description}>{item.description}</Text>
-              <Pressable style={styles.button} 
-              
-              onPress={() => router.replace("../screens/DetailedItinerary")}>
+              <Pressable
+                style={styles.button}
+                onPress={() => router.replace("../screens/DetailedItinerary")}
+              >
                 <Text style={styles.buttonText}>View Details</Text>
               </Pressable>
             </View>
@@ -132,74 +156,95 @@ export default function Itinerary() {
         </ScrollView>
 
         {/* Modal for Adding New Trip */}
-        <Modal visible={modalVisible} animationType="slide" transparent={true}>
-          <View style={styles.modalContainer}>
-            <View style={styles.modalContent}>
+        <Modal visible={modalVisible} animationType="fade" transparent={true}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalView}>
               <Text style={styles.modalTitle}>Add New Trip</Text>
+              /* TODO: Add Header for input fields */
               <TextInput
                 placeholder="Trip Name"
                 style={styles.input}
                 value={newTrip.title}
                 onChangeText={(text) => setNewTrip({ ...newTrip, title: text })}
               />
-
               {/* Date Pickers */}
               <View style={styles.dateContainer}>
+                // TODO: Add date input container
                 {/* Start Date Picker */}
                 <View>
                   <Text style={styles.dateLabel}>Start Date</Text>
-                  <Pressable style={styles.dateInput} onPress={() => setShowFromDatePicker(true)}>
-                  <Text style={styles.dateText}>{newTrip.fromDate ? formatDate(newTrip.fromDate) : "MM DD, YYYY"}</Text>
+                  <Pressable
+                    style={styles.selectFieldContainer}
+                    onPress={() => setShowFromDatePicker(true)}
+                  >
+                    <Text style={styles.dateText}>
+                      {newTrip.fromDate
+                        ? formatDate(newTrip.fromDate)
+                        : "MM DD, YYYY"}
+                    </Text>
                   </Pressable>
                 </View>
-
                 {/* End Date Picker */}
                 <View>
                   <Text style={styles.dateLabel}>End Date</Text>
-                  <Pressable style={styles.dateInput} onPress={() => setShowToDatePicker(true)}>
-                  <Text style={styles.dateText}>{newTrip.toDate ? formatDate(newTrip.toDate) : "MM DD, YYYY"}</Text>
+                  <Pressable
+                    style={styles.selectFieldContainer}
+                    onPress={() => setShowToDatePicker(true)}
+                  >
+                    <Text style={styles.dateText}>
+                      {newTrip.toDate
+                        ? formatDate(newTrip.toDate)
+                        : "MM DD, YYYY"}
+                    </Text>
                   </Pressable>
                 </View>
               </View>
-
-                {showFromDatePicker && (
-                  <View style={styles.pickerContainer}>
-                    <DateTimePicker
-                      value={newTrip.fromDate || new Date()}
-                      mode="date"
-                      display="spinner" // Ensures better styling
-                      onChange={(event, date) => handleDateChange(event, date, "from")}
-                      minimumDate={new Date()}
-                    />
-                  </View>
-                )}
-
-                {showToDatePicker && (
-                  <View style={styles.pickerContainer}>
-                    <DateTimePicker
-                      value={newTrip.toDate || new Date()}
-                      mode="date"
-                      display="spinner"
-                      onChange={(event, date) => handleDateChange(event, date, "to")}
-                      minimumDate={new Date()}
-                    />
-                  </View>
-                )}
-
-
+              {showFromDatePicker && (
+                <View style={styles.pickerContainer}>
+                  <DateTimePicker
+                    value={newTrip.fromDate || new Date()}
+                    mode="date"
+                    display="spinner" // Ensures better styling
+                    onChange={(event, date) =>
+                      handleDateChange(event, date, "from")
+                    }
+                    minimumDate={new Date()}
+                  />
+                </View>
+              )}
+              {showToDatePicker && (
+                <View style={styles.pickerContainer}>
+                  <DateTimePicker
+                    value={newTrip.toDate || new Date()}
+                    mode="date"
+                    display="spinner"
+                    onChange={(event, date) =>
+                      handleDateChange(event, date, "to")
+                    }
+                    minimumDate={new Date()}
+                  />
+                </View>
+              )}
               <TextInput
                 placeholder="Trip Description"
                 style={[styles.input, styles.textArea]}
                 value={newTrip.description}
-                onChangeText={(text) => setNewTrip({ ...newTrip, description: text })}
+                onChangeText={(text) =>
+                  setNewTrip({ ...newTrip, description: text })
+                }
                 multiline
               />
-
               <View style={styles.modalButtonContainer}>
-                <Pressable style={[styles.button, styles.modalButton]} onPress={handleAddTrip}>
+                <Pressable
+                  style={[styles.button, styles.modalButton]}
+                  onPress={handleAddTrip}
+                >
                   <Text style={styles.buttonText}>Done</Text>
                 </Pressable>
-                <Pressable style={[styles.button, styles.modalButtonCancel]} onPress={() => setModalVisible(false)}>
+                <Pressable
+                  style={[styles.button, styles.modalButtonCancel]}
+                  onPress={() => setModalVisible(false)}
+                >
                   <Text style={styles.buttonText}>Cancel</Text>
                 </Pressable>
               </View>
@@ -210,7 +255,6 @@ export default function Itinerary() {
     </SafeAreaView>
   );
 }
-
 
 const styles = StyleSheet.create({
   safeContainer: {
@@ -271,23 +315,26 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: "quicksand-bold",
   },
-  modalContainer: {
+  modalOverlay: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)", // Semi-transparent background
+    backgroundColor: "rgba(52, 52, 52, 0.8)", // Background will blur when modal is open
   },
-  modalContent: {
-    width: "80%",
+  modalView: {
+    width: "90%",
     backgroundColor: Colors.white,
+    borderRadius: 20,
+    borderWidth: 3,
+    borderColor: Colors.peachySalmon,
     padding: 20,
-    borderRadius: 10,
-    alignItems: "center",
+    elevation: 5,
   },
   modalTitle: {
-    fontSize: 20,
+    fontSize: 24,
     fontFamily: "quicksand-bold",
-    marginBottom: 10,
+    textAlign: "center",
+    marginBottom: 20,
   },
   input: {
     width: "100%",
@@ -316,16 +363,22 @@ const styles = StyleSheet.create({
     flex: 1,
     marginHorizontal: 5,
   },
+  selectFieldContainer: {
+    borderWidth: 1,
+    borderColor: Colors.grey,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 12,
+    justifyContent: "center",
+  },
   dateContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    width: "100%",
     marginBottom: 15,
-    alignItems: "center", 
   },
   dateWrapper: {
     flex: 1,
-    marginRight: 10, 
+    marginRight: 10,
   },
   dateLabel: {
     fontSize: 14,
@@ -349,6 +402,4 @@ const styles = StyleSheet.create({
   pickerContainer: {
     alignItems: "center",
   },
-  
-
 });
