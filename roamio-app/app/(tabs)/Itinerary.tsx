@@ -51,7 +51,7 @@ const itineraryData = [
     description: "Enjoy breathtaking views at Grassi Lakes and explore Quarry Lake. Discover local cafés, art galleries, and scenic biking trails around the town.",
   },
 ];
-rnf
+
 export default function Itinerary() {
   const [modalVisible, setModalVisible] = useState(false);
   const [showFromDatePicker, setShowFromDatePicker] = useState(false);
