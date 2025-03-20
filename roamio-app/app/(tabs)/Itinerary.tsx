@@ -63,6 +63,19 @@ export default function Itinerary() {
   const [showFromDatePicker, setShowFromDatePicker] = useState(false);
   const [showToDatePicker, setShowToDatePicker] = useState(false);
   const [itineraryList, setItineraryList] = useState(itineraryData);
+  // Dropdown visibility states
+  const [showStartDateDropdown, setShowStartDateDropdown] = useState(false);
+  const [showEndDateDropdown, setShowEndDateDropdown] = useState(false);
+  const [showStartTimeDropdown, setShowStartTimeDropdown] = useState(false);
+  const [showEndTimeDropdown, setShowEndTimeDropdown] = useState(false);
+
+  // Start-end date selection default states
+  const [startDate, setStartDate] = useState("MM DD, YYYY");
+  const [endDate, setEndDate] = useState("MM DD, YYYY");
+
+  // Start-end time selection default states
+  const [startTime, setStartTime] = useState("--:-- (MST)");
+  const [endTime, setEndTime] = useState("--:-- (MST)");
 
   // Define initial state
   const [newTrip, setNewTrip] = useState<{
@@ -143,10 +156,14 @@ export default function Itinerary() {
           {itineraryList.map((item) => (
             <View key={item.id} style={styles.box}>
               <Text style={styles.title}>{item.title}</Text>
+              <View style = {styles.dateView}> 
               <Text style={styles.date}>{item.date}</Text>
-              <Text style={styles.description}>{item.description}</Text>
+              </View>
+              <View style={styles.descriptionView}>
+                <Text style={styles.description}>{item.description}</Text>
+              </View>
               <Pressable
-                style={styles.button}
+                style={[styles.viewButton, styles.viewDetailsButton]}
                 onPress={() => router.replace("../screens/DetailedItinerary")}
               >
                 <Text style={styles.buttonText}>View Details</Text>
@@ -160,19 +177,24 @@ export default function Itinerary() {
           <View style={styles.modalOverlay}>
             <View style={styles.modalView}>
               <Text style={styles.modalTitle}>Add New Trip</Text>
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>Enter Trip Name</Text>
+                <TextInput
+                  placeholder="Trip Name"
+                  style={styles.input}
+                  value={newTrip.title}
+                  onChangeText={(text) =>
+                    setNewTrip({ ...newTrip, title: text })
+                  }
+                />
+              </View>
               /* TODO: Add Header for input fields */
-              <TextInput
-                placeholder="Trip Name"
-                style={styles.input}
-                value={newTrip.title}
-                onChangeText={(text) => setNewTrip({ ...newTrip, title: text })}
-              />
               {/* Date Pickers */}
               <View style={styles.dateContainer}>
-                // TODO: Add date input container
-                {/* Start Date Picker */}
-                <View>
-                  <Text style={styles.dateLabel}>Start Date</Text>
+                <View style={styles.dateInputContainer}>
+                  {/* Start Date Picker */}
+
+                  <Text style={styles.inputLabel}>Start Date</Text>
                   <Pressable
                     style={styles.selectFieldContainer}
                     onPress={() => setShowFromDatePicker(true)}
@@ -184,9 +206,10 @@ export default function Itinerary() {
                     </Text>
                   </Pressable>
                 </View>
-                {/* End Date Picker */}
-                <View>
-                  <Text style={styles.dateLabel}>End Date</Text>
+
+                <View style={styles.dateInputContainer}>
+                  {/* End Date Picker */}
+                  <Text style={styles.inputLabel}>End Date</Text>
                   <Pressable
                     style={styles.selectFieldContainer}
                     onPress={() => setShowToDatePicker(true)}
@@ -225,24 +248,27 @@ export default function Itinerary() {
                   />
                 </View>
               )}
-              <TextInput
-                placeholder="Trip Description"
-                style={[styles.input, styles.textArea]}
-                value={newTrip.description}
-                onChangeText={(text) =>
-                  setNewTrip({ ...newTrip, description: text })
-                }
-                multiline
-              />
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>Enter Trip Description</Text>
+                <TextInput
+                  placeholder="Trip Description"
+                  style={[styles.input, styles.textArea]}
+                  value={newTrip.description}
+                  onChangeText={(text) =>
+                    setNewTrip({ ...newTrip, description: text })
+                  }
+                  multiline
+                />
+              </View>
               <View style={styles.modalButtonContainer}>
                 <Pressable
-                  style={[styles.button, styles.modalButton]}
+                  style={[styles.button, styles.doneButton]}
                   onPress={handleAddTrip}
                 >
                   <Text style={styles.buttonText}>Done</Text>
                 </Pressable>
                 <Pressable
-                  style={[styles.button, styles.modalButtonCancel]}
+                  style={[styles.button, styles.cancelButton]}
                   onPress={() => setModalVisible(false)}
                 >
                   <Text style={styles.buttonText}>Cancel</Text>
@@ -286,28 +312,50 @@ const styles = StyleSheet.create({
   box: {
     backgroundColor: Colors.palestPink,
     padding: 15,
-    marginBottom: 10,
+    marginBottom: 20,
     borderRadius: 10,
     elevation: 3,
+    justifyContent: "space-between",
   },
   title: {
+    
     fontSize: 18,
     fontFamily: "quicksand-bold",
   },
   date: {
     fontSize: 14,
     color: Colors.grey,
+    marginTop: 5,
     marginBottom: 5,
     fontFamily: "quicksand-semibold",
+  },
+  dateView: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   description: {
     fontSize: 14,
     fontFamily: "quicksand-semibold",
   },
-  button: {
-    backgroundColor: Colors.coral,
+  descriptionView: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  viewButton: {
+    borderRadius: 10,
+    justifyContent: "center",
+    alignContent: "center",
     padding: 10,
-    borderRadius: 5,
+    alignItems: "center",
+  },
+  button: {
+    borderRadius: 10,
+    padding: 10,
+    elevation: 2,
+    width: "48%",
     alignItems: "center",
   },
   buttonText: {
@@ -340,9 +388,9 @@ const styles = StyleSheet.create({
     width: "100%",
     borderWidth: 1,
     borderColor: Colors.grey,
-    borderRadius: 5,
-    padding: 10,
-    marginBottom: 10,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 12,
     fontFamily: "quicksand-semibold",
   },
   textArea: {
@@ -351,17 +399,17 @@ const styles = StyleSheet.create({
   },
   modalButtonContainer: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    width: "100%",
+    justifyContent: "space-around",
+    marginTop: 20,
   },
-  modalButton: {
-    flex: 1,
-    marginHorizontal: 5,
+  viewDetailsButton: {
+    backgroundColor: Colors.coral,
   },
-  modalButtonCancel: {
+  doneButton: {
+    backgroundColor: Colors.coral,
+  },
+  cancelButton: {
     backgroundColor: Colors.grey,
-    flex: 1,
-    marginHorizontal: 5,
   },
   selectFieldContainer: {
     borderWidth: 1,
@@ -396,10 +444,26 @@ const styles = StyleSheet.create({
   },
   dateText: {
     fontSize: 16,
-    fontFamily: "quicksand-semibold",
-    color: Colors.primary,
+    fontFamily: "quicksand-medium",
   },
   pickerContainer: {
     alignItems: "center",
+  },
+  dateInputContainer: {
+    width: "48%",
+    position: "relative",
+  },
+  inputContainer: {
+    marginBottom: 15,
+    position: "relative",
+  },
+  inputLabel: {
+    fontSize: 16,
+    fontFamily: "quicksand-semibold",
+    marginBottom: 5,
+  },
+  textInputLabel: {
+    fontSize: 16,
+    fontFamily: "quicksand-medium",
   },
 });
