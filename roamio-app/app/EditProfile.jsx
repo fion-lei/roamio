@@ -8,6 +8,7 @@ import {
     StyleSheet,
     Image,
 } from "react-native";
+import * as ImagePicker from "expo-image-picker"; // Import ImagePicker
 import { Dropdown } from "react-native-element-dropdown";
 import { Colors } from "@/constants/Colors"; // Ensure Colors file exists
 import { FontAwesome } from "@expo/vector-icons";
@@ -16,16 +17,17 @@ import { useRouter } from "expo-router";
 export default function EditProfile() {
     const router = useRouter();
 
-    // Existing user data from Profile.jsx (prefilled values)
+    // Existing user data
     const [name, setName] = useState("Wendy Wanderer");
     const [email, setEmail] = useState("wendy.wanderer@email.com");
     const [phone, setPhone] = useState("123-456-7890");
-    const [bio, setBio] = useState(
-        "Hey, I’m Wendy! I’m 28, a digital nomad from Los Angeles who thrives on spontaneous adventures. Whether it’s a hidden café or an offbeat hiking trail, I’m all about budget-friendly experiences and soaking in local vibes."
-    );
+    const [bio, setBio] = useState("");
+    const [profileImage, setProfileImage] = useState(null); // For profile picture
     const [travellerType, setTravellerType] = useState("solo");
 
-    // Traveler options dropdown (from SignUpDetails.jsx)
+    const BIO_CHAR_LIMIT = 200; // Bio character limit
+
+    // Traveler options dropdown
     const travellerOptions = [
         { label: "Solo Traveler", value: "solo" },
         { label: "Group Traveler", value: "group" },
@@ -35,12 +37,36 @@ export default function EditProfile() {
         { label: "Retiree Traveler", value: "retiree" },
     ];
 
+    // Function to pick image
+    const pickImage = async () => {
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.Images,
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 1,
+        });
+
+        if (!result.canceled) {
+            setProfileImage(result.assets[0].uri);
+        }
+    };
+
     return (
         <SafeAreaView style={styles.container}>
             {/* Profile Header */}
             <View style={styles.profileHeader}>
                 <Text style={styles.editTitle}>Edit Profile</Text>
             </View>
+
+            {/* Profile Picture Section */}
+            <Pressable onPress={pickImage} style={styles.profileImageContainer}>
+                {profileImage ? (
+                    <Image source={{ uri: profileImage }} style={styles.profileImage} />
+                ) : (
+                    <FontAwesome name="user-circle" size={80} color={Colors.grey} />
+                )}
+                <Text style={styles.changePhotoText}>Change Photo</Text>
+            </Pressable>
 
             {/* Editable Fields */}
             <View style={styles.inputContainer}>
@@ -65,7 +91,7 @@ export default function EditProfile() {
 
             <View style={styles.inputContainer}>
                 <TextInput
-                    placeholder="Phone Number"
+                    placeholder="Phone Numberrrrr"
                     value={phone}
                     onChangeText={setPhone}
                     style={styles.input}
@@ -78,11 +104,22 @@ export default function EditProfile() {
                 <TextInput
                     placeholder="Bio"
                     value={bio}
-                    onChangeText={setBio}
+                    onChangeText={(text) => {
+                        if (text.length <= BIO_CHAR_LIMIT) {
+                            setBio(text);
+                        }
+                    }}
                     style={styles.bioInput}
                     multiline
                 />
+                <Text style={[styles.charCounter, bio.length >= 180 ? styles.charCounterWarning : {}]}>
+                    {bio.length}/{BIO_CHAR_LIMIT}
+                </Text>
+                {bio.length === BIO_CHAR_LIMIT && (
+                    <Text style={styles.warningText}>You have reached the maximum limit!</Text>
+                )}
             </View>
+
 
             {/* Traveler Type Dropdown */}
             <View style={styles.pickerContainer}>
@@ -122,12 +159,28 @@ const styles = StyleSheet.create({
         alignItems: "center",
         marginBottom: 20,
     },
-
     editTitle: {
         fontSize: 22,
         fontFamily: "quicksand-bold",
         color: Colors.primary,
         marginTop: 10,
+    },
+    profileImageContainer: {
+        alignItems: "center",
+        marginBottom: 20,
+    },
+    profileImage: {
+        width: 100,
+        height: 100,
+        borderRadius: 50,
+        borderWidth: 2,
+        borderColor: Colors.peachySalmon,
+    },
+    changePhotoText: {
+        marginTop: 8,
+        color: Colors.coral,
+        fontSize: 14,
+        fontFamily: "quicksand-semibold",
     },
     inputContainer: {
         width: "100%",
@@ -158,13 +211,19 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         paddingHorizontal: 10,
         paddingVertical: 12,
-        marginBottom: 15,
+        marginBottom: 10,
     },
     bioInput: {
         fontSize: 16,
         color: Colors.black,
         fontFamily: "quicksand-semibold",
         textAlignVertical: "top",
+    },
+    charCounter: {
+        textAlign: "right",
+        fontSize: 12,
+        color: Colors.grey,
+        marginTop: 4,
     },
     pickerContainer: {
         width: "100%",
@@ -183,25 +242,6 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         backgroundColor: Colors.white,
     },
-    dropdownStyle: {
-        maxHeight: 200,
-        alignSelf: "center",
-    },
-    placeholderText: {
-        fontSize: 16,
-        fontFamily: "quicksand-semibold",
-        color: Colors.grey,
-    },
-    selectedText: {
-        fontSize: 16,
-        fontFamily: "quicksand-bold",
-        color: Colors.black,
-    },
-    itemText: {
-        fontSize: 16,
-        fontFamily: "quicksand-semibold",
-        color: Colors.black,
-    },
     saveButton: {
         width: "100%",
         backgroundColor: Colors.palePink,
@@ -217,5 +257,25 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontFamily: "quicksand-bold",
     },
+    charCounter: {
+        textAlign: "right",
+        fontSize: 12,
+        color: Colors.grey,
+        marginTop: 4,
+    },
+    
+    charCounterWarning: {
+        color: "red", // Turns red when near limit
+        fontWeight: "bold",
+    },
+    
+    warningText: {
+        color: "red",
+        fontSize: 12,
+        textAlign: "center",
+        marginTop: 5,
+        fontWeight: "bold",
+    },
+    
 });
 

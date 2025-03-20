@@ -38,7 +38,7 @@ export default function Profile() {
       {/* Bio Section */}
       <View style={styles.bioContainer}>
         <Text style={styles.bio}>
-          Hey, I’m Wendy! I’m 28, a digital nomad from Los Angeles who thrives on spontaneous adventures. Whether it’s a hidden café or an offbeat hiking trail, I’m all about budget-friendly experiences and soaking in local vibes.
+          Hi, I’m Wendy! I’m 28, a digital nomad from Los Angeles. Whether it’s a hidden café or an offbeat hiking trail, I’m all about budget-friendly experiences and soaking in local vibes.
         </Text>
       </View>
 
