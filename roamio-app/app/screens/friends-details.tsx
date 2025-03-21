@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFonts } from 'expo-font';
-import { useNavigation } from '@react-navigation/native';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../navigation/FriendsStackNavigator';
 
 import {
   View,
@@ -9,6 +12,7 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import {
   FontAwesome,
@@ -17,14 +21,7 @@ import {
   Feather,
   Ionicons,
 } from '@expo/vector-icons';
-import { useRoute } from '@react-navigation/native';
 import { Colors } from '@/constants/Colors';
-
-interface RouteParams {
-  name: string;
-  phone: string;
-  avatar: any;
-}
 
 interface InfoItemProps {
   icon: React.ReactNode;
@@ -39,24 +36,27 @@ const InfoItem = ({ icon, text }: InfoItemProps) => (
 );
 
 const DetailScreen = () => {
-  const route = useRoute();
-  const { name, phone, avatar } = route.params as RouteParams;
-
   const [sent, setSent] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedItinerary, setSelectedItinerary] = useState<string | null>(null);
   const [accessType, setAccessType] = useState<'trip-mate' | 'viewer'>('viewer');
 
-  const itineraries = ['Full Calgary Trip', 'Stampede', 'Weekend Out']; //make this dynamic
-  const navigation = useNavigation();
+  const itineraries = ['Full Calgary Trip', 'Stampede', 'Weekend Out']; // make dynamic if needed
+  const route = useRoute<RouteProp<RootStackParamList, 'Detail'>>();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'FriendsScreen'>>();
 
+  const { name, phone, avatar } = route.params;
+
+  // Function to handle sending the itinerary (remains unchanged)
   const handleSend = () => {
-    if (!selectedItinerary) return alert('Please select an itinerary.');
+    if (!selectedItinerary) {
+      Alert.alert('Please select an itinerary.');
+      return;
+    }
 
     setSent(true);
     setModalVisible(false);
     console.log(`Shared '${selectedItinerary}' as a ${accessType}!`);
-
 
     setTimeout(() => {
       setSent(false);
@@ -65,6 +65,29 @@ const DetailScreen = () => {
     }, 2000);
   };
 
+  // Update friend list using AsyncStorage when unfriending
+  const handleUnfriend = async () => {
+    try {
+      const storedFriends = await AsyncStorage.getItem('friendsList');
+      let friendsList = storedFriends ? JSON.parse(storedFriends) : [];
+      // Filter out the friend with matching phone number
+      const updatedFriendsList = friendsList.filter((friend: any) => friend.phone !== phone);
+      await AsyncStorage.setItem('friendsList', JSON.stringify(updatedFriendsList));
+      Alert.alert('Friend removed');
+      navigation.navigate('FriendsScreen');
+    } catch (error) {
+      console.error('Error removing friend:', error);
+      Alert.alert('Error', 'Could not remove friend.');
+    }
+  };
+
+  const [fontsLoaded] = useFonts({
+    'quicksand-regular': require('../../assets/fonts/Quicksand-Regular.ttf'),
+    'quicksand-bold': require('../../assets/fonts/Quicksand-Bold.ttf'),
+  });
+
+  if (!fontsLoaded) return null;
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Image
@@ -72,15 +95,12 @@ const DetailScreen = () => {
         style={styles.image}
         resizeMode="cover"
       />
-     <View style={styles.nameRow}>
-  <Text style={styles.title}>{name}</Text>
-  <Feather name="star" size={25} style={{ marginLeft: 20, marginBottom:15 }} />
-</View>
+      <View style={styles.nameRow}>
+        <Text style={styles.title}>{name}</Text>
+        <Feather name="star" size={25} style={{ marginLeft: 20, marginBottom: 15 }} />
+      </View>
 
-      <TouchableOpacity
-        style={styles.unfriendButton}
-        onPress={() => console.log('Unfriended!')}
-      >
+      <TouchableOpacity style={styles.unfriendButton} onPress={handleUnfriend}>
         <Text style={styles.unfriendText}>Unfriend</Text>
       </TouchableOpacity>
 
@@ -90,10 +110,7 @@ const DetailScreen = () => {
         <InfoItem icon={<FontAwesome name="plane" size={20} />} text="Travel Enthusiast" />
         <InfoItem icon={<Ionicons name="heart" size={20} />} text="Loves to explore" />
         <InfoItem icon={<Feather name="camera" size={20} />} text="Captures moments" />
-        <InfoItem
-          icon={<MaterialCommunityIcons name="account-circle" size={20} />}
-          text="Social Butterfly"
-        />
+        <InfoItem icon={<MaterialCommunityIcons name="account-circle" size={20} />} text="Social Butterfly" />
       </View>
 
       <View style={styles.sendCard}>
@@ -126,7 +143,7 @@ const DetailScreen = () => {
                 ]}
               >
                 <Text style={styles.itineraryText}>{itinerary}</Text>
-            </TouchableOpacity>
+              </TouchableOpacity>
             ))}
 
             <View style={styles.accessButtons}>
@@ -155,7 +172,9 @@ const DetailScreen = () => {
             </TouchableOpacity>
 
             <TouchableOpacity onPress={() => setModalVisible(false)} style={{ marginTop: 10 }}>
-              <Text style={{ textAlign: 'center', color: '#6b7280',fontFamily: 'Quicksand-SemiBold' }}>Cancel</Text>
+              <Text style={{ textAlign: 'center', color: '#6b7280', fontFamily: 'Quicksand-SemiBold' }}>
+                Cancel
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -218,7 +237,7 @@ const styles = StyleSheet.create({
   itineraryText: {
     fontFamily: 'Quicksand-Regular',
     fontSize: 14,
-  },  
+  },
   unfriendButton: {
     alignSelf: 'flex-end',
     backgroundColor: '#ffe5e5',
@@ -244,11 +263,14 @@ const styles = StyleSheet.create({
   nameRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16, // optional, for spacing
-  },  
+    marginBottom: 16,
+  },
   modalOverlay: {
     position: 'absolute',
-    top: 0, left: 0, right: 0, bottom: 0,
+    top: 0, 
+    left: 0, 
+    right: 0, 
+    bottom: 0,
     backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
@@ -272,7 +294,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   itinerarySelected: {
-    backgroundColor: Colors.palePink	,
+    backgroundColor: Colors.palePink,
   },
   accessButtons: {
     flexDirection: 'row',
@@ -294,7 +316,6 @@ const styles = StyleSheet.create({
   accessText: {
     textAlign: 'center',
     fontFamily: 'Quicksand-SemiBold',
-    
   },
   shareButton: {
     backgroundColor: Colors.coral,
