@@ -3,43 +3,55 @@ import { View, Text, Image, Pressable, StyleSheet } from "react-native";
 import { Colors } from "../constants/Colors";
 import { useRouter } from "expo-router";
 import { FontAwesome } from "@expo/vector-icons";
+import { useLocalSearchParams } from "expo-router";
+
 
 export default function Profile() {
   const router = useRouter();
-  return (
-    <View style={styles.container}>
-      {/* Profile Header */}
-      <View style={styles.profileHeader}>
-        <Image
-          source={require("../assets/images/profilePicture.png")}
-          style={styles.avatar}
-        />
-        <Text style={styles.name}>Wendy Wanderer</Text>
+  const params = useLocalSearchParams();
 
-        {/* Traveler Type with Icon */}
+
+  // Get updated profile data from params (fallback to default values if missing)
+  const profileImage = params.profileImage && params.profileImage !== "null"
+  ? { uri: params.profileImage }
+  : require("../assets/images/profilePicture.png");
+
+
+  const name = params.name || "Wendy Wanderer";
+  const email = params.email || "wendy.wanderer@email.com";
+  const phone = params.phone || "123-456-7890";
+  const bio = params.bio || "Hi, I’m Wendy! I’m 28, a digital nomad from Los Angeles. Whether it’s a hidden café or an offbeat hiking trail, I’m all about budget-friendly experiences and soaking in local vibes.";
+  const travellerType = params.travellerType || "Solo Traveler";
+
+  
+   return (
+    <View style={styles.container}>
+      <View style={styles.profileHeader}>
+        <Image key={profileImage.uri} source={profileImage} style={styles.avatar} />
+        <Text style={styles.name}>{name}</Text>
+
+        {/* Traveler Type */}
         <View style={styles.infoRow}>
           <FontAwesome name="globe" size={18} color={Colors.coral} />
-          <Text style={styles.subtitle}>Solo Traveler</Text>
+          <Text style={styles.subtitle}>{travellerType}</Text>
         </View>
 
-        {/* Email with Icon */}
+        {/* Email */}
         <View style={styles.infoRow}>
           <FontAwesome name="envelope" size={18} color={Colors.coral} />
-          <Text style={styles.email}>wendy.wanderer@email.com</Text>
+          <Text style={styles.email}>{email}</Text>
         </View>
 
-        {/* Phone Number with Icon */}
+        {/* Phone Number */}
         <View style={styles.infoRow}>
           <FontAwesome name="phone" size={18} color={Colors.coral} />
-          <Text style={styles.phoneNumber}>123-456-7890</Text>
+          <Text style={styles.phoneNumber}>{phone}</Text>
         </View>
       </View>
 
       {/* Bio Section */}
       <View style={styles.bioContainer}>
-        <Text style={styles.bio}>
-          Hi, I’m Wendy! I’m 28, a digital nomad from Los Angeles. Whether it’s a hidden café or an offbeat hiking trail, I’m all about budget-friendly experiences and soaking in local vibes.
-        </Text>
+        <Text style={styles.bio}>{bio}</Text>
       </View>
 
       {/* Edit Profile Button */}

@@ -38,19 +38,19 @@ export default function EditProfile() {
     ];
 
     // Function to pick image
-    const pickImage = async () => {
-        let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.Images,
-            allowsEditing: true,
-            aspect: [1, 1],
-            quality: 1,
-        });
-    
-        if (!result.canceled && result.assets.length > 0) {
-            setProfileImage(result.assets[0].uri); // Update state with new image URI
-        }
-    };
-    
+const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 1,
+    });
+
+    if (!result.canceled && result.assets.length > 0) {
+        setProfileImage(result.assets[0].uri);
+    }
+};
+
 
     return (
         <SafeAreaView style={styles.container}>
@@ -95,7 +95,7 @@ export default function EditProfile() {
 
             <View style={styles.inputContainer}>
                 <TextInput
-                    placeholder="Phone Numberrrrr"
+                    placeholder="Phone Number"
                     value={phone}
                     onChangeText={setPhone}
                     style={styles.input}
@@ -144,9 +144,27 @@ export default function EditProfile() {
             </View>
 
             {/* Save Button */}
-            <Pressable onPress={() => router.replace("../Profile")} style={styles.saveButton}>
+
+            <Pressable
+                onPress={() => 
+                {
+                    router.replace({
+                    pathname: "../Profile",
+                    params: {
+                        name,
+                        email,
+                        phone,
+                        bio,
+                        profileImage,
+                        travellerType: travellerOptions.find(opt => opt.value === travellerType)?.label,
+                    },
+                    });
+                }}
+                style={styles.saveButton}
+                >
                 <Text style={styles.buttonText}>Save Changes</Text>
             </Pressable>
+
         </SafeAreaView>
     );
 }
