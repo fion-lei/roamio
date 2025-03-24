@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
     },
     buttonText: {
         color: Colors.white,
-        fontSize: 20,
+        fontSize: 18,
         fontFamily: "quicksand-bold",
     },
 });
