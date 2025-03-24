@@ -43,7 +43,7 @@ export default function RootLayout() {
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : LightTheme}>
       <Stack
         screenOptions={{
-          headerStyle: { backgroundColor: Colors.palePink},
+          headerStyle: { backgroundColor: Colors.palePink },
           headerTintColor: Colors.coral,
           headerShadowVisible: false,
           title: "",
@@ -78,12 +78,14 @@ export default function RootLayout() {
         <Stack.Screen
           name="SignUpDetails"
           options={{
-            headerShown: false,
+            headerTintColor: Colors.white,
+            headerStyle: { backgroundColor: Colors.coral },
           }}
         />
         <Stack.Screen
           name="(tabs)"
           options={{
+            headerBackVisible: false,
             headerTitle: "",
             headerShadowVisible: false,
             headerRight: () => (
@@ -98,8 +100,6 @@ export default function RootLayout() {
             ),
           }}
         />
-        {/* Profile Page */}
-        <Stack.Screen name="Profile" />
       </Stack>
     </ThemeProvider>
   );
