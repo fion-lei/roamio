@@ -53,7 +53,7 @@ const DetailedItinerary = () => {
       ),
       headerRight: () => (
         <Pressable onPress={() => setIsEditMode(!isEditMode)}>
-          <Text style={{ color: Colors.coral, marginRight: 15, fontSize: 20 }}>
+          <Text style={{ color: Colors.coral, marginRight: 15, fontSize: 20, fontFamily: "quicksand-bold" }}>
             {isEditMode ? "Done" : "Edit"}
           </Text>
         </Pressable>
@@ -156,7 +156,7 @@ const DetailedItinerary = () => {
           }}
         >
           <View style={styles.iconContainer}>
-            <FontAwesome name="minus" size={16} color={Colors.peachySalmon} />
+            <FontAwesome name="minus" size={16} color={Colors.primary} />
           </View>
         </Pressable>
       )}
@@ -186,7 +186,7 @@ const DetailedItinerary = () => {
               ]}
               onPress={() => {
                 if (!isEditMode) {
-                  router.replace({
+                  router.push({
                     pathname: "/screens/EventDetails",
                     params: {
                       activity: item.activity,
@@ -227,14 +227,14 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingLeft: 10,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.grey,
+    borderBottomColor: Colors.primary,
   },
   eventsContainer: {
     flex: 1,
     position: "relative",
   },
   eventBubble: {
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.palePink,
     borderRadius: 0,
     padding: 8,
     borderWidth: 1,
@@ -249,19 +249,19 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   timeText: {
-    fontSize: 12,
-    fontFamily: "quicksand-semibold",
-    color: Colors.primary,
+    fontSize: 14,
+    fontFamily: "quicksand",
+    color: Colors.grey,
   },
   activityText: {
-    fontSize: 14,
-    fontFamily: "quicksand-semibold",
-    color: Colors.coral,
+    fontSize: 16,
+    fontFamily: "quicksand-bold",
+    color: Colors.primary,
   },
   durationText: {
-    fontSize: 12,
-    fontFamily: "quicksand-semibold",
-    color: Colors.grey,
+    fontSize: 13,
+    fontFamily: "quicksand",
+    color: Colors.primary,
     marginTop: 4,
   },
   eventContent: {
@@ -283,7 +283,7 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     backgroundColor: Colors.white,
     borderWidth: 2,
-    borderColor: Colors.peachySalmon,
+    borderColor: Colors.primary,
     justifyContent: "center",
     alignItems: "center",
   },
