@@ -43,7 +43,7 @@ const DetailedItinerary = () => {
           <Text style={{ color: Colors.coral, fontSize: 20, fontFamily: "quicksand-bold" }}>
             {itineraryTitle}
           </Text>
-          <View style={{ flexDirection: "row", marginTop: 4, alignItems: "center", marginLeft: -50 }}>
+          <View style={{ flexDirection: "row", marginTop: 0, alignItems: "center", marginLeft: -50 }}>
             <FontAwesome name="calendar" size={16} color={Colors.coral} />
             <Text style={{ color: Colors.coral, marginLeft: 4, fontSize: 14, fontFamily: "quicksand-semibold" }}>
               {itineraryDate}
@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
   },
   timeText: {
     fontSize: 14,
-    fontFamily: "quicksand",
+    fontFamily: "quicksand-semibold",
     color: Colors.grey,
   },
   activityText: {
@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
   },
   durationText: {
     fontSize: 13,
-    fontFamily: "quicksand",
+    fontFamily: "quicksand-regular",
     color: Colors.primary,
     marginTop: 4,
   },

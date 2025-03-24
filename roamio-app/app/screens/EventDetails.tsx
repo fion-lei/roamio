@@ -102,7 +102,7 @@ const EventDetails = () => {
                 />
             </View>
 
-            <View style={styles.infoText}>
+            <View style={styles.descriptionContainer}>
                 <Text style={styles.descriptionText}>
                     The best in the city! We offer amazing food and drink. {/* placeholder description */}
                 </Text>
@@ -138,9 +138,8 @@ const styles = StyleSheet.create({
     },
     title: {
         fontSize: 24,
-        fontWeight: 'bold',
         marginBottom: 16,
-        fontFamily: 'Quicksand-Bold',
+        fontFamily: 'quicksand-bold',
         color: Colors.primary,
     },
     infoList: {
@@ -154,13 +153,15 @@ const styles = StyleSheet.create({
     infoText: {
         marginLeft: 10,
         fontSize: 16,
-        fontFamily: 'Quicksand-Regular',
+        fontFamily: 'quicksand-semibold',
         color: Colors.primary,
     },
-    descriptionText: {
+    descriptionContainer: {
         marginTop: 10,
+    },
+    descriptionText: {
         fontSize: 16,
-        fontFamily: 'Quicksand-Regular',
+        fontFamily: 'quicksand-semibold',
         color: Colors.primary,
     },
     shareCard: {
@@ -187,9 +188,8 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     shareTitle: {
-        fontWeight: 'bold',
         fontSize: 18,
-        fontFamily: 'Quicksand-Bold',
+        fontFamily: 'quicksand-bold',
         color: Colors.coral,
     },
     shareIcon: {
