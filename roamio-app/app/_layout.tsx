@@ -85,9 +85,8 @@ export default function RootLayout() {
         <Stack.Screen
           name="(tabs)"
           options={{
-            headerBackVisible: false,
+            // headerBackVisible: false,
             headerTitle: "",
-            headerShadowVisible: false,
             headerRight: () => (
               <Pressable onPress={() => router.push("/Profile")}>
                 <FontAwesome
