@@ -1,3 +1,3 @@
-id,name,email,password
-
-1742857884257,test,test,test
+id,email,password,first_name,last_name,phone_number,traveller_type
+,,,,,,
+1742860734628,test,test,1,2,3,solo

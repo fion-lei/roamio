@@ -23,7 +23,7 @@ export default function Login() {
 
         {/* Input Fields */}
         <View style={styles.inputContainer}>
-          <TextInput placeholder="Login" style={styles.input} />
+          <TextInput placeholder="Email" style={styles.input} />
         </View>
 
         <View style={styles.inputContainer}>

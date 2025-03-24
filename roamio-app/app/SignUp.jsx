@@ -16,14 +16,14 @@ import { useRouter } from "expo-router";
 export default function SignUp() {
   const router = useRouter();
 
-  // State for form inputs
-  const [username, setUsername] = useState("");
+  // State for form inputs (now using email instead of username)
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
   // Handle the signup action
   const handleSignUp = async () => {
-    if (!username || !password || !confirmPassword) {
+    if (!email || !password || !confirmPassword) {
       Alert.alert("Error", "Please fill in all fields.");
       return;
     }
@@ -32,10 +32,9 @@ export default function SignUp() {
       return;
     }
 
-    // Prepare user data; here username is used as email for simplicity
+    // Prepare user data with email as the key
     const userData = {
-      name: username,
-      email: username,
+      email: email,
       password: password,
     };
 
@@ -51,7 +50,7 @@ export default function SignUp() {
       if (response.ok) {
         Alert.alert("Success", "Account created successfully!");
         // Navigate to the next screen, such as SignUpDetails or Login
-        router.replace("../SignUpDetails");
+        router.replace("../SignUpDetails?email=" + encodeURIComponent(email));
       } else {
         Alert.alert("Signup Failed", result.error || "An error occurred during signup.");
       }
@@ -77,10 +76,10 @@ export default function SignUp() {
 
         <View style={styles.inputContainer}>
           <TextInput
-            placeholder="Username"
+            placeholder="Email"
             style={styles.input}
-            value={username}
-            onChangeText={setUsername}
+            value={email}
+            onChangeText={setEmail}
           />
         </View>
 
