@@ -29,12 +29,12 @@ export default function EditProfile() {
     const BIO_CHAR_LIMIT = 200;
 
     const travellerOptions = [
-        { label: "Solo Traveler", value: "solo" },
-        { label: "Group Traveler", value: "group" },
-        { label: "Local Traveler", value: "local" },
-        { label: "International Traveler", value: "international" },
-        { label: "Business Traveler", value: "business" },
-        { label: "Retiree Traveler", value: "retiree" },
+        { label: "Solo Traveler", value: "Solo Traveler" },
+        { label: "Group Traveler", value: "Group Traveler" },
+        { label: "Local Traveler", value: "Local Traveler" },
+        { label: "International Traveler", value: "International Traveler" },
+        { label: "Business Traveler", value: "Business Traveler" },
+        { label: "Retiree Traveler", value: "Retiree Traveler" },
     ];
 
     useEffect(() => {
@@ -192,7 +192,7 @@ export default function EditProfile() {
                     placeholderStyle={styles.placeholderText}
                     itemTextStyle={styles.itemText}
                     dropdownStyle={styles.dropdownStyle}
-                    dropdownPosition="auto"
+                    dropdownPosition="top"
                 />
             </View>
 
