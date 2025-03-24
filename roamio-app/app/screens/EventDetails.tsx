@@ -129,39 +129,41 @@ const styles = StyleSheet.create({
     container: {
         padding: 20,
         backgroundColor: Colors.white,
+        paddingTop: 40,
     },
     image: {
         width: '100%',
         height: 200,
         borderRadius: 16,
-        marginBottom: 20,
+        marginBottom: 30,
     },
     title: {
-        fontSize: 24,
-        marginBottom: 16,
+        fontSize: 28,
+        marginBottom: 24,
         fontFamily: 'quicksand-bold',
         color: Colors.primary,
     },
     infoList: {
-        marginBottom: 20,
+        marginBottom: 30,
     },
     infoItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 10,
+        marginBottom: 8,
     },
     infoText: {
         marginLeft: 10,
-        fontSize: 16,
+        fontSize: 18,
         fontFamily: 'quicksand-semibold',
         color: Colors.primary,
     },
     descriptionContainer: {
-        marginTop: 10,
+        marginTop: 20,
+        marginBottom: 30,
     },
     descriptionText: {
-        fontSize: 16,
-        fontFamily: 'quicksand-semibold',
+        fontSize: 20,
+        fontFamily: 'quicksand-regular',
         color: Colors.primary,
     },
     shareCard: {
@@ -170,7 +172,8 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.palePink,
         borderRadius: 12,
         padding: 12,
-        marginTop: 20
+        marginTop: 30,
+        marginBottom: 40,
     },
     avatarContainer: {
         width: 40,
