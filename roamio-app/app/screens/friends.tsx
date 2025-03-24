@@ -347,8 +347,8 @@ const FriendsScreen = () => {
         renderItem={({ item }) => (
           <View style={styles.tripCard}>
             <Image source={item.image} style={styles.tripImage} />
-            <Text style={styles.tripName}>{item.name}</Text>
-            <Text style={styles.tripPrice}>{item.price}</Text>
+            <Text style={styles.friendName}>{item.name}</Text>
+            <Text style={styles.friendTripName}>{item.price}</Text>
           </View>
         )}
         showsHorizontalScrollIndicator={false}
@@ -446,7 +446,7 @@ const styles = StyleSheet.create({
   },
   avatar: { width: 40, height: 40, borderRadius: 20, marginRight: 15 },
   friendInfo: { flex: 1 },
-  friendName: { fontWeight: "600", fontSize: 16, fontFamily: 'quicksand-regular' },
+  friendName: { fontWeight: "600", fontSize: 16, fontFamily: 'quicksand-semibold' },
   friendPhone: { color: "#888", marginTop: 2, fontFamily: 'quicksand-regular' },
   menuDots: { fontSize: 20, color: "#888", paddingLeft: 10 },
   tripCard: {
@@ -456,8 +456,8 @@ const styles = StyleSheet.create({
     borderColor: Colors.coral,
   },
   tripImage: { width: 50, height: 50, borderRadius: 25, marginBottom: 6 },
-  tripName: { fontWeight: "600", fontSize: 16, fontFamily: 'quicksand-bold' },
-  tripPrice: { color: "#888" },
+  friendName: { fontSize: 16, fontFamily: 'quicksand-bold' },
+  friendTripName: { color: Colors.grey, fontFamily: 'quicksand-semibold' },
   // New style for friend request items
   requestItem: {
     marginBottom: 10,
