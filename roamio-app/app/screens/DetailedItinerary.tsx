@@ -10,12 +10,18 @@ import {
 import { Colors } from "@/constants/Colors";
 import { FontAwesome } from "@expo/vector-icons";
 
-import { useNavigation, useRouter } from "expo-router";
+import { useNavigation, useRouter, useLocalSearchParams } from "expo-router";
 
 // for ensuring timeslot sizes/positions are consistent. E.g. each hour chunk = 60px in height
 const pixelsForHour = 60;
 
 const DetailedItinerary = () => {
+  // Get route parameters
+  const params = useLocalSearchParams();
+  const itineraryId = params.id as string;
+  const itineraryTitle = params.title as string || "Couldn't find title";
+  const itineraryDate = params.date as string || "Couldn't find date";
+  
   const navigation = useNavigation();
   const router = useRouter();
   const [isEditMode, setIsEditMode] = useState(false);
@@ -27,21 +33,21 @@ const DetailedItinerary = () => {
       headerTitle: () => (
         <View
           style={{
-            flexDirection: "row",
+            flexDirection: "column",
             alignItems: "center",
             flex: 1,
             justifyContent: "center",
           }}
         >
-          <Pressable
-            onPress={() => setShowCalendar(!showCalendar)}
-            style={{ alignItems: "center" }}
-          >
-            <FontAwesome name="calendar" size={24} color={Colors.coral} />
-          </Pressable>
-          <Text style={{ color: Colors.coral, marginLeft: 8, fontSize: 20 }}>
-            Nov. 3, 2025 {/* placeholder date */}
+          <Text style={{ color: Colors.coral, fontSize: 20, fontFamily: "quicksand-bold" }}>
+            {itineraryTitle}
           </Text>
+          <View style={{ flexDirection: "row", alignItems: "center", marginTop: 4 }}>
+            <FontAwesome name="calendar" size={16} color={Colors.coral} />
+            <Text style={{ color: Colors.coral, marginLeft: 6, fontSize: 14, fontFamily: "quicksand-semibold" }}>
+              {itineraryDate}
+            </Text>
+          </View>
         </View>
       ),
       headerRight: () => (
@@ -52,7 +58,7 @@ const DetailedItinerary = () => {
         </Pressable>
       ),
     });
-  }, [navigation, isEditMode]);
+  }, [navigation, isEditMode, itineraryTitle]);
 
   // making time slots for 24 hours in AM and PM format
   const timeSlots = Array.from({ length: 24 }, (_, i) => {
@@ -141,7 +147,7 @@ const DetailedItinerary = () => {
         </Text>
       </View>
       {/* If in edit mode, show delete button */}
-      {isEditMode ? (
+      {isEditMode && (
         <Pressable
           style={styles.deleteButton}
           onPress={() => {
@@ -151,24 +157,6 @@ const DetailedItinerary = () => {
           <View style={styles.iconContainer}>
             <FontAwesome name="minus" size={16} color={Colors.peachySalmon} />
           </View>
-        </Pressable>
-      ) : (
-        // If not in edit mode, show dots on events to see the details
-        <Pressable
-          style={styles.dotsContainer}
-          onPress={() =>
-            router.replace({
-              pathname: "/screens/EventDetails",
-              params: {
-                activity: item.activity,
-                time: item.time,
-                duration: item.duration,
-              },
-            })
-          }
-        >
-          <View style={styles.dot} />
-          <View style={styles.dot} />
         </Pressable>
       )}
     </View>
@@ -189,15 +177,28 @@ const DetailedItinerary = () => {
         {/* Events container */}
         <View style={styles.eventsContainer}>
           {itineraryItems.map((item, index) => (
-            <View
+            <Pressable
               key={index}
               style={[
                 styles.eventBubble,
                 getEventStyle(item.time, item.duration),
               ]}
+              onPress={() => {
+                if (!isEditMode) {
+                  router.replace({
+                    pathname: "/screens/EventDetails",
+                    params: {
+                      activity: item.activity,
+                      time: item.time,
+                      duration: item.duration,
+                    },
+                  });
+                }
+              }}
+              disabled={isEditMode}
             >
               {renderEventContent(item, index)}
-            </View>
+            </Pressable>
           ))}
         </View>
       </View>
@@ -269,20 +270,6 @@ const styles = StyleSheet.create({
   },
   eventTextContainer: {
     flex: 1,
-  },
-  dotsContainer: {
-    flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "center",
-    paddingRight: 5,
-    height: 24,
-  },
-  dot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: Colors.grey,
-    marginVertical: 2,
   },
   deleteButton: {
     padding: 8,

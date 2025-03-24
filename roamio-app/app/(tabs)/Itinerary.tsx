@@ -124,7 +124,11 @@ export default function Itinerary() {
               <Text style={styles.description}>{item.description}</Text>
               <Pressable style={styles.button} onPress={() => router.push({
                 pathname: "/screens/DetailedItinerary",
-                params: { id: item.id }
+                params: { 
+                  id: item.id,
+                  title: item.title,
+                  date: item.date
+                }
               })}>
                 <Text style={styles.buttonText}>View Details</Text>
               </Pressable>
