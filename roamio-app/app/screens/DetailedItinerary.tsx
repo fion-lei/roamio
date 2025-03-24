@@ -34,17 +34,18 @@ const DetailedItinerary = () => {
         <View
           style={{
             flexDirection: "column",
-            alignItems: "center",
-            flex: 1,
-            justifyContent: "center",
+         //   alignItems: "center",
+            flex: 0,
+            marginLeft: 110,
+         //   justifyContent: "center",
           }}
         >
           <Text style={{ color: Colors.coral, fontSize: 20, fontFamily: "quicksand-bold" }}>
             {itineraryTitle}
           </Text>
-          <View style={{ flexDirection: "row", alignItems: "center", marginTop: 4 }}>
+          <View style={{ flexDirection: "row", marginTop: 4, alignItems: "center", marginLeft: -50 }}>
             <FontAwesome name="calendar" size={16} color={Colors.coral} />
-            <Text style={{ color: Colors.coral, marginLeft: 6, fontSize: 14, fontFamily: "quicksand-semibold" }}>
+            <Text style={{ color: Colors.coral, marginLeft: 4, fontSize: 14, fontFamily: "quicksand-semibold" }}>
               {itineraryDate}
             </Text>
           </View>
