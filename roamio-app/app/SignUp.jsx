@@ -1,12 +1,9 @@
 import React from "react";
-import { View, Text, Image, StyleSheet, TextInput, Pressable, SafeAreaView, } from "react-native";
+import {View,Text,Image,StyleSheet,TextInput,Pressable,SafeAreaView,} from "react-native";
 import { Colors } from "@/constants/Colors"; // Ensure Colors file exists
 import { FontAwesome } from "@expo/vector-icons"; // For password icon
-import { useRouter } from "expo-router";
 
-export default function SignUp() {
-  const router = useRouter();
-
+export default function Login() {
   return (
     <SafeAreaView style={styles.container}>
       {/* Logo */}
@@ -17,11 +14,11 @@ export default function SignUp() {
       {/* Login Section */}
       <View style={styles.signUpContainer}>
         {/* Login Title */}
-        <Text style={styles.signUpTitle}>Sign up</Text>
+        <Text style={styles.signUpTitle}>Sign Up</Text>
 
         {/* Input Fields */}
         <View style={styles.inputContainer}>
-          <TextInput placeholder="Username" style={styles.input} />
+          <TextInput placeholder="Login" style={styles.input} />
         </View>
 
         <View style={styles.inputContainer}>
@@ -33,9 +30,9 @@ export default function SignUp() {
           <FontAwesome name="lock" size={20} color={Colors.coral} style={styles.icon} />
         </View>
 
-        {/* Sign Up Button */}
-        <Pressable onPress={() => router.replace("../SignUpDetails")} style={styles.signUpButton}>
-          <Text style={styles.buttonText}>Sign up</Text>
+        {/* Login Button */}
+        <Pressable style={styles.signUpButton}>
+          <Text style={styles.buttonText}>Login</Text>
           <FontAwesome name="arrow-right" size={18} color="white" style={styles.arrowIcon} />
         </Pressable>
 
@@ -71,8 +68,6 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 30,
     elevation: 0,
-    borderColor: Colors.peachySalmon,
-    borderWidth: 10,
   },
   signUpTitle: {
     fontSize: 25,

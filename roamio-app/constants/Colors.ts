@@ -13,7 +13,6 @@ export const Colors = {
   peachySalmon: '#ff989a',
   palePink: '#ffd9d9',
   grey: '#7d7d7d',
-  palestPink: '#fff2f2',
   
   light: {
     text: '#11181C',

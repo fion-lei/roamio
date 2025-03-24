@@ -1,10 +1,10 @@
 import { View, Text } from 'react-native'
 import React from 'react'
 
-export default function Itinerary() {
+export default function Profile() {
   return (
     <View>
-      <Text>Itinerary</Text>
+      <Text>Profile</Text>
     </View>
   )
 }
