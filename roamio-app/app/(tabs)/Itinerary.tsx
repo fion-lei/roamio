@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,12 +10,13 @@ import {
   TextInput,
   Modal,
   Platform,
+  Alert,
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Colors } from "../../constants/Colors";
 import { AntDesign } from "@expo/vector-icons";
 import { router } from "expo-router";
-const { height } = Dimensions.get("window");
+import { useUser } from "@/contexts/UserContext";
 
 // Function to format dates in "MMM DD, YYYY" format
 const formatDate = (date: Date | null) => {
@@ -28,54 +29,21 @@ const formatDate = (date: Date | null) => {
 };
 
 // Initial Itinerary Data with Fixed Date Format
-const itineraryData = [
+const defaultItineraryData = [
   {
-    id: "1",
-    title: "Calgary",
-    date: `${formatDate(new Date("2025-03-20"))} - ${formatDate(
-      new Date("2025-03-23")
-    )}`,
-    description:
-      "Explore downtown Calgary, visit the Calgary Tower, and walk along Stephen Avenue. Enjoy a day at the Calgary Zoo and relax at Prince’s Island Park.",
-  },
-  {
-    id: "2",
-    title: "Banff",
-    date: `${formatDate(new Date("2025-03-24"))} - ${formatDate(
-      new Date("2025-03-27")
-    )}`,
-    description:
-      "Take the Banff Gondola for stunning mountain views and soak in the Banff Hot Springs. Hike through Johnston Canyon and spot wildlife along the scenic trails.",
-  },
-  {
-    id: "3",
-    title: "Canmore",
-    date: `${formatDate(new Date("2025-03-28"))} - ${formatDate(
-      new Date("2025-03-30")
-    )}`,
-    description:
-      "Enjoy breathtaking views at Grassi Lakes and explore Quarry Lake. Discover local cafés, art galleries, and scenic biking trails around the town.",
+    id: "0",
+    title: "No itineraries available",
+    date: "",
+    description: "You have not created any trip itineraries yet.",
   },
 ];
 
 export default function Itinerary() {
+  const { user } = useUser();
   const [modalVisible, setModalVisible] = useState(false);
   const [showFromDatePicker, setShowFromDatePicker] = useState(false);
   const [showToDatePicker, setShowToDatePicker] = useState(false);
-  const [itineraryList, setItineraryList] = useState(itineraryData);
-  // Dropdown visibility states
-  const [showStartDateDropdown, setShowStartDateDropdown] = useState(false);
-  const [showEndDateDropdown, setShowEndDateDropdown] = useState(false);
-  const [showStartTimeDropdown, setShowStartTimeDropdown] = useState(false);
-  const [showEndTimeDropdown, setShowEndTimeDropdown] = useState(false);
-
-  // Start-end date selection default states
-  const [startDate, setStartDate] = useState("MM DD, YYYY");
-  const [endDate, setEndDate] = useState("MM DD, YYYY");
-
-  // Start-end time selection default states
-  const [startTime, setStartTime] = useState("--:-- (MST)");
-  const [endTime, setEndTime] = useState("--:-- (MST)");
+  const [itineraryList, setItineraryList] = useState<any[]>([]);
 
   // Define initial state
   const [newTrip, setNewTrip] = useState<{
@@ -89,6 +57,38 @@ export default function Itinerary() {
     toDate: null,
     description: "",
   });
+
+  // Fetch itineraries from backend 
+  useEffect(() => {
+    const fetchItineraries = async () => {
+      try {
+        if (!user.email) {
+          Alert.alert("Error", "User email not found. Please log in.");
+          return;
+        }
+        const response = await fetch(
+          `http://10.0.2.2:3000/itineraries?email=${encodeURIComponent(user.email)}`
+        );
+        const data = await response.json();
+        if (response.ok) {
+          setItineraryList(
+            data.itineraries && data.itineraries.length > 0
+              ? data.itineraries
+              : defaultItineraryData
+          );
+        } else {
+          Alert.alert("Error", data.error || "Failed to load itineraries.");
+          setItineraryList(defaultItineraryData);
+        }
+      } catch (error) {
+        console.error("Error fetching itineraries:", error);
+        Alert.alert("Error", "Failed to load itineraries.");
+        setItineraryList(defaultItineraryData);
+      }
+    };
+
+    fetchItineraries();
+  }, [user.email]);
 
   // Handle date selection
   const handleDateChange = (
@@ -111,29 +111,57 @@ export default function Itinerary() {
   };
 
   // Handle adding a new trip
-  const handleAddTrip = () => {
+  const handleAddTrip = async () => {
     if (
       newTrip.title &&
       newTrip.fromDate &&
       newTrip.toDate &&
       newTrip.description
     ) {
-      setItineraryList([
-        ...itineraryList,
-        {
-          id: Date.now().toString(),
-          title: newTrip.title,
-          date: `${formatDate(newTrip.fromDate)} - ${formatDate(
-            newTrip.toDate
-          )}`,
-          description: newTrip.description,
-        },
-      ]);
-      setModalVisible(false);
-      setNewTrip({ title: "", fromDate: null, toDate: null, description: "" });
+      if (!user.email) {
+        Alert.alert("Error", "User email not found. Please log in.");
+        return;
+      }
+      // Build payload to pass into backend
+      const payload = {
+        user_email: user.email,
+        trip_title: newTrip.title,
+        trip_description: newTrip.description,
+        start_date: formatDate(newTrip.fromDate),
+        end_date: formatDate(newTrip.toDate),
+      };
+      try {
+        const response = await fetch("http://10.0.2.2:3000/itineraries", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const result = await response.json();
+        console.log("POST response:", result); // Log POST response
+        if (response.ok) {
+          // Re-fetch itinerary list from backend after adding trip
+          const updatedResponse = await fetch(
+            `http://10.0.2.2:3000/itineraries?email=${encodeURIComponent(user.email)}`
+          );
+          const updatedData = await updatedResponse.json();
+          console.log("GET response:", updatedData); // Log GET response
+          if (updatedResponse.ok) {
+            setItineraryList(updatedData.itineraries);
+          }
+          setModalVisible(false);
+          setNewTrip({ title: "", fromDate: null, toDate: null, description: "" });
+        } else {
+          Alert.alert("Error", result.error || "Failed to add trip.");
+        }
+      } catch (error) {
+        console.error("Error adding trip:", error);
+        Alert.alert("Error", "Failed to add trip.");
+      }
+    } else {
+      Alert.alert("Error", "Please fill in all fields.");
     }
   };
-
+  
   return (
     <SafeAreaView style={styles.safeContainer}>
       <View style={styles.container}>
@@ -144,25 +172,28 @@ export default function Itinerary() {
             onPress={() => setModalVisible(true)}
             style={styles.addButton}
           >
-            <AntDesign name="pluscircle" size={30} color={Colors.coral} 
-            
-            />
+            <AntDesign name="pluscircle" size={30} color={Colors.coral} />
           </Pressable>
         </View>
 
         {/* Itinerary List */}
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           {itineraryList.map((item) => (
-            <View key={item.id} style={styles.box}>
-              <Text style={styles.title}>{item.title}</Text>
+            <View key={item.id || item.itinerary_id} style={styles.box}>
+              <Text style={styles.title}>{item.trip_title || item.title}</Text>
               <View style={styles.dateView}>
-                <Text style={styles.date}>{item.date}</Text>
+                <Text style={styles.date}>
+                  {item.start_date
+                    ? item.start_date
+                    : item.date.split(" - ")[0]}{" "}
+                  -{" "}
+                  {item.end_date
+                    ? item.end_date
+                    : item.date.split(" - ")[1]}
+                </Text>
               </View>
               <View style={styles.descriptionView}>
-                <Text style={styles.description}>{item.description}</Text>
+                <Text style={styles.description}>{item.trip_description || item.description}</Text>
               </View>
               <Pressable
                 style={[styles.viewButton, styles.viewDetailsButton]}
@@ -367,7 +398,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(52, 52, 52, 0.8)", // Background will blur when modal is open
+    backgroundColor: "rgba(52, 52, 52, 0.8)",
   },
   modalView: {
     width: "90%",
