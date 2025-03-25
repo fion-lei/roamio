@@ -177,7 +177,10 @@ export default function Itinerary() {
         </View>
 
         {/* Itinerary List */}
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
           {itineraryList.map((item) => (
             <View key={item.id || item.itinerary_id} style={styles.box}>
               <Text style={styles.title}>{item.trip_title || item.title}</Text>
@@ -193,14 +196,19 @@ export default function Itinerary() {
                 </Text>
               </View>
               <View style={styles.descriptionView}>
-                <Text style={styles.description}>{item.trip_description || item.description}</Text>
+                <Text style={styles.description}>
+                  {item.trip_description || item.description}
+                </Text>
               </View>
-              <Pressable
-                style={[styles.viewButton, styles.viewDetailsButton]}
-                onPress={() => router.replace("../screens/DetailedItinerary")}
-              >
-                <Text style={styles.buttonText}>View Details</Text>
-              </Pressable>
+              {/* Only show View Details button if this is not the default itinerary */}
+              {item.id !== "0" && item.itinerary_id !== "0" && (
+                <Pressable
+                  style={[styles.viewButton, styles.viewDetailsButton]}
+                  onPress={() => router.replace("../screens/DetailedItinerary")}
+                >
+                  <Text style={styles.buttonText}>View Details</Text>
+                </Pressable>
+              )}
             </View>
           ))}
         </ScrollView>
