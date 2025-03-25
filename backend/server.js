@@ -96,7 +96,7 @@ app.post('/login', async (req, res) => {
 // Update User Details Endpoint
 // ----------------------
 app.put('/updateUserDetails', async (req, res) => {
-  const { email, first_name, last_name, phone_number, traveller_type } = req.body;
+  const { email, first_name, last_name, phone_number, traveller_type, bio } = req.body;
   
   if (!email) {
     return res.status(400).json({ error: 'Email is required.' });
@@ -108,7 +108,7 @@ app.put('/updateUserDetails', async (req, res) => {
     console.log("Email to update:", email);
     console.log("Current users:", users);
 
-    await updateUserDetails(email, { first_name, last_name, phone_number, traveller_type });
+    await updateUserDetails(email, { first_name, last_name, phone_number, traveller_type , bio});
     return res.status(200).json({ message: 'User details updated successfully.' });
   } catch (error) {
     console.error("Error updating user details:", error);

@@ -3,10 +3,9 @@ const path = require('path');
 const csv = require('csv-parser');
 
 const USERS_CSV = path.join(__dirname, '..', 'data', 'users.csv');
-// Define the correct header string (without extra spaces)
-const HEADER = 'id,email,password,first_name,last_name,phone_number,traveller_type';
-// Define the expected order of fields
-const HEADER_FIELDS = ["id", "email", "password", "first_name", "last_name", "phone_number", "traveller_type"];
+const HEADER = 'id,email,password,first_name,last_name,phone_number,traveller_type,bio';
+const HEADER_FIELDS = ['id','email','password','first_name','last_name','phone_number','traveller_type','bio'];
+
 
 // Ensure the CSV file exists with the correct header
 if (!fs.existsSync(USERS_CSV)) {

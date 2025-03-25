@@ -35,7 +35,7 @@ export default function Profile() {
             email: data.email,
             phone: data.phone_number,
             travellerType: data.traveller_type,
-            bio: data.bio || "This is a default bio.",
+            bio: data.bio,
           });
         } else {
           console.error("Error fetching profile:", data.error);
@@ -53,7 +53,7 @@ export default function Profile() {
       <View style={styles.profileHeader}>
         <Image
           source={
-            require("../assets/images/profilePicture.png")
+            require("../assets/images/avatar1.png")
           }
           style={styles.avatar}
         />

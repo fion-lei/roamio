@@ -83,6 +83,8 @@ export default function RootLayout() {
           <Stack.Screen
             name="SignUpDetails"
             options={{
+              // Set false to force user to enter in details
+              headerShown: false,
               headerTintColor: Colors.white,
               headerStyle: { backgroundColor: Colors.coral },
             }}
