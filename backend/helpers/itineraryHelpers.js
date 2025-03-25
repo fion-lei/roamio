@@ -23,5 +23,80 @@ const appendItinerary = (itinerary) => {
   });
 };
 
-// (You can add read, update, and delete functions similarly)
-module.exports = { appendItinerary /*, readItineraries, updateItinerary, deleteItinerary */ };
+const readItineraries = () => {
+  return new Promise((resolve, reject) => {
+    fs.readFile(itineraryCSV, 'utf8', (err, data) => {
+      if (err) return reject(err);
+      const lines = data.trim().split('\n');
+      if (lines.length < 2) {
+        // Only header exists
+        return resolve([]);
+      }
+      const header = lines[0].split(',');
+      const itineraries = lines.slice(1).map(line => {
+        const values = line.split(',');
+        let itinerary = {};
+        header.forEach((key, index) => {
+          itinerary[key.trim()] = values[index] ? values[index].trim() : "";
+        });
+        return itinerary;
+      });
+      resolve(itineraries);
+    });
+  });
+};
+
+const updateItinerary = (itinerary_id, updates) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const itineraries = await readItineraries();
+      let found = false;
+      const updatedItineraries = itineraries.map((itinerary) => {
+        if (itinerary.itinerary_id === itinerary_id) {
+          found = true;
+          return { ...itinerary, ...updates };
+        }
+        return itinerary;
+      });
+      if (!found) {
+        return reject(new Error("Itinerary not found"));
+      }
+      const headerFields = ITINERARY_HEADER.split(',');
+      const lines = updatedItineraries.map(it => {
+        return headerFields.map(field => it[field.trim()] || "").join(',');
+      });
+      const newCSV = ITINERARY_HEADER + "\n" + lines.join("\n");
+      fs.writeFile(itineraryCSV, newCSV, (err) => {
+        if (err) return reject(err);
+        resolve();
+      });
+    } catch (e) {
+      reject(e);
+    }
+  });
+};
+
+const deleteItinerary = (itinerary_id) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const itineraries = await readItineraries();
+      const filteredItineraries = itineraries.filter(it => it.itinerary_id !== itinerary_id);
+      if (filteredItineraries.length === itineraries.length) {
+        return reject(new Error("Itinerary not found"));
+      }
+      const headerFields = ITINERARY_HEADER.split(',');
+      const lines = filteredItineraries.map(it => {
+        return headerFields.map(field => it[field.trim()] || "").join(',');
+      });
+      const newCSV = ITINERARY_HEADER + "\n" + lines.join("\n");
+      fs.writeFile(itineraryCSV, newCSV, (err) => {
+        if (err) return reject(err);
+        resolve();
+      });
+    } catch (e) {
+      reject(e);
+    }
+  });
+};
+
+module.exports = { appendItinerary, readItineraries, updateItinerary, deleteItinerary };

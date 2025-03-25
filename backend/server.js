@@ -1,6 +1,6 @@
 const express = require('express');
 const { readUsers, appendUser, updateUserDetails } = require('./helpers/usersHelpers');
-const { appendItinerary } = require('./helpers/itineraryHelpers');
+const { appendItinerary, readItineraries, updateItinerary, deleteItinerary } = require('./helpers/itineraryHelpers');
 const app = express();
 
 const PORT = process.env.PORT || 3000;
@@ -168,10 +168,79 @@ app.get('/profile', async (req, res) => {
 // Itinerary Endpoints
 // ---------------------------------------------------------------------------------
 
+// ----------------------
+// Create trip Endpoint
+// ----------------------
+app.post('/itineraries', async (req, res) => {
+  const { user_email, trip_title, trip_description, start_date, end_date, destinations } = req.body;
+  if (!user_email || !trip_title) {
+    return res.status(400).json({ error: 'Missing required fields.' });
+  }
+  
+  const itinerary = {
+    itinerary_id: Date.now(), // simple unique id
+    user_email,
+    trip_title,
+    trip_description: trip_description || "",
+    start_date: start_date || "",
+    end_date: end_date || "",
+    destinations: destinations || "",
+  };
+
+  try {
+    await appendItinerary(itinerary);
+    res.status(201).json({ message: 'Itinerary created successfully.', itinerary });
+  } catch (error) {
+    console.error("Error creating itinerary:", error);
+    res.status(500).json({ error: 'Error creating itinerary.' });
+  }
+});
 
 
+// ----------------------
+// Get trip Endpoint
+// ----------------------
+app.get('/itineraries', async (req, res) => {
+  const { email } = req.query;
+  if (!email) {
+    return res.status(400).json({ error: "Email parameter is required" });
+  }
+  try {
+    const itineraries = await readItineraries();
+    // Filter itineraries to include only those belonging to the specified email
+    const filtered = itineraries.filter(it => it.user_email === email);
+    return res.status(200).json({ itineraries: filtered });
+  } catch (error) {
+    console.error("Error fetching itineraries:", error);
+    return res.status(500).json({ error: "Error fetching itineraries" });
+  }
+});
 
+// ----------------------
+// Update trip Endpoint
+// ----------------------
+app.put('/itineraries/:id', async (req, res) => {
+  const itinerary_id = req.params.id;
+  const updates = req.body;
+  try {
+    await updateItinerary(itinerary_id, updates);
+    return res.status(200).json({ message: "Itinerary updated successfully." });
+  } catch (error) {
+    console.error("Error updating itinerary:", error);
+    return res.status(500).json({ error: error.message || "Error updating itinerary." });
+  }
+});
 
-
-
-
+// ----------------------
+// Delete trip Endpoint
+// ----------------------
+app.delete('/itineraries/:id', async (req, res) => {
+  const itinerary_id = req.params.id;
+  try {
+    await deleteItinerary(itinerary_id);
+    return res.status(200).json({ message: "Itinerary deleted successfully." });
+  } catch (error) {
+    console.error("Error deleting itinerary:", error);
+    return res.status(500).json({ error: error.message || "Error deleting itinerary." });
+  }
+});
