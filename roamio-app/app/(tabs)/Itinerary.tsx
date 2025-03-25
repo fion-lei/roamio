@@ -15,6 +15,8 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { Colors } from "../../constants/Colors";
 import { AntDesign } from "@expo/vector-icons";
 import { router } from "expo-router";
+import { Entypo } from "@expo/vector-icons";
+
 const { height } = Dimensions.get("window");
 
 
@@ -35,28 +37,47 @@ const itineraryData = [
   {
     id: "1",
     title: "Calgary",
-    date: `${formatDate(new Date("2025-03-20"))} - ${formatDate(new Date("2025-03-23"))}`,
+    fromDate: new Date("2025-03-20"),
+    toDate: new Date("2025-03-23"),
     description: "Explore downtown Calgary, visit the Calgary Tower, and walk along Stephen Avenue. Enjoy a day at the Calgary Zoo and relax at Prince’s Island Park.",
   },
   {
     id: "2",
     title: "Banff",
-    date: `${formatDate(new Date("2025-03-24"))} - ${formatDate(new Date("2025-03-27"))}`,
+    fromDate: new Date("2025-03-24"),
+    toDate: new Date("2025-03-27"),
     description: "Take the Banff Gondola for stunning mountain views and soak in the Banff Hot Springs. Hike through Johnston Canyon and spot wildlife along the scenic trails.",
   },
   {
     id: "3",
     title: "Canmore",
-    date: `${formatDate(new Date("2025-03-28"))} - ${formatDate(new Date("2025-03-30"))}`,
+    fromDate: new Date("2025-03-28"),
+    toDate: new Date("2025-03-30"),
     description: "Enjoy breathtaking views at Grassi Lakes and explore Quarry Lake. Discover local cafés, art galleries, and scenic biking trails around the town.",
   },
 ];
+
 
 export default function Itinerary() {
   const [modalVisible, setModalVisible] = useState(false);
   const [showFromDatePicker, setShowFromDatePicker] = useState(false);
   const [showToDatePicker, setShowToDatePicker] = useState(false);
   const [itineraryList, setItineraryList] = useState(itineraryData);
+  const today = new Date();
+
+  const ongoingTrips = itineraryList.filter(
+    (trip) => trip.fromDate <= today && trip.toDate >= today
+  );
+  
+  const upcomingTrips = itineraryList.filter(
+    (trip) => trip.fromDate > today
+  );
+  
+  const pastTrips = itineraryList.filter(
+    (trip) => trip.toDate < today
+  );
+  
+
 
   // Define initial state
   const [newTrip, setNewTrip] = useState<{
@@ -95,7 +116,8 @@ export default function Itinerary() {
         {
           id: Date.now().toString(),
           title: newTrip.title,
-          date: `${formatDate(newTrip.fromDate)} - ${formatDate(newTrip.toDate)}`,
+          fromDate: newTrip.fromDate, 
+          toDate: newTrip.toDate,  
           description: newTrip.description,
         },
       ]);
@@ -103,6 +125,7 @@ export default function Itinerary() {
       setNewTrip({ title: "", fromDate: null, toDate: null, description: "" });
     }
   };
+  
 
   return (
     <SafeAreaView style={styles.safeContainer}>
@@ -117,17 +140,72 @@ export default function Itinerary() {
 
         {/* Itinerary List */}
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          {itineraryList.map((item) => (
-            <View key={item.id} style={styles.box}>
-              <Text style={styles.title}>{item.title}</Text>
-              <Text style={styles.date}>{item.date}</Text>
-              <Text style={styles.description}>{item.description}</Text>
-              <Pressable style={styles.button} onPress={() => console.log("View Details Clicked!")}>
-                <Text style={styles.buttonText}>View Details</Text>
-              </Pressable>
-            </View>
-          ))}
-        </ScrollView>
+            {/* Ongoing Trips */}
+            {ongoingTrips.length > 0 && (
+              <>
+                <Text style={[styles.sectionTitle, styles.ongoingTitle]}>Ongoing Trips</Text>
+                {ongoingTrips.map((item) => (
+                  <View key={item.id} style={[styles.box, styles.ongoingBox]}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                      <Entypo name="location-pin" size={18} color={Colors.primary} />
+                      <Text style={styles.title}>{item.title}</Text>
+                    </View>
+                    <Text style={styles.date}>
+                      {`${formatDate(item.fromDate)} - ${formatDate(item.toDate)}`}
+                    </Text>
+                    <Text style={styles.description}>{item.description}</Text>
+                    <Pressable style={styles.button} onPress={() => console.log("View Details Clicked!")}>
+                      <Text style={styles.buttonText}>View Details</Text>
+                    </Pressable>
+                  </View>
+                ))}
+              </>
+            )}
+
+            {/* Upcoming Trips */}
+            {upcomingTrips.length > 0 && (
+              <>
+                <Text style={[styles.sectionTitle, styles.upcomingTitle]}>Upcoming Trips</Text>
+                {upcomingTrips.map((item) => (
+                  <View key={item.id} style={[styles.box, styles.upcomingBox]}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                      <Entypo name="location-pin" size={18} color={Colors.primary} />
+                      <Text style={styles.title}>{item.title}</Text>
+                    </View>
+                    <Text style={styles.date}>
+                      {`${formatDate(item.fromDate)} - ${formatDate(item.toDate)}`}
+                    </Text>
+                    <Text style={styles.description}>{item.description}</Text>
+                    <Pressable style={styles.button} onPress={() => console.log("View Details Clicked!")}>
+                      <Text style={styles.buttonText}>View Details</Text>
+                    </Pressable>
+                  </View>
+                ))}
+              </>
+            )}
+
+            {/* Past Trips */}
+            {pastTrips.length > 0 && (
+              <>
+                <Text style={[styles.sectionTitle, styles.pastTitle]}>Past Trips</Text>
+                {pastTrips.map((item) => (
+                  <View key={item.id} style={[styles.box, styles.pastBox]}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                      <Entypo name="location-pin" size={18} color={Colors.primary} />
+                      <Text style={styles.title}>{item.title}</Text>
+                    </View>
+                    <Text style={styles.date}>
+                      {`${formatDate(item.fromDate)} - ${formatDate(item.toDate)}`}
+                    </Text>
+                    <Text style={styles.description}>{item.description}</Text>
+                    <Pressable style={[styles.button, styles.pastButton]} onPress={() => console.log("View Details Clicked!")}>
+                      <Text style={styles.buttonText}>View Details</Text>
+                    </Pressable>
+                  </View>
+                ))}
+              </>
+            )}
+          </ScrollView>
 
         {/* Modal for Adding New Trip */}
         <Modal visible={modalVisible} animationType="slide" transparent={true}>
@@ -273,7 +351,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)", // Semi-transparent background
+    backgroundColor: "rgba(0, 0, 0, 0.5)", 
   },
   modalContent: {
     width: "80%",
@@ -347,6 +425,50 @@ const styles = StyleSheet.create({
   pickerContainer: {
     alignItems: "center",
   },
-  
+
+  // Section Titles
+sectionTitle: {
+  fontSize: 20,
+  fontFamily: "quicksand-bold",
+  marginVertical: 10,
+},
+
+ongoingTitle: {
+  color: Colors.coral
+},
+upcomingTitle: {
+  color: Colors.peachySalmon, 
+},
+pastTitle: {
+  color: Colors.grey, 
+},
+
+ongoingBox: {
+  borderLeftWidth: 4,
+  borderLeftColor: Colors.coral, 
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.15,
+  shadowRadius: 4,
+  elevation: 3,
+},
+
+upcomingBox: { 
+  borderLeftWidth: 4,
+  borderLeftColor: Colors.peachySalmon, 
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.15,
+  shadowRadius: 4,
+  elevation: 3,
+},
+
+pastBox: {
+  borderLeftWidth: 4,
+  borderLeftColor: Colors.grey,
+},
+
+// Past Button Styling
+pastButton: {
+  backgroundColor: Colors.grey,
+},
 
 });
