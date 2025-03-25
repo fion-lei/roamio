@@ -1,86 +1,100 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, Image, Pressable, StyleSheet } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Colors } from "../constants/Colors";
 import { useRouter } from "expo-router";
 import { FontAwesome } from "@expo/vector-icons";
+import { useUser } from "@/contexts/UserContext";
 
 export default function Profile() {
   const router = useRouter();
-  const [profileImage, setProfileImage] = useState(null);
-  const [name, setName] = useState("Wendy Wanderer");
-  const [email, setEmail] = useState("wendy.wanderer@email.com");
-  const [phone, setPhone] = useState("123-456-7890");
-  const [bio, setBio] = useState("");
-  const [travellerType, setTravellerType] = useState("");
+  const { user } = useUser(); // Access global user data
+  const [profileData, setProfileData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    travellerType: "",
+    bio: "",
+  });
 
   useEffect(() => {
-    // Load profile details from AsyncStorage when screen opens
-    const loadProfileData = async () => {
-      try {
-        const storedImage = await AsyncStorage.getItem("profileImage");
-        const storedName = await AsyncStorage.getItem("profileName");
-        const storedEmail = await AsyncStorage.getItem("profileEmail");
-        const storedPhone = await AsyncStorage.getItem("profilePhone");
-        const storedBio = await AsyncStorage.getItem("profileBio");
-        const storedTravellerType = await AsyncStorage.getItem("profileTravellerType");
+    // Ensure that the user email is available
+    if (!user.email) {
+      console.error("No user email found in global state.");
+      return;
+    }
 
-        if (storedImage) setProfileImage(storedImage);
-        if (storedName) setName(storedName);
-        if (storedEmail) setEmail(storedEmail);
-        if (storedPhone) setPhone(storedPhone);
-        if (storedBio) setBio(storedBio);
-        if (storedTravellerType) setTravellerType(storedTravellerType);
+    const fetchProfileData = async () => {
+      try {
+        const response = await fetch(
+          `http://10.0.2.2:3000/profile?email=${encodeURIComponent(user.email)}`
+        );
+        const data = await response.json();
+        if (response.ok) {
+          setProfileData({
+            name: `${data.first_name} ${data.last_name}`,
+            email: data.email,
+            phone: data.phone_number,
+            travellerType: data.traveller_type,
+            bio: data.bio,
+          });
+        } else {
+          console.error("Error fetching profile:", data.error);
+        }
       } catch (error) {
-        console.log("Error loading profile data: ", error);
+        console.error("Error fetching profile:", error);
       }
     };
 
-    loadProfileData();
-  }, []);
+    fetchProfileData();
+  }, [user.email]);
 
   return (
     <View style={styles.container}>
       <View style={styles.profileHeader}>
         <Image
-          source={profileImage ? { uri: profileImage } : require("../assets/images/profilePicture.png")}
+          source={
+            require("../assets/images/avatar1.png")
+          }
           style={styles.avatar}
         />
-        <Text style={styles.name}>{name}</Text>
+        <Text style={styles.name}>{profileData.name}</Text>
 
         {/* Traveler Type */}
         <View style={styles.infoRow}>
           <FontAwesome name="globe" size={18} color={Colors.coral} />
-          <Text style={styles.subtitle}>{travellerType}</Text>
+          <Text style={styles.subtitle}>{profileData.travellerType}</Text>
         </View>
 
         {/* Email */}
         <View style={styles.infoRow}>
           <FontAwesome name="envelope" size={18} color={Colors.coral} />
-          <Text style={styles.email}>{email}</Text>
+          <Text style={styles.email}>{profileData.email}</Text>
         </View>
 
         {/* Phone Number */}
         <View style={styles.infoRow}>
           <FontAwesome name="phone" size={18} color={Colors.coral} />
-          <Text style={styles.phoneNumber}>{phone}</Text>
+          <Text style={styles.phoneNumber}>{profileData.phone}</Text>
         </View>
       </View>
 
       {/* Bio Section */}
       <View style={styles.bioContainer}>
-        <Text style={styles.bio}>{bio}</Text>
+        <Text style={styles.bio}>{profileData.bio}</Text>
       </View>
 
       {/* Edit Profile Button */}
-      <Pressable style={styles.button} onPress={() => router.push("../EditProfile")}>
+      <Pressable
+        style={styles.button}
+        onPress={() => router.push("../EditProfile")}
+      >
         <Text style={styles.buttonText}>Edit Profile</Text>
       </Pressable>
     </View>
   );
 }
 
-// Styles
+// Styles remain the same as before
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -91,8 +105,8 @@ const styles = StyleSheet.create({
   },
   profileHeader: {
     alignItems: "center",
-    marginBottom: 15,  // Reduced from 20 to move everything up
-    marginTop: -10,  // Moves the whole section slightly higher
+    marginBottom: 15,
+    marginTop: -10,
   },
   avatar: {
     width: 200,
