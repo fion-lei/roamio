@@ -100,6 +100,28 @@ app.put('/updateUserDetails', async (req, res) => {
   }
 });
 
+// ----------------------
+// Reset Password Endpoint
+// ----------------------
+
+app.post('/resetPassword', async (req, res) => {
+  const { email, newPassword } = req.body;
+
+  // Validate that email and newPassword are provided
+  if (!email || !newPassword) {
+    return res.status(400).json({ error: 'Missing required fields.' });
+  }
+
+  try {
+    // Update only the password field for the specified email
+    await updateUserDetails(email, { password: newPassword });
+    console.log(`Password reset successful for email: ${email}`);
+    return res.status(200).json({ message: 'Password reset successful.' });
+  } catch (error) {
+    console.error("Error resetting password:", error);
+    return res.status(500).json({ error: 'Error resetting password.' });
+  }
+});
 
 // ----------------------
 // Start the Server
