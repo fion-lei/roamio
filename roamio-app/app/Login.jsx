@@ -1,19 +1,61 @@
-import React from "react";
-import { View, Text, Image, StyleSheet, TextInput, Pressable, SafeAreaView, } from "react-native";
+import React, { useState } from "react";
+import { 
+  View, 
+  Text, 
+  Image, 
+  StyleSheet, 
+  TextInput, 
+  Pressable, 
+  SafeAreaView, 
+  Alert 
+} from "react-native";
 import { Colors } from "@/constants/Colors"; // Ensure Colors file exists
 import { FontAwesome } from "@expo/vector-icons"; // For password icon
 import { useRouter } from "expo-router";
 
 export default function Login() {
   const router = useRouter();
+  
+  // State for email and password inputs
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  // Function to handle login action
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert("Error", "Please fill in both email and password.");
+      return;
+    }
+
+    try {
+      const response = await fetch("http://10.0.2.2:3000/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        Alert.alert("Success", "Login successful!");
+        router.replace("../(tabs)/Trip");
+      } else {
+        Alert.alert("Login Failed", result.error || "An error occurred during login.");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      Alert.alert("Network Error", "Unable to connect to the server.");
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
       {/* Logo */}
       <View style={styles.logoContainer}>
         <Image 
-        source={require("../assets/images/logo_coral.png")} 
-        style={styles.logo} />
+          source={require("../assets/images/logo_coral.png")} 
+          style={styles.logo} 
+        />
       </View>
 
       {/* Login Section */}
@@ -21,23 +63,36 @@ export default function Login() {
         {/* Login Title */}
         <Text style={styles.loginTitle}>Login</Text>
 
-        {/* Input Fields */}
+        {/* Email Input */}
         <View style={styles.inputContainer}>
-          <TextInput placeholder="Email" style={styles.input} />
+          <TextInput 
+            placeholder="Email" 
+            style={styles.input} 
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+          />
         </View>
 
+        {/* Password Input */}
         <View style={styles.inputContainer}>
-          <TextInput placeholder="Password" style={styles.input} secureTextEntry />
+          <TextInput 
+            placeholder="Password" 
+            style={styles.input} 
+            secureTextEntry 
+            value={password}
+            onChangeText={setPassword}
+          />
           <FontAwesome name="lock" size={20} color={Colors.peachySalmon} style={styles.icon} />
         </View>
 
         {/* Login Button */}
-        <Pressable onPress={() => router.replace("../(tabs)/Trip")} style={styles.loginButton} >
+        <Pressable onPress={handleLogin} style={styles.loginButton}>
           <Text style={styles.buttonText}>Login</Text>
           <FontAwesome name="arrow-right" size={18} color="white" style={styles.arrowIcon} />
         </Pressable>
 
-        {/* Forgot Password & Create Account */}
+        {/* Footer Options */}
         <View style={styles.footerContainer}>
           <Text style={styles.footerText}>
             Forgot password? <Text style={styles.boldText}>Get new</Text>
@@ -72,7 +127,7 @@ const styles = StyleSheet.create({
   },
   loginContainer: {
     width: "100%",
-    backgroundColor: Colors.coral, // Optional: Can change for contrast
+    backgroundColor: Colors.coral,
     padding: 20,
     borderRadius: 30,
     elevation: 0,
@@ -116,7 +171,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginTop: 10,
-
   },
   buttonText: {
     color: Colors.coral,
