@@ -9,19 +9,20 @@ import {
   SafeAreaView, 
   Alert 
 } from "react-native";
-import { Colors } from "@/constants/Colors"; // Your color constants
+import { Colors } from "@/constants/Colors";
 import { FontAwesome } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useUser } from "@/contexts/UserContext";
 
 export default function SignUp() {
   const router = useRouter();
+  const { setUser } = useUser(); // Access global user setter
 
-  // State for form inputs (now using email instead of username)
+  // Local state for sign-up form
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  // Handle the signup action
   const handleSignUp = async () => {
     if (!email || !password || !confirmPassword) {
       Alert.alert("Error", "Please fill in all fields.");
@@ -32,11 +33,8 @@ export default function SignUp() {
       return;
     }
 
-    // Prepare user data with email as the key
-    const userData = {
-      email: email,
-      password: password,
-    };
+    // Prepare payload for signup endpoint
+    const userData = { email, password };
 
     try {
       const response = await fetch("http://10.0.2.2:3000/signup", {
@@ -44,18 +42,19 @@ export default function SignUp() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(userData),
       });
-
       const result = await response.json();
 
       if (response.ok) {
         Alert.alert("Success", "Account created successfully!");
-        // Navigate to the next screen, such as SignUpDetails or Login
-        router.replace("../SignUpDetails?email=" + encodeURIComponent(email));
+        // Save the email (and any other returned user data) in global context
+        setUser({ email, ...result.user });
+        // Navigate to SignUpDetails screen
+        router.replace("../SignUpDetails");
       } else {
         Alert.alert("Signup Failed", result.error || "An error occurred during signup.");
       }
     } catch (error) {
-      console.error(error);
+      console.error("Signup error:", error);
       Alert.alert("Network Error", "Unable to connect to the server.");
     }
   };
@@ -69,41 +68,37 @@ export default function SignUp() {
           style={styles.logo} 
         />
       </View>
-
-      {/* Sign Up Form */}
+      {/* Sign up Section */}
       <View style={styles.signUpContainer}>
         <Text style={styles.signUpTitle}>Sign up</Text>
-
         <View style={styles.inputContainer}>
-          <TextInput
-            placeholder="Email"
-            style={styles.input}
+          <TextInput 
+            placeholder="Email" 
+            style={styles.input} 
             value={email}
             onChangeText={setEmail}
+            keyboardType="email-address"
           />
         </View>
-
         <View style={styles.inputContainer}>
-          <TextInput
-            placeholder="Password"
-            style={styles.input}
-            secureTextEntry
+          <TextInput 
+            placeholder="Password" 
+            style={styles.input} 
+            secureTextEntry 
             value={password}
             onChangeText={setPassword}
           />
         </View>
-
         <View style={styles.inputContainer}>
-          <TextInput
-            placeholder="Confirm Password"
-            style={styles.input}
-            secureTextEntry
+          <TextInput 
+            placeholder="Confirm Password" 
+            style={styles.input} 
+            secureTextEntry 
             value={confirmPassword}
             onChangeText={setConfirmPassword}
           />
           <FontAwesome name="lock" size={20} color={Colors.coral} style={styles.icon} />
         </View>
-
         <Pressable onPress={handleSignUp} style={styles.signUpButton}>
           <Text style={styles.buttonText}>Sign up</Text>
           <FontAwesome name="arrow-right" size={18} color="white" style={styles.arrowIcon} />

@@ -8,6 +8,22 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 
 // ----------------------
+// Start the Server
+// ----------------------
+const server = app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
+
+// Error handling for server startup issues
+server.on('error', (error) => {
+  if (error.code === 'EADDRINUSE') {
+    console.error(`Port ${PORT} is already in use. Please choose a different port.`);
+  } else {
+    console.error("Server error:", error);
+  }
+});
+
+// ----------------------
 // Signup Endpoint (using email as identifier)
 // ----------------------
 app.post('/signup', async (req, res) => {
@@ -123,18 +139,33 @@ app.post('/resetPassword', async (req, res) => {
   }
 });
 
-// ----------------------
-// Start the Server
-// ----------------------
-const server = app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
 
-// Error handling for server startup issues
-server.on('error', (error) => {
-  if (error.code === 'EADDRINUSE') {
-    console.error(`Port ${PORT} is already in use. Please choose a different port.`);
-  } else {
-    console.error("Server error:", error);
+// ----------------------
+// Fetch Profile Deets Endpoint
+// ----------------------
+app.get('/profile', async (req, res) => {
+  const { email } = req.query;
+  if (!email) return res.status(400).json({ error: 'Email is required.' });
+  try {
+    const users = await readUsers();
+    const user = users.find(u => u.email === email);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+    return res.status(200).json(user);
+  } catch (error) {
+    console.error("Error fetching profile:", error);
+    return res.status(500).json({ error: 'Error fetching profile.' });
   }
 });
+
+
+
+
+
+
+
+
+
+
+

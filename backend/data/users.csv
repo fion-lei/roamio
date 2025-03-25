@@ -1,3 +1,7 @@
 id,email,password,first_name,last_name,phone_number,traveller_type
 ,,,,,,
 1742860734628,test,test,1,2,3,solo
+1742862155937,test@gmail.com,1,Test,Test Last,123,group
+1742864328360,wendy@gmail.com,1,,,,
+1742864494977,wendy1@gmail.com,1,1,1,1,solo
+1742864561426,test1@gmail.com,1,test,test,1,Group Traveler

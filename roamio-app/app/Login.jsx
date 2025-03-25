@@ -13,11 +13,13 @@ import {
 import { Colors } from "@/constants/Colors"; // Ensure Colors file exists
 import { FontAwesome } from "@expo/vector-icons"; // For icons
 import { useRouter } from "expo-router";
+import { useUser } from "@/contexts/UserContext"; 
 
 export default function Login() {
   const router = useRouter();
-  
-  // State for main login screen
+  const { setUser } = useUser(); // Access the global user setter
+
+  // State for main login screen inputs
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -41,6 +43,8 @@ export default function Login() {
       const result = await response.json();
       if (response.ok) {
         Alert.alert("Success", "Login successful!");
+        // Update global user state with the email and any other data returned from backend.
+        setUser({ email, ...result.user });
         router.replace("../(tabs)/Trip");
       } else {
         Alert.alert("Login Failed", result.error || "An error occurred during login.");
@@ -51,7 +55,7 @@ export default function Login() {
     }
   };
 
-  // Handle password reset submission
+  // Handle password reset submission from the modal
   const handleResetPassword = async () => {
     if (!resetEmail || !newPassword) {
       Alert.alert("Error", "Please fill in both email and new password.");
@@ -109,7 +113,7 @@ export default function Login() {
             />
             <View style={styles.modalButtons}>
               <Pressable style={styles.modalButton} onPress={handleResetPassword}>
-                <Text style={styles.modalButtonText}>Reset</Text>
+                <Text style={styles.modalButtonText}>Reset Password</Text>
               </Pressable>
               <Pressable style={[styles.modalButton, styles.modalCancel]} onPress={() => setModalVisible(false)}>
                 <Text style={styles.modalButtonText}>Cancel</Text>
@@ -297,7 +301,7 @@ const styles = StyleSheet.create({
   },
   modalButton: {
     flex: 1,
-    backgroundColor: Colors.coral,
+    backgroundColor: Colors.palePink,
     paddingVertical: 10,
     borderRadius: 10,
     alignItems: "center",
@@ -308,7 +312,7 @@ const styles = StyleSheet.create({
   },
   modalButtonText: {
     fontSize: 16,
-    color: Colors.white,
+    color: Colors.coral,
     fontFamily: "quicksand-bold",
   },
 });

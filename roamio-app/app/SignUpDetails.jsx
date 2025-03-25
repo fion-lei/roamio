@@ -1,16 +1,24 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Pressable, SafeAreaView, StyleSheet, Alert } from "react-native";
+import { 
+  View, 
+  Text, 
+  TextInput, 
+  Pressable, 
+  SafeAreaView, 
+  StyleSheet, 
+  Alert 
+} from "react-native";
 import { Dropdown } from "react-native-element-dropdown";
 import { Colors } from "@/constants/Colors";
 import { FontAwesome } from "@expo/vector-icons";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useRouter } from "expo-router";
+import { useUser } from "@/contexts/UserContext"; // Adjust path if needed
 
 export default function SignUpDetails() {
   const router = useRouter();
-  // Retrieve the email from the route parameters using useLocalSearchParams
-  const { email } = useLocalSearchParams();
+  const { user, setUser } = useUser(); // Access global user state
 
-  // State for additional details
+  // Local state for additional profile details
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -18,12 +26,12 @@ export default function SignUpDetails() {
 
   // Traveller options
   const travellerOptions = [
-    { label: "Solo Traveler", value: "solo" },
-    { label: "Group Traveler", value: "group" },
-    { label: "Local Traveler", value: "local" },
-    { label: "International Traveler", value: "international" },
-    { label: "Business Traveler", value: "business" },
-    { label: "Retiree Traveler", value: "retiree" },
+    { label: "Solo Traveler", value: "Solo Traveler" },
+    { label: "Group Traveler", value: "Group Traveler" },
+    { label: "Local Traveler", value: "Local Traveler" },
+    { label: "International Traveler", value: "International Traveler" },
+    { label: "Business Traveler", value: "Business Traveler" },
+    { label: "Retiree Traveler", value: "Retiree Traveler" },
   ];
 
   const handleContinue = async () => {
@@ -32,14 +40,10 @@ export default function SignUpDetails() {
       Alert.alert("Error", "Please fill in all required fields (First Name and Last Name).");
       return;
     }
-    if (!email) {
-      Alert.alert("Error", "No email was provided for this user.");
-      return;
-    }
 
-    // Prepare the payload using the email from the route
+    // Prepare details using the global user's email
     const userDetails = {
-      email,
+      email: user.email,
       first_name: firstName,
       last_name: lastName,
       phone_number: phoneNumber,
@@ -47,21 +51,28 @@ export default function SignUpDetails() {
     };
 
     try {
-      // For Android emulator, use 10.0.2.2; adjust if needed
       const response = await fetch("http://10.0.2.2:3000/updateUserDetails", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(userDetails),
       });
       const result = await response.json();
-
       if (response.ok) {
+        Alert.alert("Success", "User details updated successfully!");
+        // Update global user state with new details
+        setUser((prev) => ({
+          ...prev,
+          first_name: firstName,
+          last_name: lastName,
+          phone_number: phoneNumber,
+          traveller_type: travellerType || "",
+        }));
         router.replace("../(tabs)/Trip");
       } else {
         Alert.alert("Update Failed", result.error || "An error occurred while updating details.");
       }
     } catch (error) {
-      console.error(error);
+      console.error("Error updating details:", error);
       Alert.alert("Network Error", "Unable to connect to the server.");
     }
   };
