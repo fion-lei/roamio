@@ -1,46 +1,108 @@
-import React from "react";
-import { View, Text, Image, StyleSheet, TextInput, Pressable, SafeAreaView, } from "react-native";
-import { Colors } from "@/constants/Colors"; // Ensure Colors file exists
-import { FontAwesome } from "@expo/vector-icons"; // For password icon
+import React, { useState } from "react";
+import { 
+  View, 
+  Text, 
+  Image, 
+  StyleSheet, 
+  TextInput, 
+  Pressable, 
+  SafeAreaView, 
+  Alert 
+} from "react-native";
+import { Colors } from "@/constants/Colors";
+import { FontAwesome } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useUser } from "@/contexts/UserContext";
 
 export default function SignUp() {
   const router = useRouter();
+  const { setUser } = useUser(); // Access global user setter
+
+  // Local state for sign-up form
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  const handleSignUp = async () => {
+    if (!email || !password || !confirmPassword) {
+      Alert.alert("Error", "Please fill in all fields.");
+      return;
+    }
+    if (password !== confirmPassword) {
+      Alert.alert("Error", "Passwords do not match.");
+      return;
+    }
+
+    // Prepare payload for signup endpoint
+    const userData = { email, password };
+
+    try {
+      const response = await fetch("http://10.0.2.2:3000/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(userData),
+      });
+      const result = await response.json();
+
+      if (response.ok) {
+        Alert.alert("Success", "Account created successfully!");
+        // Save the email (and any other returned user data) in global context
+        setUser({ email, ...result.user });
+        // Navigate to SignUpDetails screen
+        router.replace("../SignUpDetails");
+      } else {
+        Alert.alert("Signup Failed", result.error || "An error occurred during signup.");
+      }
+    } catch (error) {
+      console.error("Signup error:", error);
+      Alert.alert("Network Error", "Unable to connect to the server.");
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Logo */}
+      {/* Logo Section */}
       <View style={styles.logoContainer}>
-        <Image source={require("../assets/images/logo_white.png")} style={styles.logo} />
+        <Image 
+          source={require("../assets/images/logo_white.png")} 
+          style={styles.logo} 
+        />
       </View>
-
-      {/* Login Section */}
+      {/* Sign up Section */}
       <View style={styles.signUpContainer}>
-        {/* Login Title */}
         <Text style={styles.signUpTitle}>Sign up</Text>
-
-        {/* Input Fields */}
         <View style={styles.inputContainer}>
-          <TextInput placeholder="Username" style={styles.input} />
+          <TextInput 
+            placeholder="Email" 
+            style={styles.input} 
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+          />
         </View>
-
         <View style={styles.inputContainer}>
-          <TextInput placeholder="Password" style={styles.input} secureTextEntry />
+          <TextInput 
+            placeholder="Password" 
+            style={styles.input} 
+            secureTextEntry 
+            value={password}
+            onChangeText={setPassword}
+          />
         </View>
-
         <View style={styles.inputContainer}>
-          <TextInput placeholder="Confirm Password" style={styles.input} secureTextEntry />
+          <TextInput 
+            placeholder="Confirm Password" 
+            style={styles.input} 
+            secureTextEntry 
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+          />
           <FontAwesome name="lock" size={20} color={Colors.coral} style={styles.icon} />
         </View>
-
-        {/* Sign Up Button */}
-        <Pressable onPress={() => router.replace("../SignUpDetails")} style={styles.signUpButton}>
+        <Pressable onPress={handleSignUp} style={styles.signUpButton}>
           <Text style={styles.buttonText}>Sign up</Text>
           <FontAwesome name="arrow-right" size={18} color="white" style={styles.arrowIcon} />
         </Pressable>
-
-        {/* Forgot Password & Create Account */}
-
       </View>
     </SafeAreaView>
   );
@@ -70,7 +132,6 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
     padding: 20,
     borderRadius: 30,
-    elevation: 0,
     borderColor: Colors.peachySalmon,
     borderWidth: 10,
   },
@@ -111,7 +172,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginTop: 10,
-
   },
   buttonText: {
     color: Colors.coral,
@@ -121,19 +181,5 @@ const styles = StyleSheet.create({
   arrowIcon: {
     marginLeft: 8,
     color: Colors.coral,
-  },
-  footerContainer: {
-    marginTop: 20,
-    alignItems: "center",
-  },
-  footerText: {
-    fontSize: 14,
-    color: Colors.white,
-    marginBottom: 5,
-    fontFamily: "quicksand-semibold",
-  },
-  boldText: {
-    fontWeight: "bold",
-    color: Colors.black,
   },
 });

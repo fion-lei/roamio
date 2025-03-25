@@ -2,7 +2,7 @@
 
 App Description:
 
-Instructions to Run:
+Instructions to Run Frontend & Backend:
 - See SETUP.md
 
 Project Group:

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,53 +10,40 @@ import {
   TextInput,
   Modal,
   Platform,
+  Alert,
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Colors } from "../../constants/Colors";
 import { AntDesign } from "@expo/vector-icons";
 import { router } from "expo-router";
-const { height } = Dimensions.get("window");
-
+import { useUser } from "@/contexts/UserContext";
 
 // Function to format dates in "MMM DD, YYYY" format
 const formatDate = (date: Date | null) => {
   if (!date) return "MM DD, YYYY"; // Default placeholder
   return date.toLocaleDateString("en-US", {
-    month: "2-digit", 
+    month: "2-digit",
     day: "2-digit",
     year: "numeric",
   });
 };
 
-
-
 // Initial Itinerary Data with Fixed Date Format
-const itineraryData = [
+const defaultItineraryData = [
   {
-    id: "1",
-    title: "Calgary",
-    date: `${formatDate(new Date("2025-03-20"))} - ${formatDate(new Date("2025-03-23"))}`,
-    description: "Explore downtown Calgary, visit the Calgary Tower, and walk along Stephen Avenue. Enjoy a day at the Calgary Zoo and relax at Prince’s Island Park.",
-  },
-  {
-    id: "2",
-    title: "Banff",
-    date: `${formatDate(new Date("2025-03-24"))} - ${formatDate(new Date("2025-03-27"))}`,
-    description: "Take the Banff Gondola for stunning mountain views and soak in the Banff Hot Springs. Hike through Johnston Canyon and spot wildlife along the scenic trails.",
-  },
-  {
-    id: "3",
-    title: "Canmore",
-    date: `${formatDate(new Date("2025-03-28"))} - ${formatDate(new Date("2025-03-30"))}`,
-    description: "Enjoy breathtaking views at Grassi Lakes and explore Quarry Lake. Discover local cafés, art galleries, and scenic biking trails around the town.",
+    id: "0",
+    title: "No itineraries available",
+    date: "",
+    description: "You have not created any trip itineraries yet.",
   },
 ];
 
 export default function Itinerary() {
+  const { user } = useUser();
   const [modalVisible, setModalVisible] = useState(false);
   const [showFromDatePicker, setShowFromDatePicker] = useState(false);
   const [showToDatePicker, setShowToDatePicker] = useState(false);
-  const [itineraryList, setItineraryList] = useState(itineraryData);
+  const [itineraryList, setItineraryList] = useState<any[]>([]);
 
   // Define initial state
   const [newTrip, setNewTrip] = useState<{
@@ -71,8 +58,44 @@ export default function Itinerary() {
     description: "",
   });
 
+  // Fetch itineraries from backend 
+  useEffect(() => {
+    const fetchItineraries = async () => {
+      try {
+        if (!user.email) {
+          Alert.alert("Error", "User email not found. Please log in.");
+          return;
+        }
+        const response = await fetch(
+          `http://10.0.2.2:3000/itineraries?email=${encodeURIComponent(user.email)}`
+        );
+        const data = await response.json();
+        if (response.ok) {
+          setItineraryList(
+            data.itineraries && data.itineraries.length > 0
+              ? data.itineraries
+              : defaultItineraryData
+          );
+        } else {
+          Alert.alert("Error", data.error || "Failed to load itineraries.");
+          setItineraryList(defaultItineraryData);
+        }
+      } catch (error) {
+        console.error("Error fetching itineraries:", error);
+        Alert.alert("Error", "Failed to load itineraries.");
+        setItineraryList(defaultItineraryData);
+      }
+    };
+
+    fetchItineraries();
+  }, [user.email]);
+
   // Handle date selection
-  const handleDateChange = (event: unknown, selectedDate?: Date, type?: "from" | "to") => {
+  const handleDateChange = (
+    event: unknown,
+    selectedDate?: Date,
+    type?: "from" | "to"
+  ) => {
     if (selectedDate && type) {
       setNewTrip((prevTrip) => ({
         ...prevTrip,
@@ -88,117 +111,207 @@ export default function Itinerary() {
   };
 
   // Handle adding a new trip
-  const handleAddTrip = () => {
-    if (newTrip.title && newTrip.fromDate && newTrip.toDate && newTrip.description) {
-      setItineraryList([
-        ...itineraryList,
-        {
-          id: Date.now().toString(),
-          title: newTrip.title,
-          date: `${formatDate(newTrip.fromDate)} - ${formatDate(newTrip.toDate)}`,
-          description: newTrip.description,
-        },
-      ]);
-      setModalVisible(false);
-      setNewTrip({ title: "", fromDate: null, toDate: null, description: "" });
+  const handleAddTrip = async () => {
+    if (
+      newTrip.title &&
+      newTrip.fromDate &&
+      newTrip.toDate &&
+      newTrip.description
+    ) {
+      if (!user.email) {
+        Alert.alert("Error", "User email not found. Please log in.");
+        return;
+      }
+      // Build payload to pass into backend
+      const payload = {
+        user_email: user.email,
+        trip_title: newTrip.title,
+        trip_description: newTrip.description,
+        start_date: formatDate(newTrip.fromDate),
+        end_date: formatDate(newTrip.toDate),
+      };
+      try {
+        const response = await fetch("http://10.0.2.2:3000/itineraries", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const result = await response.json();
+        console.log("POST response:", result); // Log POST response
+        if (response.ok) {
+          // Re-fetch itinerary list from backend after adding trip
+          const updatedResponse = await fetch(
+            `http://10.0.2.2:3000/itineraries?email=${encodeURIComponent(user.email)}`
+          );
+          const updatedData = await updatedResponse.json();
+          console.log("GET response:", updatedData); // Log GET response
+          if (updatedResponse.ok) {
+            setItineraryList(updatedData.itineraries);
+          }
+          setModalVisible(false);
+          setNewTrip({ title: "", fromDate: null, toDate: null, description: "" });
+        } else {
+          Alert.alert("Error", result.error || "Failed to add trip.");
+        }
+      } catch (error) {
+        console.error("Error adding trip:", error);
+        Alert.alert("Error", "Failed to add trip.");
+      }
+    } else {
+      Alert.alert("Error", "Please fill in all fields.");
     }
   };
-
+  
   return (
     <SafeAreaView style={styles.safeContainer}>
       <View style={styles.container}>
         {/* Header with Plus Icon */}
         <View style={styles.headerContainer}>
           <Text style={styles.header}>Trip Itineraries</Text>
-          <Pressable onPress={() => setModalVisible(true)} style={styles.addButton}>
-            <AntDesign name="pluscircle" size={28} color={Colors.coral} />
+          <Pressable
+            onPress={() => setModalVisible(true)}
+            style={styles.addButton}
+          >
+            <AntDesign name="pluscircle" size={30} color={Colors.coral} />
           </Pressable>
         </View>
 
         {/* Itinerary List */}
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
           {itineraryList.map((item) => (
-            <View key={item.id} style={styles.box}>
-              <Text style={styles.title}>{item.title}</Text>
-              <Text style={styles.date}>{item.date}</Text>
-              <Text style={styles.description}>{item.description}</Text>
-              <Pressable style={styles.button} onPress={() => console.log("View Details Clicked!")}>
-                <Text style={styles.buttonText}>View Details</Text>
-              </Pressable>
+            <View key={item.id || item.itinerary_id} style={styles.box}>
+              <Text style={styles.title}>{item.trip_title || item.title}</Text>
+              <View style={styles.dateView}>
+                <Text style={styles.date}>
+                  {item.start_date
+                    ? item.start_date
+                    : item.date.split(" - ")[0]}{" "}
+                  -{" "}
+                  {item.end_date
+                    ? item.end_date
+                    : item.date.split(" - ")[1]}
+                </Text>
+              </View>
+              <View style={styles.descriptionView}>
+                <Text style={styles.description}>
+                  {item.trip_description || item.description}
+                </Text>
+              </View>
+              {/* Only show View Details button if this is not the default itinerary */}
+              {item.id !== "0" && item.itinerary_id !== "0" && (
+                <Pressable
+                  style={[styles.viewButton, styles.viewDetailsButton]}
+                  onPress={() => router.replace("../screens/DetailedItinerary")}
+                >
+                  <Text style={styles.buttonText}>View Details</Text>
+                </Pressable>
+              )}
             </View>
           ))}
         </ScrollView>
 
         {/* Modal for Adding New Trip */}
-        <Modal visible={modalVisible} animationType="slide" transparent={true}>
-          <View style={styles.modalContainer}>
-            <View style={styles.modalContent}>
+        <Modal visible={modalVisible} animationType="fade" transparent={true}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalView}>
               <Text style={styles.modalTitle}>Add New Trip</Text>
-              <TextInput
-                placeholder="Trip Name"
-                style={styles.input}
-                value={newTrip.title}
-                onChangeText={(text) => setNewTrip({ ...newTrip, title: text })}
-              />
-
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>Enter Trip Name</Text>
+                <TextInput
+                  placeholder="Trip Name"
+                  style={styles.input}
+                  value={newTrip.title}
+                  onChangeText={(text) =>
+                    setNewTrip({ ...newTrip, title: text })
+                  }
+                />
+              </View>
               {/* Date Pickers */}
               <View style={styles.dateContainer}>
-                {/* Start Date Picker */}
-                <View>
-                  <Text style={styles.dateLabel}>Start Date</Text>
-                  <Pressable style={styles.dateInput} onPress={() => setShowFromDatePicker(true)}>
-                  <Text style={styles.dateText}>{newTrip.fromDate ? formatDate(newTrip.fromDate) : "MM DD, YYYY"}</Text>
+                <View style={styles.dateInputContainer}>
+                  {/* Start Date Picker */}
+
+                  <Text style={styles.inputLabel}>Start Date</Text>
+                  <Pressable
+                    style={styles.selectFieldContainer}
+                    onPress={() => setShowFromDatePicker(true)}
+                  >
+                    <Text style={styles.dateText}>
+                      {newTrip.fromDate
+                        ? formatDate(newTrip.fromDate)
+                        : "MM DD, YYYY"}
+                    </Text>
                   </Pressable>
                 </View>
 
-                {/* End Date Picker */}
-                <View>
-                  <Text style={styles.dateLabel}>End Date</Text>
-                  <Pressable style={styles.dateInput} onPress={() => setShowToDatePicker(true)}>
-                  <Text style={styles.dateText}>{newTrip.toDate ? formatDate(newTrip.toDate) : "MM DD, YYYY"}</Text>
+                <View style={styles.dateInputContainer}>
+                  {/* End Date Picker */}
+                  <Text style={styles.inputLabel}>End Date</Text>
+                  <Pressable
+                    style={styles.selectFieldContainer}
+                    onPress={() => setShowToDatePicker(true)}
+                  >
+                    <Text style={styles.dateText}>
+                      {newTrip.toDate
+                        ? formatDate(newTrip.toDate)
+                        : "MM DD, YYYY"}
+                    </Text>
                   </Pressable>
                 </View>
               </View>
-
-                {showFromDatePicker && (
-                  <View style={styles.pickerContainer}>
-                    <DateTimePicker
-                      value={newTrip.fromDate || new Date()}
-                      mode="date"
-                      display="spinner" // Ensures better styling
-                      onChange={(event, date) => handleDateChange(event, date, "from")}
-                      minimumDate={new Date()}
-                    />
-                  </View>
-                )}
-
-                {showToDatePicker && (
-                  <View style={styles.pickerContainer}>
-                    <DateTimePicker
-                      value={newTrip.toDate || new Date()}
-                      mode="date"
-                      display="spinner"
-                      onChange={(event, date) => handleDateChange(event, date, "to")}
-                      minimumDate={new Date()}
-                    />
-                  </View>
-                )}
-
-
-              <TextInput
-                placeholder="Trip Description"
-                style={[styles.input, styles.textArea]}
-                value={newTrip.description}
-                onChangeText={(text) => setNewTrip({ ...newTrip, description: text })}
-                multiline
-              />
-
+              {showFromDatePicker && (
+                <View style={styles.pickerContainer}>
+                  <DateTimePicker
+                    value={newTrip.fromDate || new Date()}
+                    mode="date"
+                    display="spinner" // Ensures better styling
+                    onChange={(event, date) =>
+                      handleDateChange(event, date, "from")
+                    }
+                    minimumDate={new Date()}
+                  />
+                </View>
+              )}
+              {showToDatePicker && (
+                <View style={styles.pickerContainer}>
+                  <DateTimePicker
+                    value={newTrip.toDate || new Date()}
+                    mode="date"
+                    display="spinner"
+                    onChange={(event, date) =>
+                      handleDateChange(event, date, "to")
+                    }
+                    minimumDate={new Date()}
+                  />
+                </View>
+              )}
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>Enter Trip Description</Text>
+                <TextInput
+                  placeholder="Trip Description"
+                  style={[styles.input, styles.textArea]}
+                  value={newTrip.description}
+                  onChangeText={(text) =>
+                    setNewTrip({ ...newTrip, description: text })
+                  }
+                  multiline
+                />
+              </View>
               <View style={styles.modalButtonContainer}>
-                <Pressable style={[styles.button, styles.modalButton]} onPress={handleAddTrip}>
-                  <Text style={styles.buttonText}>Done</Text>
-                </Pressable>
-                <Pressable style={[styles.button, styles.modalButtonCancel]} onPress={() => setModalVisible(false)}>
+                <Pressable
+                  style={[styles.button, styles.cancelButton]}
+                  onPress={() => setModalVisible(false)}
+                >
                   <Text style={styles.buttonText}>Cancel</Text>
+                </Pressable>
+                <Pressable
+                  style={[styles.button, styles.doneButton]}
+                  onPress={handleAddTrip}
+                >
+                  <Text style={styles.buttonText}>Done</Text>
                 </Pressable>
               </View>
             </View>
@@ -208,7 +321,6 @@ export default function Itinerary() {
     </SafeAreaView>
   );
 }
-
 
 const styles = StyleSheet.create({
   safeContainer: {
@@ -240,9 +352,10 @@ const styles = StyleSheet.create({
   box: {
     backgroundColor: Colors.palestPink,
     padding: 15,
-    marginBottom: 10,
-    borderRadius: 10,
+    marginBottom: 20,
+    borderRadius: 12,
     elevation: 3,
+    justifyContent: "space-between",
   },
   title: {
     fontSize: 18,
@@ -251,17 +364,37 @@ const styles = StyleSheet.create({
   date: {
     fontSize: 14,
     color: Colors.grey,
+    marginTop: 5,
     marginBottom: 5,
     fontFamily: "quicksand-semibold",
+  },
+  dateView: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   description: {
     fontSize: 14,
     fontFamily: "quicksand-semibold",
   },
-  button: {
-    backgroundColor: Colors.coral,
+  descriptionView: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  viewButton: {
+    borderRadius: 10,
+    justifyContent: "center",
+    alignContent: "center",
     padding: 10,
-    borderRadius: 5,
+    alignItems: "center",
+  },
+  button: {
+    borderRadius: 10,
+    padding: 10,
+    elevation: 2,
+    width: "48%",
     alignItems: "center",
   },
   buttonText: {
@@ -269,31 +402,35 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: "quicksand-bold",
   },
-  modalContainer: {
+  modalOverlay: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)", // Semi-transparent background
+    backgroundColor: "rgba(52, 52, 52, 0.8)",
   },
-  modalContent: {
-    width: "80%",
+  modalView: {
+    width: "90%",
     backgroundColor: Colors.white,
+    borderRadius: 20,
+    borderWidth: 3,
+    borderColor: Colors.peachySalmon,
     padding: 20,
-    borderRadius: 10,
-    alignItems: "center",
+    elevation: 5,
   },
   modalTitle: {
-    fontSize: 20,
+    fontSize: 24,
     fontFamily: "quicksand-bold",
-    marginBottom: 10,
+    textAlign: "center",
+    marginBottom: 20,
   },
   input: {
     width: "100%",
     borderWidth: 1,
     borderColor: Colors.grey,
-    borderRadius: 5,
-    padding: 10,
-    marginBottom: 10,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 12,
+    fontSize: 16,
     fontFamily: "quicksand-semibold",
   },
   textArea: {
@@ -302,28 +439,34 @@ const styles = StyleSheet.create({
   },
   modalButtonContainer: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    width: "100%",
+    justifyContent: "space-around",
+    marginTop: 20,
   },
-  modalButton: {
-    flex: 1,
-    marginHorizontal: 5,
+  viewDetailsButton: {
+    backgroundColor: Colors.coral,
   },
-  modalButtonCancel: {
+  doneButton: {
+    backgroundColor: Colors.coral,
+  },
+  cancelButton: {
     backgroundColor: Colors.grey,
-    flex: 1,
-    marginHorizontal: 5,
+  },
+  selectFieldContainer: {
+    borderWidth: 1,
+    borderColor: Colors.grey,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 12,
+    justifyContent: "center",
   },
   dateContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    width: "100%",
     marginBottom: 15,
-    alignItems: "center", 
   },
   dateWrapper: {
     flex: 1,
-    marginRight: 10, 
+    marginRight: 10,
   },
   dateLabel: {
     fontSize: 14,
@@ -341,12 +484,26 @@ const styles = StyleSheet.create({
   },
   dateText: {
     fontSize: 16,
-    fontFamily: "quicksand-semibold",
-    color: Colors.primary,
+    fontFamily: "quicksand-medium",
   },
   pickerContainer: {
     alignItems: "center",
   },
-  
-
+  dateInputContainer: {
+    width: "48%",
+    position: "relative",
+  },
+  inputContainer: {
+    marginBottom: 15,
+    position: "relative",
+  },
+  inputLabel: {
+    fontSize: 16,
+    fontFamily: "quicksand-semibold",
+    marginBottom: 5,
+  },
+  textInputLabel: {
+    fontSize: 16,
+    fontFamily: "quicksand-medium",
+  },
 });

@@ -295,7 +295,7 @@ const styles = StyleSheet.create({
   tripCard: {
     backgroundColor: Colors.white, 
     borderRadius: 15,
-    elevation: 5, 
+    elevation: 3, 
     overflow: "hidden", 
     // Box Shadow Generator: https://ethercreative.github.io/react-native-shadow-generator/
     shadowColor: Colors.primary,    
