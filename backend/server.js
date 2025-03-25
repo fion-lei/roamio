@@ -1,5 +1,6 @@
 const express = require('express');
-const { readUsers, appendUser, updateUserDetails } = require('./helpers/csvHelpers');
+const { readUsers, appendUser, updateUserDetails } = require('./helpers/usersHelpers');
+const { appendItinerary } = require('./helpers/itineraryHelpers');
 const app = express();
 
 const PORT = process.env.PORT || 3000;
@@ -22,6 +23,10 @@ server.on('error', (error) => {
     console.error("Server error:", error);
   }
 });
+
+// ---------------------------------------------------------------------------------
+// User Endpoints
+// ---------------------------------------------------------------------------------
 
 // ----------------------
 // Signup Endpoint (using email as identifier)
@@ -159,8 +164,9 @@ app.get('/profile', async (req, res) => {
   }
 });
 
-
-
+// ---------------------------------------------------------------------------------
+// Itinerary Endpoints
+// ---------------------------------------------------------------------------------
 
 
 
