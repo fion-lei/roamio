@@ -10,6 +10,9 @@
 6. Start project 'npx expo start'
 
 ### Back-End Instructions
+---
+1. 
+
 
 #### Troubleshooting for Front-End
 Issues with dependencies?
