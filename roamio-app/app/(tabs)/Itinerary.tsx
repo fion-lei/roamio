@@ -48,7 +48,7 @@ export default function Itinerary() {
   const [showToDatePicker, setShowToDatePicker] = useState(false);
   const [itineraryList, setItineraryList] = useState<any[]>([]);
   const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  today.setHours(0, 0, 0, 0); 
 
   const ongoingTrips = itineraryList.filter(
     (trip) => trip.fromDate <= today && trip.toDate >= today
@@ -79,8 +79,9 @@ export default function Itinerary() {
 
   const parseDate = (dateStr: string) => {
     const [month, day, year] = dateStr.split("/");
-    return new Date(`${year}-${month}-${day}`);
+    return new Date(Number(year), Number(month) - 1, Number(day)); 
   };
+  
   
   // Fetch itineraries from backend 
   useEffect(() => {
