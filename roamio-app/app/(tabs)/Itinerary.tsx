@@ -16,6 +16,8 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { Colors } from "../../constants/Colors";
 import { AntDesign } from "@expo/vector-icons";
 import { router } from "expo-router";
+import { Entypo } from "@expo/vector-icons";
+
 import { useUser } from "@/contexts/UserContext";
 
 // Function to format dates in "MMM DD, YYYY" format
@@ -38,12 +40,28 @@ const defaultItineraryData = [
   },
 ];
 
+
 export default function Itinerary() {
   const { user } = useUser();
   const [modalVisible, setModalVisible] = useState(false);
   const [showFromDatePicker, setShowFromDatePicker] = useState(false);
   const [showToDatePicker, setShowToDatePicker] = useState(false);
   const [itineraryList, setItineraryList] = useState<any[]>([]);
+  const today = new Date();
+
+  const ongoingTrips = itineraryList.filter(
+    (trip) => trip.fromDate <= today && trip.toDate >= today
+  );
+  
+  const upcomingTrips = itineraryList.filter(
+    (trip) => trip.fromDate > today
+  );
+  
+  const pastTrips = itineraryList.filter(
+    (trip) => trip.toDate < today
+  );
+  
+
 
   // Define initial state
   const [newTrip, setNewTrip] = useState<{
@@ -162,6 +180,7 @@ export default function Itinerary() {
     }
   };
   
+  
   return (
     <SafeAreaView style={styles.safeContainer}>
       <View style={styles.container}>
@@ -177,41 +196,73 @@ export default function Itinerary() {
         </View>
 
         {/* Itinerary List */}
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-          {itineraryList.map((item) => (
-            <View key={item.id || item.itinerary_id} style={styles.box}>
-              <Text style={styles.title}>{item.trip_title || item.title}</Text>
-              <View style={styles.dateView}>
-                <Text style={styles.date}>
-                  {item.start_date
-                    ? item.start_date
-                    : item.date.split(" - ")[0]}{" "}
-                  -{" "}
-                  {item.end_date
-                    ? item.end_date
-                    : item.date.split(" - ")[1]}
-                </Text>
-              </View>
-              <View style={styles.descriptionView}>
-                <Text style={styles.description}>
-                  {item.trip_description || item.description}
-                </Text>
-              </View>
-              {/* Only show View Details button if this is not the default itinerary */}
-              {item.id !== "0" && item.itinerary_id !== "0" && (
-                <Pressable
-                  style={[styles.viewButton, styles.viewDetailsButton]}
-                  onPress={() => router.replace("../screens/DetailedItinerary")}
-                >
-                  <Text style={styles.buttonText}>View Details</Text>
-                </Pressable>
-              )}
-            </View>
-          ))}
-        </ScrollView>
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+            {/* Ongoing Trips */}
+            {ongoingTrips.length > 0 && (
+              <>
+                <Text style={[styles.sectionTitle, styles.ongoingTitle]}>Ongoing Trips</Text>
+                {ongoingTrips.map((item) => (
+                  <View key={item.id} style={[styles.box, styles.ongoingBox]}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                      <Entypo name="location-pin" size={18} color={Colors.primary} />
+                      <Text style={styles.title}>{item.title}</Text>
+                    </View>
+                    <Text style={styles.date}>
+                      {`${formatDate(item.fromDate)} - ${formatDate(item.toDate)}`}
+                    </Text>
+                    <Text style={styles.description}>{item.description}</Text>
+                    <Pressable style={styles.button} onPress={() => console.log("View Details Clicked!")}>
+                      <Text style={styles.buttonText}>View Details</Text>
+                    </Pressable>
+                  </View>
+                ))}
+              </>
+            )}
+
+            {/* Upcoming Trips */}
+            {upcomingTrips.length > 0 && (
+              <>
+                <Text style={[styles.sectionTitle, styles.upcomingTitle]}>Upcoming Trips</Text>
+                {upcomingTrips.map((item) => (
+                  <View key={item.id} style={[styles.box, styles.upcomingBox]}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                      <Entypo name="location-pin" size={18} color={Colors.primary} />
+                      <Text style={styles.title}>{item.title}</Text>
+                    </View>
+                    <Text style={styles.date}>
+                      {`${formatDate(item.fromDate)} - ${formatDate(item.toDate)}`}
+                    </Text>
+                    <Text style={styles.description}>{item.description}</Text>
+                    <Pressable style={styles.button} onPress={() => console.log("View Details Clicked!")}>
+                      <Text style={styles.buttonText}>View Details</Text>
+                    </Pressable>
+                  </View>
+                ))}
+              </>
+            )}
+
+            {/* Past Trips */}
+            {pastTrips.length > 0 && (
+              <>
+                <Text style={[styles.sectionTitle, styles.pastTitle]}>Past Trips</Text>
+                {pastTrips.map((item) => (
+                  <View key={item.id} style={[styles.box, styles.pastBox]}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                      <Entypo name="location-pin" size={18} color={Colors.primary} />
+                      <Text style={styles.title}>{item.title}</Text>
+                    </View>
+                    <Text style={styles.date}>
+                      {`${formatDate(item.fromDate)} - ${formatDate(item.toDate)}`}
+                    </Text>
+                    <Text style={styles.description}>{item.description}</Text>
+                    <Pressable style={[styles.button, styles.pastButton]} onPress={() => console.log("View Details Clicked!")}>
+                      <Text style={styles.buttonText}>View Details</Text>
+                    </Pressable>
+                  </View>
+                ))}
+              </>
+            )}
+          </ScrollView>
 
         {/* Modal for Adding New Trip */}
         <Modal visible={modalVisible} animationType="fade" transparent={true}>
@@ -489,21 +540,50 @@ const styles = StyleSheet.create({
   pickerContainer: {
     alignItems: "center",
   },
-  dateInputContainer: {
-    width: "48%",
-    position: "relative",
-  },
-  inputContainer: {
-    marginBottom: 15,
-    position: "relative",
-  },
-  inputLabel: {
-    fontSize: 16,
-    fontFamily: "quicksand-semibold",
-    marginBottom: 5,
-  },
-  textInputLabel: {
-    fontSize: 16,
-    fontFamily: "quicksand-medium",
-  },
+
+  // Section Titles
+sectionTitle: {
+  fontSize: 20,
+  fontFamily: "quicksand-bold",
+  marginVertical: 10,
+},
+
+ongoingTitle: {
+  color: Colors.coral
+},
+upcomingTitle: {
+  color: Colors.peachySalmon, 
+},
+pastTitle: {
+  color: Colors.grey, 
+},
+
+ongoingBox: {
+  borderLeftWidth: 4,
+  borderLeftColor: Colors.coral, 
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.15,
+  shadowRadius: 4,
+  elevation: 3,
+},
+
+upcomingBox: { 
+  borderLeftWidth: 4,
+  borderLeftColor: Colors.peachySalmon, 
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.15,
+  shadowRadius: 4,
+  elevation: 3,
+},
+
+pastBox: {
+  borderLeftWidth: 4,
+  borderLeftColor: Colors.grey,
+},
+
+// Past Button Styling
+pastButton: {
+  backgroundColor: Colors.grey,
+},
+
 });
