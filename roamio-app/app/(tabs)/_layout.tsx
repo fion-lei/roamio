@@ -15,7 +15,7 @@ export default function TabLayout() {
           backgroundColor: Colors.palePink, 
           height: 65, 
           position: "absolute",
-          marginHorizontal: 20, 
+          marginHorizontal: 10, 
           marginBottom: 15, 
           borderRadius: 15, 
           shadowColor: "grey", 

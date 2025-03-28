@@ -1,49 +1,116 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Pressable, SafeAreaView, StyleSheet } from "react-native";
+import { 
+  View, 
+  Text, 
+  TextInput, 
+  Pressable, 
+  SafeAreaView, 
+  StyleSheet, 
+  Alert 
+} from "react-native";
 import { Dropdown } from "react-native-element-dropdown";
-import { Colors } from "@/constants/Colors"; // Ensure Colors file exists
+import { Colors } from "@/constants/Colors";
 import { FontAwesome } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useUser } from "@/contexts/UserContext"; // Adjust path if needed
 
 export default function SignUpDetails() {
   const router = useRouter();
+  const { user, setUser } = useUser(); // Access global user state
+
+  // Local state for additional profile details
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [travellerType, setTravellerType] = useState(null);
 
-  // Traveller options with Quicksand font
+  // Traveller options
   const travellerOptions = [
-    { label: "Solo Traveler", value: "solo" },
-    { label: "Group Traveler", value: "group" },
-    { label: "Local Traveler", value: "local" },
-    { label: "International Traveler", value: "international" },
-    { label: "Business Traveler", value: "business" },
-    { label: "Retiree Traveler", value: "retiree" },
+    { label: "Solo Traveler", value: "Solo Traveler" },
+    { label: "Group Traveler", value: "Group Traveler" },
+    { label: "Local Traveler", value: "Local Traveler" },
+    { label: "International Traveler", value: "International Traveler" },
+    { label: "Business Traveler", value: "Business Traveler" },
+    { label: "Retiree Traveler", value: "Retiree Traveler" },
   ];
+
+  const handleContinue = async () => {
+    // Validate required fields
+    if (!firstName || !lastName) {
+      Alert.alert("Error", "Please fill in all required fields (First Name and Last Name).");
+      return;
+    }
+
+    // Prepare details using the global user's email
+    const userDetails = {
+      email: user.email,
+      first_name: firstName,
+      last_name: lastName,
+      phone_number: phoneNumber,
+      traveller_type: travellerType || "",
+    };
+
+    try {
+      const response = await fetch("http://10.0.2.2:3000/updateUserDetails", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(userDetails),
+      });
+      const result = await response.json();
+      if (response.ok) {
+        Alert.alert("Success", "User details updated successfully!");
+        // Update global user state with new details
+        setUser((prev) => ({
+          ...prev,
+          first_name: firstName,
+          last_name: lastName,
+          phone_number: phoneNumber,
+          traveller_type: travellerType || "",
+        }));
+        router.replace("../(tabs)/Trip");
+      } else {
+        Alert.alert("Update Failed", result.error || "An error occurred while updating details.");
+      }
+    } catch (error) {
+      console.error("Error updating details:", error);
+      Alert.alert("Network Error", "Unable to connect to the server.");
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Sign Up Details Section */}
       <View style={styles.signUpContainer}>
         <Text style={styles.signUpTitle}>Sign Up Details</Text>
 
         {/* First Name */}
         <View style={styles.inputContainer}>
-          <TextInput placeholder="First Name" style={styles.input} />
+          <TextInput
+            placeholder="First Name"
+            style={styles.input}
+            value={firstName}
+            onChangeText={setFirstName}
+          />
         </View>
 
         {/* Last Name */}
         <View style={styles.inputContainer}>
-          <TextInput placeholder="Last Name" style={styles.input} />
-        </View>
-
-        {/* Email */}
-        <View style={styles.inputContainer}>
-          <TextInput placeholder="Email" style={styles.input} keyboardType="email-address" />
-          <FontAwesome name="envelope" size={20} color={Colors.coral} style={styles.icon} />
+          <TextInput
+            placeholder="Last Name"
+            style={styles.input}
+            value={lastName}
+            onChangeText={setLastName}
+          />
         </View>
 
         {/* Phone Number */}
         <View style={styles.inputContainer}>
-          <TextInput placeholder="Phone Number" style={styles.input} keyboardType="phone-pad" />
+          <TextInput
+            placeholder="Phone Number"
+            style={styles.input}
+            keyboardType="phone-pad"
+            value={phoneNumber}
+            onChangeText={setPhoneNumber}
+          />
           <FontAwesome name="phone" size={20} color={Colors.coral} style={styles.icon} />
         </View>
 
@@ -60,16 +127,16 @@ export default function SignUpDetails() {
             selectedTextStyle={styles.selectedText}
             placeholderStyle={styles.placeholderText}
             itemTextStyle={styles.itemText}
-            dropdownStyle={styles.dropdownStyle} // ✅ Prevents dropdown from exceeding the screen
-            dropdownPosition="top" // ✅ Forces it to open upwards when close to the bottom
+            dropdownStyle={styles.dropdownStyle}
+            dropdownPosition="top"
           />
         </View>
 
-        {/* Invisible Spacer to Limit Dropdown */}
+        {/* Invisible Spacer */}
         <View style={styles.bottomSpacer} />
 
         {/* Continue Button */}
-        <Pressable onPress={() => router.replace("../(tabs)/Trip")} style={styles.continueButton}>
+        <Pressable onPress={handleContinue} style={styles.continueButton}>
           <Text style={styles.buttonText}>Continue</Text>
           <FontAwesome name="arrow-right" size={18} color="white" style={styles.arrowIcon} />
         </Pressable>
@@ -130,7 +197,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 10,
     paddingVertical: 12,
-    marginBottom: 10, // ✅ Creates spacing above the dropdown
+    marginBottom: 10,
     overflow: "hidden",
   },
   dropdown: {
@@ -140,7 +207,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
   },
   dropdownStyle: {
-    maxHeight: 200, // ✅ Limits dropdown height
+    maxHeight: 200,
     alignSelf: "center",
   },
   placeholderText: {
@@ -159,7 +226,7 @@ const styles = StyleSheet.create({
     color: Colors.black,
   },
   bottomSpacer: {
-    height: 0, 
+    height: 0,
   },
   continueButton: {
     width: "100%",
@@ -181,4 +248,3 @@ const styles = StyleSheet.create({
     color: Colors.coral,
   },
 });
-

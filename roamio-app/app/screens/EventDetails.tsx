@@ -102,7 +102,7 @@ const EventDetails = () => {
                 />
             </View>
 
-            <View style={styles.infoText}>
+            <View style={styles.descriptionContainer}>
                 <Text style={styles.descriptionText}>
                     The best in the city! We offer amazing food and drink. {/* placeholder description */}
                 </Text>
@@ -129,38 +129,41 @@ const styles = StyleSheet.create({
     container: {
         padding: 20,
         backgroundColor: Colors.white,
+        paddingTop: 40,
     },
     image: {
         width: '100%',
         height: 200,
         borderRadius: 16,
-        marginBottom: 20,
+        marginBottom: 30,
     },
     title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 16,
-        fontFamily: 'Quicksand-Bold',
+        fontSize: 28,
+        marginBottom: 24,
+        fontFamily: 'quicksand-bold',
         color: Colors.primary,
     },
     infoList: {
-        marginBottom: 20,
+        marginBottom: 30,
     },
     infoItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 10,
+        marginBottom: 8,
     },
     infoText: {
         marginLeft: 10,
-        fontSize: 16,
-        fontFamily: 'Quicksand-Regular',
+        fontSize: 18,
+        fontFamily: 'quicksand-semibold',
         color: Colors.primary,
     },
+    descriptionContainer: {
+        marginTop: 20,
+        marginBottom: 30,
+    },
     descriptionText: {
-        marginTop: 10,
-        fontSize: 16,
-        fontFamily: 'Quicksand-Regular',
+        fontSize: 20,
+        fontFamily: 'quicksand-regular',
         color: Colors.primary,
     },
     shareCard: {
@@ -169,7 +172,8 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.palePink,
         borderRadius: 12,
         padding: 12,
-        marginTop: 20
+        marginTop: 30,
+        marginBottom: 40,
     },
     avatarContainer: {
         width: 40,
@@ -187,9 +191,8 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     shareTitle: {
-        fontWeight: 'bold',
         fontSize: 18,
-        fontFamily: 'Quicksand-Bold',
+        fontFamily: 'quicksand-bold',
         color: Colors.coral,
     },
     shareIcon: {

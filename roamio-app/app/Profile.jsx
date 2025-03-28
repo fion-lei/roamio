@@ -1,56 +1,100 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, Image, Pressable, StyleSheet } from "react-native";
 import { Colors } from "../constants/Colors";
 import { useRouter } from "expo-router";
 import { FontAwesome } from "@expo/vector-icons";
+import { useUser } from "@/contexts/UserContext";
 
 export default function Profile() {
   const router = useRouter();
+  const { user } = useUser(); // Access global user data
+  const [profileData, setProfileData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    travellerType: "",
+    bio: "",
+  });
+
+  useEffect(() => {
+    // Ensure that the user email is available
+    if (!user.email) {
+      console.error("No user email found in global state.");
+      return;
+    }
+
+    const fetchProfileData = async () => {
+      try {
+        const response = await fetch(
+          `http://10.0.2.2:3000/profile?email=${encodeURIComponent(user.email)}`
+        );
+        const data = await response.json();
+        if (response.ok) {
+          setProfileData({
+            name: `${data.first_name} ${data.last_name}`,
+            email: data.email,
+            phone: data.phone_number,
+            travellerType: data.traveller_type,
+            bio: data.bio,
+          });
+        } else {
+          console.error("Error fetching profile:", data.error);
+        }
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+      }
+    };
+
+    fetchProfileData();
+  }, [user.email]);
+
   return (
     <View style={styles.container}>
-      {/* Profile Header */}
       <View style={styles.profileHeader}>
         <Image
-          source={require("../assets/images/profilePicture.png")}
+          source={
+            require("../assets/images/avatar1.png")
+          }
           style={styles.avatar}
         />
-        <Text style={styles.name}>Wendy Wanderer</Text>
+        <Text style={styles.name}>{profileData.name}</Text>
 
-        {/* Traveler Type with Icon */}
+        {/* Traveler Type */}
         <View style={styles.infoRow}>
           <FontAwesome name="globe" size={18} color={Colors.coral} />
-          <Text style={styles.subtitle}>Solo Traveler</Text>
+          <Text style={styles.subtitle}>{profileData.travellerType}</Text>
         </View>
 
-        {/* Email with Icon */}
+        {/* Email */}
         <View style={styles.infoRow}>
           <FontAwesome name="envelope" size={18} color={Colors.coral} />
-          <Text style={styles.email}>wendy.wanderer@email.com</Text>
+          <Text style={styles.email}>{profileData.email}</Text>
         </View>
 
-        {/* Phone Number with Icon */}
+        {/* Phone Number */}
         <View style={styles.infoRow}>
           <FontAwesome name="phone" size={18} color={Colors.coral} />
-          <Text style={styles.phoneNumber}>123-456-7890</Text>
+          <Text style={styles.phoneNumber}>{profileData.phone}</Text>
         </View>
       </View>
 
       {/* Bio Section */}
       <View style={styles.bioContainer}>
-        <Text style={styles.bio}>
-          Hey, I’m Wendy! I’m 28, a digital nomad from Los Angeles who thrives on spontaneous adventures. Whether it’s a hidden café or an offbeat hiking trail, I’m all about budget-friendly experiences and soaking in local vibes.
-        </Text>
+        <Text style={styles.bio}>{profileData.bio}</Text>
       </View>
 
       {/* Edit Profile Button */}
-      <Pressable style={styles.button} onPress={() => router.replace("../EditProfile")}>
+      <Pressable
+        style={styles.button}
+        onPress={() => router.push("../EditProfile")}
+      >
         <Text style={styles.buttonText}>Edit Profile</Text>
       </Pressable>
     </View>
   );
 }
 
-// Styles
+// Styles remain the same as before
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -61,7 +105,8 @@ const styles = StyleSheet.create({
   },
   profileHeader: {
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 15,
+    marginTop: -10,
   },
   avatar: {
     width: 200,
@@ -124,7 +169,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: Colors.white,
-    fontSize: 18,
+    fontSize: 16,
     fontFamily: "quicksand-bold",
   },
 });

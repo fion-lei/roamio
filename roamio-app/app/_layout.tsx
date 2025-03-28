@@ -10,6 +10,9 @@ import { Pressable } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 
+// Import the UserProvider from your UserContext file
+import { UserProvider } from "../contexts/UserContext"; // adjust the path as necessary
+
 export default function RootLayout() {
   const { colorScheme, setColorScheme } = useColorScheme();
   const systemColorScheme = Appearance.getColorScheme();
@@ -17,7 +20,7 @@ export default function RootLayout() {
 
   useEffect(() => {
     const loadTheme = async () => {
-      const stored = (await AsyncStorage.getItem("theme")) as ThemeOptions;
+      const stored = await AsyncStorage.getItem("theme");
       if (stored) {
         setColorScheme(stored);
       } else {
@@ -40,67 +43,70 @@ export default function RootLayout() {
   if (!fontsLoaded) return null;
 
   return (
-    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : LightTheme}>
-      <Stack
-        screenOptions={{
-          headerStyle: { backgroundColor: Colors.palePink},
-          headerTintColor: Colors.coral,
-          headerShadowVisible: false,
-          title: "",
-        }}
-      >
-        {/* Hide header on Intro */}
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen
-          name="Intro"
-          options={{ title: "Intro", headerShown: false }}
-        />
-
-        {/* Login and Signup */}
-        <Stack.Screen
-          name="Login"
-          options={{
-            headerStyle: { backgroundColor: Colors.white },
+    // Wrap the entire app in UserProvider for global user state
+    <UserProvider>
+      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : LightTheme}>
+        <Stack
+          screenOptions={{
+            headerStyle: { backgroundColor: Colors.palePink },
             headerTintColor: Colors.coral,
-            headerTitle: "",
             headerShadowVisible: false,
+            title: "",
           }}
-        />
-        <Stack.Screen
-          name="SignUp"
-          options={{
-            headerStyle: { backgroundColor: Colors.coral },
-            headerTintColor: Colors.white,
-            headerTitle: "",
-            headerShadowVisible: false,
-          }}
-        />
-        <Stack.Screen
-          name="SignUpDetails"
-          options={{
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen
-          name="(tabs)"
-          options={{
-            headerTitle: "",
-            headerShadowVisible: false,
-            headerRight: () => (
-              <Pressable onPress={() => router.push("/Profile")}>
-                <FontAwesome
-                  name="user"
-                  size={24}
-                  color={Colors.coral}
-                  style={{ marginRight: 15 }}
-                />
-              </Pressable>
-            ),
-          }}
-        />
-        {/* Profile Page */}
-        <Stack.Screen name="Profile" />
-      </Stack>
-    </ThemeProvider>
+        >
+          {/* Hide header on Intro */}
+          <Stack.Screen name="index" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="Intro"
+            options={{ title: "Intro", headerShown: false }}
+          />
+
+          {/* Login and Signup */}
+          <Stack.Screen
+            name="Login"
+            options={{
+              headerStyle: { backgroundColor: Colors.white },
+              headerTintColor: Colors.coral,
+              headerTitle: "",
+              headerShadowVisible: false,
+            }}
+          />
+          <Stack.Screen
+            name="SignUp"
+            options={{
+              headerStyle: { backgroundColor: Colors.coral },
+              headerTintColor: Colors.white,
+              headerTitle: "",
+              headerShadowVisible: false,
+            }}
+          />
+          <Stack.Screen
+            name="SignUpDetails"
+            options={{
+              // Set false to force user to enter in details
+              headerShown: false,
+              headerTintColor: Colors.white,
+              headerStyle: { backgroundColor: Colors.coral },
+            }}
+          />
+          <Stack.Screen
+            name="(tabs)"
+            options={{
+              headerTitle: "",
+              headerRight: () => (
+                <Pressable onPress={() => router.push("/Profile")}>
+                  <FontAwesome
+                    name="user"
+                    size={24}
+                    color={Colors.coral}
+                    style={{ marginRight: 15 }}
+                  />
+                </Pressable>
+              ),
+            }}
+          />
+        </Stack>
+      </ThemeProvider>
+    </UserProvider>
   );
 }
