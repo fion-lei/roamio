@@ -48,6 +48,7 @@ export default function Itinerary() {
   const [showToDatePicker, setShowToDatePicker] = useState(false);
   const [itineraryList, setItineraryList] = useState<any[]>([]);
   const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
   const ongoingTrips = itineraryList.filter(
     (trip) => trip.fromDate <= today && trip.toDate >= today
@@ -60,7 +61,6 @@ export default function Itinerary() {
   const pastTrips = itineraryList.filter(
     (trip) => trip.toDate < today
   );
-  
 
 
   // Define initial state
@@ -76,6 +76,12 @@ export default function Itinerary() {
     description: "",
   });
 
+
+  const parseDate = (dateStr: string) => {
+    const [month, day, year] = dateStr.split("/");
+    return new Date(`${year}-${month}-${day}`);
+  };
+  
   // Fetch itineraries from backend 
   useEffect(() => {
     const fetchItineraries = async () => {
@@ -89,11 +95,22 @@ export default function Itinerary() {
         );
         const data = await response.json();
         if (response.ok) {
-          setItineraryList(
-            data.itineraries && data.itineraries.length > 0
-              ? data.itineraries
-              : defaultItineraryData
-          );
+              const formattedItineraries = (data.itineraries || []).map((trip: any) => ({
+                ...trip,
+                fromDate: parseDate(trip.start_date),
+                toDate: parseDate(trip.end_date),
+
+                title: trip.trip_title,
+                description: trip.trip_description,
+                id: trip.itinerary_id,
+              }));
+              
+              setItineraryList(
+                formattedItineraries.length > 0
+                  ? formattedItineraries
+                  : defaultItineraryData
+              );
+              
         } else {
           Alert.alert("Error", data.error || "Failed to load itineraries.");
           setItineraryList(defaultItineraryData);
@@ -164,8 +181,21 @@ export default function Itinerary() {
           const updatedData = await updatedResponse.json();
           console.log("GET response:", updatedData); // Log GET response
           if (updatedResponse.ok) {
-            setItineraryList(updatedData.itineraries);
+            const formattedUpdatedItineraries = (updatedData.itineraries || []).map((trip: any) => ({
+              ...trip,
+              fromDate: parseDate(trip.start_date),
+              toDate: parseDate(trip.end_date),
+              title: trip.trip_title,
+              description: trip.trip_description,
+              id: trip.itinerary_id,
+            }));
+            setItineraryList(
+              formattedUpdatedItineraries.length > 0
+                ? formattedUpdatedItineraries
+                : defaultItineraryData
+            );
           }
+          
           setModalVisible(false);
           setNewTrip({ title: "", fromDate: null, toDate: null, description: "" });
         } else {
@@ -211,7 +241,7 @@ export default function Itinerary() {
                       {`${formatDate(item.fromDate)} - ${formatDate(item.toDate)}`}
                     </Text>
                     <Text style={styles.description}>{item.description}</Text>
-                    <Pressable style={styles.button} onPress={() => console.log("View Details Clicked!")}>
+                    <Pressable style={styles.viewButtonOngoing} onPress={() => console.log("View Details Clicked!")}>
                       <Text style={styles.buttonText}>View Details</Text>
                     </Pressable>
                   </View>
@@ -233,7 +263,7 @@ export default function Itinerary() {
                       {`${formatDate(item.fromDate)} - ${formatDate(item.toDate)}`}
                     </Text>
                     <Text style={styles.description}>{item.description}</Text>
-                    <Pressable style={styles.button} onPress={() => console.log("View Details Clicked!")}>
+                    <Pressable style={styles.viewButtonUpcoming} onPress={() => console.log("View Details Clicked!")}>
                       <Text style={styles.buttonText}>View Details</Text>
                     </Pressable>
                   </View>
@@ -255,7 +285,7 @@ export default function Itinerary() {
                       {`${formatDate(item.fromDate)} - ${formatDate(item.toDate)}`}
                     </Text>
                     <Text style={styles.description}>{item.description}</Text>
-                    <Pressable style={[styles.button, styles.pastButton]} onPress={() => console.log("View Details Clicked!")}>
+                    <Pressable style={styles.viewButtonPast} onPress={() => console.log("View Details Clicked!")}>
                       <Text style={styles.buttonText}>View Details</Text>
                     </Pressable>
                   </View>
@@ -434,13 +464,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 10,
   },
-  viewButton: {
-    borderRadius: 10,
-    justifyContent: "center",
-    alignContent: "center",
-    padding: 10,
-    alignItems: "center",
-  },
+   
   button: {
     borderRadius: 10,
     padding: 10,
@@ -585,5 +609,46 @@ pastBox: {
 pastButton: {
   backgroundColor: Colors.grey,
 },
+inputContainer: {
+  marginBottom: 15,
+},
 
+inputLabel: {
+  fontSize: 14,
+  fontFamily: "quicksand-semibold",
+  marginBottom: 5,
+},
+
+dateInputContainer: {
+  flex: 1,
+  marginHorizontal: 5,
+},
+
+viewButtonOngoing: {
+  backgroundColor: Colors.coral, 
+  paddingVertical: 12,
+  paddingHorizontal: 16,
+  borderRadius: 10,
+  alignItems: "center",
+  justifyContent: "center",
+  marginTop: 10,
+},
+viewButtonUpcoming: {
+  backgroundColor: Colors.peachySalmon, 
+  paddingVertical: 12,
+  paddingHorizontal: 16,
+  borderRadius: 10,
+  alignItems: "center",
+  justifyContent: "center",
+  marginTop: 10,
+},
+viewButtonPast: {
+  backgroundColor: Colors.grey, 
+  paddingVertical: 12,
+  paddingHorizontal: 16,
+  borderRadius: 10,
+  alignItems: "center",
+  justifyContent: "center",
+  marginTop: 10,
+},
 });
