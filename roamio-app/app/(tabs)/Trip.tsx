@@ -118,10 +118,9 @@ const activityCards: ActivityCard[] = [
     { id: "price-low-high", label: "Price: Low - High" },
     { id: "price-high-low", label: "Price: High - Low" },
     { id: "rating-high-low", label: "Rating: High - Low" },
-    { id: "rating-low-high", label: "Rating: Low - High" }
+    { id: "rating-low-high", label: "Rating: Low - High" },
   ];
 
-  
   // ✅ Get router instance for navigation
   const router = useRouter(); 
   
@@ -161,7 +160,7 @@ const activityCards: ActivityCard[] = [
         case "rating-low-high":
           return optionA.rating - optionB.rating;
         default:
-          return 0; // Relevance 
+          return 0; // Relevance
       }
     });
 
@@ -457,19 +456,16 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   tripCard: {
-    backgroundColor: Colors.white, 
+    backgroundColor: Colors.white,
     borderRadius: 15,
-    elevation: 5, 
-    overflow: "hidden", 
-    // Box Shadow Generator: https://ethercreative.github.io/react-native-shadow-generator/
-    shadowColor: Colors.primary,    
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    }, 
-    shadowOpacity: 0.30,
-    shadowRadius: 3.84,
-    marginBottom: 25, 
+    // Box shadow generator: https://ethercreative.github.io/react-native-shadow-generator/
+    elevation: 4,
+    overflow: "hidden",
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.23,
+    shadowRadius: 2.62,
+    marginBottom: 22,
   },
   cardImage: {
     width: "100%", 

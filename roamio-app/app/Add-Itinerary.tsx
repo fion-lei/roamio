@@ -119,7 +119,7 @@ const handleAddItem = () => {
   }
 
   if (!startDate || !endDate || !startTime || !endTime) {
-    Alert.alert("Error", "Please fill in all missing date and time fields");
+    Alert.alert("Error", "Please fill in all missing date and time fields for this item");
     return;
   }
   
@@ -141,7 +141,7 @@ const handleAddItem = () => {
   );
 
   if (endDateTime <= startDateTime) {
-    Alert.alert("Error", "Please enter an end time slot that is after the start time slot");
+    Alert.alert("Error", "Please enter an end time slot that is after the start time slot for this item");
     return;
   }
   
