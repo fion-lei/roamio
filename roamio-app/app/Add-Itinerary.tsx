@@ -1,486 +1,608 @@
-import React from "react";
+// Add "community reviews" section to activity card? 
+import React, { useState} from "react";
 import { View, Text, Image, StyleSheet, SafeAreaView, Pressable, ScrollView, Modal, Alert, } from "react-native";
 import { Colors } from "@/constants/Colors";
 import { FontAwesome } from "@expo/vector-icons";
-import { useState } from "react"; 
 import { useLocalSearchParams } from "expo-router";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 export default function AddItinerary() {
- 
-  // Retrieve activity card data passed as params 
-  const params = useLocalSearchParams();
-
-  // Get values from activity cards 
-  const title = params.title as string;
-  const address = params.address as string;
-  const contact = params.contact as string; 
-  const hours = params.hours as string; 
-  const description = params.description as string;
-  const tags = params.tags as string; 
-  const imagePath = params.image as any; // Images usually loaded as "any" type 
-
-  // Convert tags string back into an array if needed
-  const tagsArray = tags ? tags.split(",") : [];
-
-  // Modal state
-  const [modalVisible, setModalVisible] = useState(false);
-
-  // Dropdown default state values ** placeholder ** 
-
-  // Itinerary selection default state
-  const [selectedItinerary, setSelectedItinerary] = useState("--Itinerary Name--");
- 
-  // Start-end date selection default states
-  const [startDate, setStartDate] = useState("MM DD, YYYY");
-  const [endDate, setEndDate] = useState("MM DD, YYYY");
   
-  // Start-end time selection default states
-  const [startTime, setStartTime] = useState("--:-- (MST)");
-  const [endTime, setEndTime] = useState("--:-- (MST)");
+// Retrieve activity card data passed as params 
+const params = useLocalSearchParams();
 
-  // Dropdown options ** placeholder ** 
+// Get values from activity cards 
+const activity = {
+  title: params.title as string,
+  address: params.address as string,
+  contact: params.contact as string,
+  hours: params.hours as string,
+  description: params.description as string,
+  tags: params.tags as string,
+  imagePath: params.image as any, // Images usually loaded as "any" type
+  price: params.price as string, 
+  rating: params.rating as string, 
+  ratingCount: params.ratingCount as string,
+};
 
-  // Itinerary options
-  const itineraryOptions = ["Calgary Outdoors", "Calgary Food Tour", "Niche Spots", "Business Meet Trip", ];
+// Convert tags string back into an array if needed
+const tagsArray = activity.tags ? activity.tags.split(",") : [];
 
-  // Start-end date options
-  const dateOptions = ["March 15, 2025", "March 16, 2025", "March 17, 2025", "March 18, 2025", "March 19, 2025", "March 20, 2025", ];
+// Modal state 
+const [isModalVisible, setIsModalVisible] = useState(false);
+
+// Itinerary states 
+const [selectedItinerary, setSelectedItinerary] = useState("--Itinerary Name--");
+const [showItineraryDropdown, setShowItineraryDropdown] = useState(false);
+const itineraryOptions = ["Calgary Outdoors", "Calgary Food Tour", "Niche Spots", "Business Meet Trip"];
+
+// Date/time states 
+const [startDate, setStartDate] = useState(new Date());
+const [endDate, setEndDate] = useState(new Date());
+const [startTime, setStartTime] = useState(new Date());
+const [endTime, setEndTime] = useState(new Date());
+const [showStartDatePicker, setShowStartDatePicker] = useState(false);
+const [showEndDatePicker, setShowEndDatePicker] = useState(false);
+const [showStartTimePicker, setShowStartTimePicker] = useState(false);
+const [showEndTimePicker, setShowEndTimePicker] = useState(false);
+
+// Formats date
+const formatDate = (date: Date) => {
+  return date.toLocaleDateString("en-US", {
+    month: "2-digit",
+    day: "2-digit",
+    year: "numeric"
+  });
+};
+
+// Formats time 
+const formatTime = (date: Date) => {
+  return date.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true
+  }) + " " + "(MST)";
+};
+
+// Reset all selections 
+const resetSelections = () => {
+  setSelectedItinerary("--Itinerary Name--");
+  setShowItineraryDropdown(false);
+  setShowStartDatePicker(false);
+  setShowEndDatePicker(false);
+  setShowStartTimePicker(false);
+  setShowEndTimePicker(false);
+};
+
+// Handles date/time changes, if picker is cancelled then no updates 
+const handleDateChange = (event: any, selectedDate?: Date, type?: string) => {
+  if (event.type === "dismissed") {
+    switch (type) {
+      case "startDate": 
+        setShowStartDatePicker(false); break;
+      case "endDate": 
+        setShowEndDatePicker(false); break;
+      case "startTime": 
+        setShowStartTimePicker(false); break;
+      case "endTime": 
+        setShowEndTimePicker(false); break;
+    }
+    return;
+  }
+  // Set to selected date/time 
+  if (selectedDate) {
+    switch (type) {
+      case "startDate": 
+        setStartDate(selectedDate); setShowStartDatePicker(false); break;
+      case "endDate": 
+        setEndDate(selectedDate); setShowEndDatePicker(false); break;
+      case "startTime": 
+        setStartTime(selectedDate); setShowStartTimePicker(false); break;
+      case "endTime": 
+        setEndTime(selectedDate); setShowEndTimePicker(false); break;
+    }
+  }
+};
+
+// Handles adding itinerary items 
+const handleAddItem = () => {
   
-  // Start-end time options 
-  const timeOptions = ["8:00 AM (MST)", "9:00 AM (MST)", "10:00 AM (MST)", "11:00 AM (MST)", "12:00 PM (MST)", "1:00 PM (MST)", ]; 
+  if (selectedItinerary === "--Itinerary Name--") {
+    Alert.alert("Error", "Please select a valid itinerary from your list");
+    return;
+  }
 
-  // Dropdown visibility states
-  const [showItineraryDropdown, setShowItineraryDropdown] = useState(false);
-  const [showStartDateDropdown, setShowStartDateDropdown] = useState(false);
-  const [showEndDateDropdown, setShowEndDateDropdown] = useState(false);
-  const [showStartTimeDropdown, setShowStartTimeDropdown] = useState(false);
-  const [showEndTimeDropdown, setShowEndTimeDropdown] = useState(false);
+  // Full datetime objects for form validation - handles AM/PM 
+  const startDateTime = new Date(
+    startDate.getFullYear(),
+    startDate.getMonth(),
+    startDate.getDate(),
+    startTime.getHours(),
+    startTime.getMinutes()
+  );
 
-  // Handle add item with confirmation alert 
-  const handleAddItem = () => {
-   
-   Alert.alert(
-     "Success!",`${title} has been added to: ${selectedItinerary}.`,
-     [{ text: "Ok", onPress: () => setModalVisible(false) }]
-   );
- };
+  const endDateTime = new Date(
+    endDate.getFullYear(),
+    endDate.getMonth(),
+    endDate.getDate(),
+    endTime.getHours(),
+    endTime.getMinutes()
+  );
+
+  if (endDateTime <= startDateTime) {
+    Alert.alert("Error", "Please enter an end time slot that is after the start time slot");
+    return;
+  }
+  
+  Alert.alert(
+    "Success!",
+    `${activity.title} has been added to: ${selectedItinerary}`,
+    [{text: "Ok", 
+      onPress: () => {
+        setIsModalVisible(false);
+        resetSelections();
+      }
+    }]
+  );
+};
 
   return (
-    
     <SafeAreaView style={styles.safeContainer}>
-     
-     {/* Itinerary Activity Image */}
-     <Image 
-       source={imagePath} 
-       style={styles.activityImage} 
-     />
+      {/* Itinerary Activity Image */}
+      <Image 
+        source={activity.imagePath} 
+        style={styles.activityImage} 
+      />
 
-     {/* Itinerary Activity Info Section */}
-     <View style={styles.activityContainer}>
-       <Text style={styles.activityTitle}>{title}</Text>
-       <Text style={styles.activityDetails}><FontAwesome name="map-pin" size={14} color={Colors.coral}></FontAwesome>{" "}{address}</Text>
-       <Text style={styles.activityDetails}><FontAwesome name="calendar-check-o" size={14} color={Colors.coral}></FontAwesome>{" "}{hours}</Text>
-       <Text style={styles.activityDetails}><FontAwesome name="phone" size={14} color={Colors.coral}></FontAwesome>{" "}{contact}</Text>
+      {/* Itinerary Activity Info Section */}
+      <View style={styles.activityContainer}>
+        <View style={styles.headerWrapper}>
+          <Text style={styles.activityTitle}>{activity.title}</Text>
+          <View style={styles.priceRatingContainer}>
+            <View style={styles.priceRatingTags}>
+              <Text style={styles.priceRatingText}>{activity.price}</Text>
+            </View>
+            <View style={styles.priceRatingTags}>
+              <FontAwesome name="star" size={12} color="#FFD700" />
+              <Text style={styles.priceRatingText}>
+                {activity.rating}
+                { /* Add rating count to activity cards? */}
+                {activity.ratingCount && ` (${activity.ratingCount})`}
+              </Text>
+            </View>
+          </View>
+        </View>
+        <View style={styles.detailsContainer}>
+          <Text style={styles.activityDetails}><FontAwesome name="map-pin" size={14} color={Colors.coral}></FontAwesome>{" "}{activity.address}</Text>
+          <Text style={styles.activityDetails}><FontAwesome name="calendar-check-o" size={14} color={Colors.coral}></FontAwesome>{" "}{activity.hours}</Text>
+          <Text style={styles.activityDetails}><FontAwesome name="phone" size={14} color={Colors.coral}></FontAwesome>{" "}{activity.contact}</Text>
+        </View>
+        <Text style={styles.activityDescription}>{activity.description}</Text>
+      </View>
 
-       {/* Wrap description and tags into ScrollView? If for expansion of section, ex. adding reviews */}
-       
-       <Text style={styles.activityDescription}>{description}</Text>
-     </View>
+      {/* Tags Section */}
+      <View style={styles.tagsContainer}>
+        <Text style={styles.tagsTitle}>Tags</Text>
+      </View>
 
-     {/* Tags Section */}
-     <View style={styles.tagsContainer}>
-       <Text style={styles.tagsTitle}>Tags</Text>
-     </View>
+      {/* Horizontal Scroll for tags */}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tagsScroll}>
+        <View style={styles.tagsScrollContainer}>
+          {/* Pass in each tag in the tags array to display */}
+          {tagsArray.map((tag, index) => (
+            <View key={index} style={styles.tagArea}>
+              <Text style={styles.tagTitle}>{tag}</Text>
+            </View>
+          ))}
+        </View>
+      </ScrollView>
 
-     {/* Horizontal Scroll for tags */}
-     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tagsScroll}>
-       <View style={styles.tagsScrollContainer}>
-         {/* Pass in each tag in the tags array to display */}
-         {tagsArray.map((tag, index) => (
-           <View key={index} style={styles.tagArea}>
-             <Text style={styles.tagTitle}>{tag}</Text>
-           </View>
-         ))}
-       </View>
-     </ScrollView>
-
-     {/* Select Date Button */}
-     <Pressable style={styles.selectDateButton} onPress={() => setModalVisible(true)}>
-       <Text style={styles.selectDateButtonText}>Select Date</Text>
-     </Pressable>
-     
-     {/* Date Selection Popup */}
-     <Modal
-      // Modal component for select date popup features: https://reactnative.dev/docs/modal
-       animationType="fade"
-       transparent={true}
-       visible={modalVisible}
-       onRequestClose={() => setModalVisible(false)}
-     >
-       <View style={styles.modalOverlay}>
-         <View style={styles.modalView}>
-           <Text style={styles.modalTitle}>Add To Itinerary</Text>
-           
-           {/* Select Itinerary Dropdown */}
-           <View style={styles.inputContainer}>
-             <Text style={styles.inputLabel}>Select Itinerary</Text>
-             <Pressable 
-               style={styles.selectFieldContainer}
-               onPress={() => setShowItineraryDropdown(!showItineraryDropdown)}>
-               <Text style={styles.selectText}>{selectedItinerary}</Text>
-               <FontAwesome name="chevron-down" size={14} color={Colors.peachySalmon} position={"absolute"} left={300} />
-             </Pressable>
-             
-             {showItineraryDropdown && (
-               <View style={styles.dropdownMenu}>
-                 <ScrollView nestedScrollEnabled={true}>
-                   {itineraryOptions.map((option, index) => (
-                     <Pressable 
-                       key={index} 
-                       style={styles.dropdownOption} 
-                       onPress={() => {
-                         setSelectedItinerary(option);
-                         setShowItineraryDropdown(false);
-                       }}
-                     >
-                       <Text style={styles.dropdownOptionText}>{option}</Text>
-                     </Pressable>
-                   ))}
-                 </ScrollView>
-               </View>
-             )}
-           </View>
-           
-           {/* Date Selection Dropdown */}
-           <View style={styles.dateContainer}>
-             <View style={styles.dateInputContainer}>
-               <Text style={styles.inputLabel}>Start Date</Text>
-               <Pressable 
-                 style={styles.selectFieldContainer}
-                 onPress={() => setShowStartDateDropdown(!showStartDateDropdown)}
-               >
-                 <Text style={styles.selectText}>{startDate}</Text>
-                 <FontAwesome name="chevron-down" style={styles.dropdownIcon} />
-               </Pressable>
-               
-               {showStartDateDropdown && (
-                 <View style={styles.dropdownMenu}>
-                   <ScrollView nestedScrollEnabled={true}>
-                     {dateOptions.map((option, index) => (
-                       <Pressable 
-                         key={index} 
-                         style={styles.dropdownOption} 
-                         onPress={() => {
-                           setStartDate(option);
-                           setShowStartDateDropdown(false);
-                         }}
-                       >
-                         <Text style={styles.dropdownOptionText}>{option}</Text>
-                       </Pressable>
-                     ))}
-                   </ScrollView>
-                 </View>
-               )}
-             </View>
-             
-             <View style={styles.dateInputContainer}>
-               <Text style={styles.inputLabel}>End Date</Text>
-               <Pressable 
-                 style={styles.selectFieldContainer}
-                 onPress={() => setShowEndDateDropdown(!showEndDateDropdown)}
-               >
-                 <Text style={styles.selectText}>{endDate}</Text>
-                 <FontAwesome name="chevron-down" style={styles.dropdownIcon} />
-               </Pressable>
-               
-               {showEndDateDropdown && (
-                 <View style={styles.dropdownMenu}>
-                   <ScrollView nestedScrollEnabled={true}>
-                     {dateOptions.map((option, index) => (
-                       <Pressable 
-                         key={index} 
-                         style={styles.dropdownOption} 
-                         onPress={() => {
-                           setEndDate(option);
-                           setShowEndDateDropdown(false);
-                         }}
-                       >
-                         <Text style={styles.dropdownOptionText}>{option}</Text>
-                       </Pressable>
-                     ))}
-                   </ScrollView>
-                 </View>
-               )}
-             </View>
-           </View>
-           
-           {/* Time Selection Dropdown */}
-           <View style={styles.dateContainer}>
-             <View style={styles.dateInputContainer}>
-               <Text style={styles.inputLabel}>Start Time</Text>
-               <Pressable 
-                 style={styles.selectFieldContainer}
-                 onPress={() => setShowStartTimeDropdown(!showStartTimeDropdown)}
-               >
-                 <Text style={styles.selectText}>{startTime}</Text>
-                 <FontAwesome name="chevron-down" style={styles.dropdownIcon} />
-               </Pressable>
-               
-               {showStartTimeDropdown && (
-                 <View style={styles.dropdownMenu}>
-                   <ScrollView nestedScrollEnabled={true}>
-                     {timeOptions.map((option, index) => (
-                       <Pressable 
-                         key={index} 
-                         style={styles.dropdownOption} 
-                         onPress={() => {
-                           setStartTime(option);
-                           setShowStartTimeDropdown(false);
-                         }}
-                       >
-                         <Text style={styles.dropdownOptionText}>{option}</Text>
-                       </Pressable>
-                     ))}
-                   </ScrollView>
-                 </View>
-               )}
-             </View>
-             
-             <View style={styles.dateInputContainer}>
-               <Text style={styles.inputLabel}>End Time</Text>
-               <Pressable 
-                 style={styles.selectFieldContainer}
-                 onPress={() => setShowEndTimeDropdown(!showEndTimeDropdown)}
-               >
-                 <Text style={styles.selectText}>{endTime}</Text>
-                 <FontAwesome name="chevron-down" style={styles.dropdownIcon} />
-               </Pressable>
-               
-               {showEndTimeDropdown && (
-                 <View style={styles.dropdownMenu}>
-                   <ScrollView nestedScrollEnabled={true}>
-                     {timeOptions.map((option, index) => (
-                       <Pressable 
-                         key={index} 
-                         style={styles.dropdownOption} 
-                         onPress={() => {
-                           setEndTime(option);
-                           setShowEndTimeDropdown(false);
-                         }}
-                       >
-                         <Text style={styles.dropdownOptionText}>{option}</Text>
-                       </Pressable>
-                     ))}
-                   </ScrollView>
-                 </View>
-               )}
-             </View>
-           </View>
-           
-           {/* Buttons section */}
-           <View style={styles.buttonsContainer}>
-             <Pressable
-               style={[styles.modalButtons, styles.cancelButton]}
-               onPress={() => setModalVisible(false)}
-             >
-               <Text style={styles.cancelButtonText}>Cancel</Text>
-             </Pressable>
-             <Pressable
-               style={[styles.modalButtons, styles.addButton]}
-               onPress={handleAddItem}
-             >
-               <Text style={styles.addButtonText}>Add Item</Text>
-             </Pressable>
-           </View>
-         </View>
-       </View>
-     </Modal>
-   </SafeAreaView>
- );
+      {/* Select Date Button */}
+      <Pressable 
+        style={styles.selectDateButton} 
+        onPress={() => setIsModalVisible(true)}
+      >
+        <Text style={styles.selectDateButtonText}>Select Date</Text>
+      </Pressable>
+      
+      {/* Date Selection Popup */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={isModalVisible}
+        onRequestClose={() => setIsModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalView}>
+            <Text style={styles.modalTitle}>Add To Itinerary</Text>
+            
+            {/* Select Itinerary Dropdown */}
+            <View style={styles.inputContainer}>
+              <Text style={styles.inputLabel}>Select Itinerary</Text>
+              <Pressable 
+                style={styles.selectFieldContainer}
+                onPress={() => setShowItineraryDropdown(!showItineraryDropdown)}
+              >
+                <Text style={styles.selectText}>{selectedItinerary}</Text>
+                <FontAwesome name="chevron-down" size={14} color={Colors.peachySalmon} top={5}/>
+              </Pressable>
+              
+              {showItineraryDropdown && (
+                <View style={styles.dropdownMenu}>
+                  <ScrollView nestedScrollEnabled={true}>
+                    {itineraryOptions.map((option, index) => (
+                      <Pressable 
+                        key={index} 
+                        style={styles.dropdownOption} 
+                        onPress={() => {
+                          setSelectedItinerary(option);
+                          setShowItineraryDropdown(false);
+                        }}
+                      >
+                        <Text style={styles.dropdownOptionText}>{option}</Text>
+                      </Pressable>
+                    ))}
+                  </ScrollView>
+                </View>
+              )}
+            </View>
+            
+            {/* Date Selection Section */}
+            <View style={styles.dateContainer}>
+              <View style={styles.dateInputContainer}>
+                <Text style={styles.inputLabel}>Start Date</Text>
+                <Pressable 
+                  style={styles.selectFieldContainer}
+                  onPress={() => setShowStartDatePicker(true)}
+                >
+                  <Text style={styles.selectText}>
+                    {formatDate(startDate)}
+                  </Text>
+                  <FontAwesome name="calendar-o" style={styles.dateTimeIcon} />
+                </Pressable>
+                
+                {showStartDatePicker && (
+                  <View style={styles.pickerContainer}>
+                    <DateTimePicker 
+                      value={startDate}
+                      mode="date"
+                      display="spinner"
+                      onChange={(event, date) => handleDateChange(event, date, "startDate")}
+                      // Minimum date for start date selection set to today's date 
+                      minimumDate={new Date()}
+                    />
+                  </View>
+                )}
+              </View>
+              
+              <View style={styles.dateInputContainer}>
+                <Text style={styles.inputLabel}>End Date</Text>
+                <Pressable 
+                  style={styles.selectFieldContainer}
+                  onPress={() => setShowEndDatePicker(true)}
+                >
+                  <Text style={styles.selectText}>
+                    {formatDate(endDate)}
+                  </Text>
+                  <FontAwesome name="calendar-o" style={styles.dateTimeIcon} />
+                </Pressable>
+                
+                {showEndDatePicker && (
+                  <View style={styles.pickerContainer}>
+                    <DateTimePicker
+                      value={endDate}
+                      mode="date"
+                      display="spinner"
+                      onChange={(event, date) => handleDateChange(event, date, "endDate")}
+                      // Minimum date for end date selection should start only from start date's minimum date set 
+                      minimumDate={startDate}
+                    />
+                  </View>
+                )}
+              </View>
+            </View>
+            
+            {/* Time Selection Section */}
+            <View style={styles.dateContainer}>
+              <View style={styles.dateInputContainer}>
+                <Text style={styles.inputLabel}>Start Time</Text>
+                <Pressable 
+                  style={styles.selectFieldContainer}
+                  onPress={() => setShowStartTimePicker(true)}
+                >
+                  <Text style={styles.selectText}>
+                    {formatTime(startTime)}
+                  </Text>
+                  <FontAwesome name="clock-o" size={14} style={styles.dateTimeIcon} />
+                </Pressable>
+                
+                {showStartTimePicker && (
+                  <View style={styles.pickerContainer}>
+                    <DateTimePicker
+                      value={startTime}
+                      mode="time"
+                      display="spinner"
+                      onChange={(event, date) => handleDateChange(event, date, "startTime")}
+                    />
+                  </View>
+                )}
+              </View>
+              
+              <View style={styles.dateInputContainer}>
+                <Text style={styles.inputLabel}>End Time</Text>
+                <Pressable 
+                  style={styles.selectFieldContainer}
+                  onPress={() => setShowEndTimePicker(true)}
+                >
+                  <Text style={styles.selectText}>
+                    {formatTime(endTime)}
+                  </Text>
+                  <FontAwesome name="clock-o" size={14} style={styles.dateTimeIcon} />
+                </Pressable>
+                
+                {showEndTimePicker && (
+                  <View style={styles.pickerContainer}>
+                    <DateTimePicker
+                      value={endTime}
+                      mode="time"
+                      display="spinner"
+                      onChange={(event, date) => handleDateChange(event, date, "endTime")}
+                    />
+                  </View>
+                )}
+              </View>
+            </View>
+            
+            {/* Buttons section */}
+            <View style={styles.buttonsContainer}>
+              <Pressable
+                style={[styles.modalButtons, styles.cancelButton]}
+                onPress={() => {
+                  setIsModalVisible(false);
+                  resetSelections();
+                }}
+              >
+                <Text style={styles.modalButtonsText}>Cancel</Text>
+              </Pressable>
+              <Pressable
+                style={[styles.modalButtons, styles.addButton]}
+                onPress={handleAddItem}
+              >
+                <Text style={styles.modalButtonsText}>Add Item</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    </SafeAreaView>
+  );
 }
 
 const styles = StyleSheet.create({
- safeContainer: {
-   flex: 1,
-   backgroundColor: Colors.white,
- },
- activityImage: {
-   width: "100%",
-   height: 260,
-   resizeMode: "cover",
- },
- activityContainer: {
-   padding: 16,
-   gap: 8,
- },
- activityTitle: {
-   fontSize: 24,
-   fontFamily: "quicksand-bold",
-   marginBottom: 5,
- },
- activityDetails: {
-   fontSize: 14,
-   fontFamily: "quicksand-medium",
-   color: "Colors.white,"
- },
- activityDescription: {
-   fontSize: 14,
-   fontFamily: "quicksand-regular",
-   lineHeight: 24,
- },
- tagsContainer: {
-   paddingHorizontal: 16,
- },
- tagsTitle: {
-   fontSize: 18,
-   marginBottom: 20,
-   fontFamily: "quicksand-bold",
- },
- tagsScroll: {
-   paddingHorizontal: 10,
- },
- tagsScrollContainer: {
-   flexDirection: "row",
-   alignItems: "flex-start",
-   gap: 8,
- },
- tagArea: {
-   borderWidth: 1,
-   borderColor: Colors.coral,
-   borderRadius: 15,
-   backgroundColor: Colors.palePink,
-   paddingHorizontal: 10,
-   paddingVertical: 5,
-   marginRight: 5,
- },
- tagTitle: {
-   color: Colors.coral,
-   fontSize: 14,
-   fontFamily: "quicksand-bold",
- },
- selectDateButton: {
-   alignItems: "center",
-   marginVertical: 30,
-   backgroundColor: Colors.coral,
-   borderRadius: 10,
-   padding: 10,
-   marginHorizontal: 20,
- },
- selectDateButtonText: {
-   color: Colors.white,
-   fontSize: 16,
-   fontFamily: "quicksand-bold",
- },
- modalOverlay: {
-   flex: 1,
-   justifyContent: "center",
-   alignItems: "center",
-   backgroundColor: "rgba(52, 52, 52, 0.8)", // Background will blur when modal is open 
- },
- modalView: {
-   width: "90%",
-   backgroundColor: Colors.white,
-   borderRadius: 20,
-   borderWidth: 3,      
-   borderColor: Colors.peachySalmon, 
-   padding: 20,
-   elevation: 5,
- },
- modalTitle: {
-   fontSize: 24,
-   fontFamily: "quicksand-bold",
-   textAlign: "center",
-   marginBottom: 20,
- },
- inputContainer: {
-   marginBottom: 15,
-   position: "relative",
- },
- inputLabel: {
-   fontSize: 16,
-   fontFamily: "quicksand-semibold",
-   marginBottom: 5,
- },
- selectFieldContainer: {
-   borderWidth: 1,
-   borderColor: Colors.grey,
-   borderRadius: 10,
-   paddingHorizontal: 10,
-   paddingVertical: 12,
-   justifyContent: "center",
- },
- dropdownIcon: {
-    left: 130,
+  safeContainer: {
+    flex: 1,
+    backgroundColor: Colors.white,
+  },
+  activityImage: {
+    width: "100%",
+    height: 260,
+    resizeMode: "cover",
+  },
+  activityContainer: {
+    padding: 16,
+    gap: 8,
+  },
+  headerWrapper: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+  },  
+  priceRatingContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  priceRatingTags: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FF9B8D", // Between peachySalmon and coral
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    gap: 5,
+    height: 30,
+    shadowColor: "#E0877D", // Darker shadow effect
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 6,
+    elevation: 5,
+  },
+  priceRatingText: {
+    fontSize: 13,
+    fontFamily: "quicksand-bold",
+    color: Colors.white,
+    lineHeight: 16,
+  },
+  activityTitle: {
+    fontSize: 24,
+    fontFamily: "quicksand-bold",
+  },
+  detailsContainer: {
+    gap: 8,
+    marginBottom: 6,
+  },
+  activityDetails: {
+    fontSize: 14,
+    fontFamily: "quicksand-semibold",
+    color: Colors.grey,
+  },
+  activityDescription: {
+    fontSize: 14,
+    fontFamily: "quicksand-regular",
+    lineHeight: 24,
+  },
+  tagsContainer: {
+    paddingHorizontal: 16,
+  },
+  tagsTitle: {
+    fontSize: 18,
+    marginBottom: 20,
+    fontFamily: "quicksand-bold",
+  },
+  tagsScroll: {
+    paddingHorizontal: 10,
+  },
+  tagsScrollContainer: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 8,
+  },
+  tagArea: {
+    borderWidth: 1,
+    borderColor: Colors.coral,
+    borderRadius: 15,
+    backgroundColor: Colors.palePink,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    marginRight: 5,
+  },
+  tagTitle: {
+    color: Colors.coral,
+    fontSize: 14,
+    fontFamily: "quicksand-bold",
+  },
+  selectDateButton: {
+    alignItems: "center",
+    marginVertical: 28,
+    backgroundColor: Colors.coral,
+    borderRadius: 10,
+    padding: 10,
+    marginHorizontal: 20,
+  },
+  selectDateButtonText: {
+    color: Colors.white,
+    fontSize: 16,
+    fontFamily: "quicksand-bold",
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(52, 52, 52, 0.8)", // Background will blur when date selection is open
+  },
+  modalView: {
+    width: "90%",
+    backgroundColor: Colors.white,
+    borderRadius: 20,
+    borderWidth: 3,      
+    borderColor: Colors.peachySalmon, 
+    padding: 20,
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontFamily: "quicksand-bold",
+    textAlign: "center",
+    marginBottom: 20,
+  },
+  inputContainer: {
+    marginBottom: 15,
+    position: "relative",
+  },
+  inputLabel: {
+    fontSize: 16,
+    fontFamily: "quicksand-semibold",
+    marginBottom: 5,
+  },
+  selectFieldContainer: {
+    borderWidth: 1,
+    borderColor: Colors.grey,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 12,
+    justifyContent: "center",
+    flexDirection: "row",
+  },
+  dateTimeIcon: {
     position: "absolute",
+    right: 10,
+    top: 18,
     color: Colors.peachySalmon,
- },
- selectText: {
-   fontSize: 16,
-   fontFamily: "quicksand-medium",
- },
- dateContainer: {
-   flexDirection: "row",
-   justifyContent: "space-between",
-   marginBottom: 15,
- },
- dateInputContainer: {
-   width: "48%",
-   position: "relative",
- },
- dateInput: {
-   borderWidth: 1,
-   borderColor: Colors.grey,
-   borderRadius: 10,
-   paddingHorizontal: 10,
-   paddingVertical: 12,
-   justifyContent: "center",
- },
- dropdownMenu: {
-   position: "absolute",
-   top: "100%",
-   left: 0,
-   right: 0,
-   backgroundColor: Colors.white,
-   borderWidth: 1,
-   borderColor: Colors.grey,
-   borderRadius: 10,
-   maxHeight: 150,
-   zIndex: 10,
-   marginTop: 2,
- },
- dropdownOption: {
-   padding: 10,
- },
- dropdownOptionText: {
-   fontSize: 16,
-   fontFamily: "quicksand-medium",
- },
- buttonsContainer: {
-   flexDirection: "row",
-   justifyContent: "space-around",
-   marginTop: 20,
- },
- modalButtons: {
-   borderRadius: 10,
-   padding: 10,
-   elevation: 2,
-   width: "48%",
-   alignItems: "center",
- },
- cancelButton: {
-   backgroundColor: Colors.grey,
- },
- addButton: {
-   backgroundColor: Colors.coral,
- },
- cancelButtonText: {
-   color: Colors.white,
-   fontFamily: "quicksand-bold",
-   fontSize: 14,
- },
- addButtonText: {
-   color: Colors.white,
-   fontFamily: "quicksand-bold",
-   fontSize: 14,
- }
+  },
+  selectText: {
+    fontSize: 16,
+    fontFamily: "quicksand-medium",
+    flex: 1,
+  },
+  dateContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 15,
+  },
+  dateInputContainer: {
+    width: "48%",
+    position: "relative",
+  },
+  dateInput: {
+    borderWidth: 1,
+    borderColor: Colors.grey,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 12,
+    justifyContent: "center",
+  },
+  dropdownMenu: {
+    position: "absolute",
+    top: "100%",
+    left: 0,
+    right: 0,
+    backgroundColor: Colors.white,
+    borderWidth: 1,
+    borderColor: Colors.grey,
+    borderRadius: 10,
+    maxHeight: 150,
+    zIndex: 10,
+    marginTop: 2,
+  },
+  dropdownOption: {
+    padding: 10,
+  },
+  dropdownOptionText: {
+    fontSize: 16,
+    fontFamily: "quicksand-medium",
+  },
+  pickerContainer: {
+    position: "absolute",
+    backgroundColor: Colors.white,
+    borderWidth: 1,
+    borderColor: Colors.grey,
+    borderRadius: 10,
+    zIndex: 20,
+    top: "100%",
+    marginTop: 2,
+  },
+  buttonsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginTop: 20,
+  },
+  modalButtons: {
+    borderRadius: 10,
+    padding: 10,
+    elevation: 2,
+    width: "48%",
+    alignItems: "center",
+  },
+  cancelButton: {
+    backgroundColor: Colors.grey,
+  },
+  addButton: {
+    backgroundColor: Colors.coral,
+  },
+  modalButtonsText: {
+    color: Colors.white,
+    fontFamily: "quicksand-bold",
+    fontSize: 14,
+  },
 });

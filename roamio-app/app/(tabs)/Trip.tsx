@@ -1,28 +1,27 @@
-import React from "react"; 
+// Populate with more activity cards of different categories 
+import React, { useState } from "react"; 
 import { View, Text, Image, TextInput, SafeAreaView, StyleSheet, Pressable, ScrollView } from "react-native"; // Images reference: https://undraw.co/
 import { Colors } from "@/constants/Colors"; 
 import { FontAwesome } from "@expo/vector-icons"; // For the search and category icons **for now**: https://oblador.github.io/react-native-vector-icons/
 import { useRouter } from "expo-router";
-import { useState } from "react"; 
 
 export default function Home() {
 
-// Define data type used 
-type CategoryId = "outdoors" | "hotspot" | "dining" | "culture";
-type IconName = "tree" | "heart" | "fire" | "paint-brush"; // Include category icons used only 
+// Define data types used 
+type CategoryId = "outdoors" | "hotspot" | "dining" | "culture" | "local";
+type IconName = "tree" | "heart" | "fire" | "paint-brush" | "map-signs";
+type SortOption = "relevance" | "price-low-high" | "price-high-low" | "rating-high-low" | "rating-low-high";
 
-// Include activity category labels? 
+// Activity categories 
 interface ActivityCategory {
   id: CategoryId;
   icon: IconName;
   color: string;
   iconColor: string;
   label: string;
-}
+};
 
-// Category array? card can belong to multiple categories 
-// Add reviews for activity cards? 
-// Add ratings for activity cards? 
+// Activity cards 
 interface ActivityCard {
   id: string;
   title: string;
@@ -31,48 +30,56 @@ interface ActivityCard {
   contact: string; 
   description: string;
   image: any; // Image usually set as "any" type 
-  category: CategoryId;
+  category: CategoryId[]; // Activity can belong to multiple categories 
   tags: string[];
-}
+  price: string; 
+  rating: number;
+  ratingCount: number; 
+};
 
 // Holds all activity categories 
-// Include activity category labels or just have the icons? 
-// Make "hotspot" categories stand out from the rest of the categories? - Have different colors for the category icons 
+// Muted pastel color palette for category icons - follows darker background lighter icon color convention
+// Consider more vibrant palette instead? 
 const activityCategories: ActivityCategory[] = [
   { 
     id: "outdoors", 
     icon: "tree", 
-    color: Colors.palePink, 
-    iconColor: Colors.peachySalmon,
+    color: "#6B8E85",  // Sage
+    iconColor: "#E8EDEB",
     label: "Outdoors"
   }, 
   { 
     id: "hotspot", 
     icon: "heart", 
-    color: Colors.peachySalmon, 
-    iconColor: Colors.palePink,
+    color: "#D17A6F", // Coral 
+    iconColor: "#F9E8E6",
     label: "Hotspot"
   },
   { 
     id: "dining", 
     icon: "fire", 
-    color: Colors.palePink, 
-    iconColor: Colors.peachySalmon,
+    color: "#8B7D9F", // Lavender
+    iconColor: "#EDE9F2", 
     label: "Dining"
   }, 
   { 
     id: "culture", 
     icon: "paint-brush", 
-    color: Colors.peachySalmon, 
-    iconColor: Colors.palePink,
+    color: "#D4B499", // Beige
+    iconColor: "#F7F0E8",
     label: "Culture"
+  },
+  { 
+    id: "local", 
+    icon: "map-signs", 
+    color: "#6B8FA3", // Blue
+    iconColor: "#E8EEF2", 
+    label: "Local"
   },
 ];
 
-// Holds all activity cards
-// Category array? card can belong to multiple categories 
-// Add reviews to activity cards? 
-// Add ratings to activity cards? 
+// Holds all activity cards 
+// Add more cards for filtering through all different categories
 const activityCards: ActivityCard[] = [ 
   { 
     id: "elgin", 
@@ -82,8 +89,11 @@ const activityCards: ActivityCard[] = [
     contact: "(403) - 111 - 1111", 
     description: `Elgin Hill is a park located in Calgary, Alberta, Canada. It is part of the City of Calgary's extensive network of parks, which includes notable locations such as Nose Hill Park, Poppy Plaza, Ranchlands Park, and many others. While specific details about Elgin Hill are limited, it is likely to offer recreational activities and green spaces typical of Calgary's parks, such as walking trails, picnic areas, and natural landscapes.`,
     image: require("@/assets/images/camp.png"),
-    category: "outdoors", 
+    category: ["outdoors"], 
     tags: ["#Nature", "#Relax", "#Park", "#Pet-Friendly", "#Leisure"],
+    price: "$",
+    rating: 4.6,
+    ratingCount: 45, 
   },
   
   { 
@@ -94,36 +104,66 @@ const activityCards: ActivityCard[] = [
     contact: "(403) - 222 - 3333", 
     description: `OEB was established in 2009; in Calgary – a Canadian city with big potential and small-town values. The people at OEB possess a deep love of food, giving staff the confidence to excite and welcome guests. The OEB menu is purposeful, filled with items that simply can't be made at home, balanced by lighter fare and vegan options. The people at OEB possess a deep love of food, giving staff the confidence to excite and welcome guests.`,
     image: require("@/assets/images/food.png"),
-    category: "dining",
-    tags: ["#Brunch", "#CozyVibes", "#Family-Friendly", "#PhotoReady"],
+    category: ["dining", "hotspot"],
+    tags: ["#Vegan", "#Brunch", "#CozyVibes", "#Family-Friendly", "#PhotoReady"],
+    price: "$$",
+    rating: 4.8,
+    ratingCount: 120, 
   },
 ]; 
   
-  const router = useRouter(); // ✅ Get router instance for navigation
+  // ✅ Get router instance for navigation
+  const router = useRouter(); 
+  
+  // States 
   const [searchText, setSearchText] = useState<string>("");
-  const [selectedCategory, setSelectedCategory] = useState<CategoryId | "">("");
+  const [selectedCategory, setSelectedCategory] = useState<CategoryId[]>([]);
+  const [sortOption, setSortOption] = useState<SortOption>("relevance");
+  const [showSortDropdown, setShowSortDropdown] = useState(false);
 
-  // Filter activities based on search text and selected category
-  const filteredActivities = activityCards.filter(activity => {
-    // Search based on activity title or address 
-    const matchesSearch = searchText === "" || 
-      activity.title.toLowerCase().includes(searchText.toLowerCase()) ||  
-      activity.address.toLowerCase().includes(searchText.toLowerCase()); 
-    
-    const matchesCategory = selectedCategory === "" || 
-      activity.category === selectedCategory;
-    
-    return matchesSearch && matchesCategory;
-  });
+  // Convert price string to number for sorting
+  const getPriceValue = (price: string): number => {
+    return price.length;
+  };
+
+  // Filter activities based on search, category, and price/rating 
+  const filteredActivities = activityCards
+    .filter(activity => {
+      const matchesSearch = searchText === "" || 
+        activity.title.toLowerCase().includes(searchText.toLowerCase()) ||  
+        activity.address.toLowerCase().includes(searchText.toLowerCase());
+      
+      const matchesCategory = selectedCategory.every(category =>
+        activity.category.includes(category)
+      );
+      
+      return matchesSearch && matchesCategory;
+    })
+    .sort((optionA, optionB) => {
+      switch (sortOption) {
+        case "price-low-high":
+          return getPriceValue(optionA.price) - getPriceValue(optionB.price);
+        case "price-high-low":
+          return getPriceValue(optionB.price) - getPriceValue(optionA.price);
+        case "rating-high-low":
+          return optionB.rating - optionA.rating;
+        case "rating-low-high":
+          return optionA.rating - optionB.rating;
+        default:
+          return 0;
+      }
+    });
 
   // Handle category selection 
   const handleCategoryPress = (categoryId: CategoryId) => {
     // If already selected, clear the filter
     // Otherwise, set the filter
-    // If category array, filter for multiple category presses?
-    setSelectedCategory(prevCategory => 
-      prevCategory === categoryId ? "" : categoryId
-    );
+    setSelectedCategory(prevCategory => {
+      if (prevCategory.includes(categoryId)) {
+        return prevCategory.filter(id => id !== categoryId); 
+      }
+      return [...prevCategory, categoryId]; 
+    }); 
   };
   
   return (
@@ -141,8 +181,87 @@ const activityCards: ActivityCard[] = [
         />
       </View>
 
-      {/* Header */}
-      <Text style={styles.header}>Activity Categories</Text>
+      {/* Header and Sort Section */}
+      <View style={styles.headerContainer}>
+        <Text style={styles.header}>Activity Categories</Text>
+        <Pressable 
+          style={styles.sortButton}
+          onPress={() => setShowSortDropdown(!showSortDropdown)}
+        >
+          <FontAwesome name="sort-amount-desc" size={16} color={Colors.peachySalmon} />
+          <Text style={styles.sortText}>Sort</Text>
+        </Pressable>
+      </View>
+
+      {/* Sort Dropdown */}
+      {showSortDropdown && (
+        <>
+          <Pressable style={styles.dropdownBackdrop}
+            onPress={() => setShowSortDropdown(false)} />
+          <View style={styles.sortDropdown}>
+            
+            <Pressable style={styles.sortOption}
+              onPress={() => {
+                setSortOption("relevance");
+                setShowSortDropdown(false);
+              }}
+            ><Text style={[styles.sortOptionText,
+              sortOption === "relevance" && styles.selectedSortOption
+              ]}>Relevance</Text>
+            </Pressable>
+            
+            <Pressable 
+              style={styles.sortOption}
+              onPress={() => {
+                setSortOption("price-low-high");
+                setShowSortDropdown(false);
+              }}
+            >
+              <Text style={[
+                styles.sortOptionText,
+                sortOption === "price-low-high" && styles.selectedSortOption
+              ]}>Price: Low - High</Text>
+            </Pressable>
+            
+            <Pressable 
+              style={styles.sortOption}
+              onPress={() => {
+                setSortOption("price-high-low");
+                setShowSortDropdown(false);
+              }}
+            >
+              <Text style={[
+                styles.sortOptionText,
+                sortOption === "price-high-low" && styles.selectedSortOption
+              ]}>Price: High - Low</Text>
+            </Pressable>
+            
+            <Pressable 
+              style={styles.sortOption}
+              onPress={() => {
+                setSortOption("rating-high-low");
+                setShowSortDropdown(false);
+              }}
+            >
+              <Text style={[styles.sortOptionText,
+                sortOption === "rating-high-low" && styles.selectedSortOption
+              ]}>Rating: High - Low</Text>
+            </Pressable>
+            
+            <Pressable style={styles.sortOption}
+              onPress={() => {
+                setSortOption("rating-low-high");
+                setShowSortDropdown(false);
+              }}>
+              
+              <Text style={[
+                styles.sortOptionText,
+                sortOption === "rating-low-high" && styles.selectedSortOption
+              ]}>Rating: Low - High</Text>
+            </Pressable>
+          </View>
+        </>
+      )}
 
       {/* Activity Categories Section */}
       <View style={styles.categoriesWrapper}>
@@ -155,7 +274,7 @@ const activityCards: ActivityCard[] = [
                   styles.categoryItem,
                   { backgroundColor: category.color },
                   // Selected category should be indicated when selected 
-                  selectedCategory === category.id && styles.selectedCategory
+                  selectedCategory.includes(category.id) && styles.selectedCategory
                 ]} 
                 onPress={() => handleCategoryPress(category.id)}
               >
@@ -165,7 +284,6 @@ const activityCards: ActivityCard[] = [
                   color={category.iconColor}
                 />
               
-                {/* Keep category label on category icons? */}
                 <Text style={styles.categoryLabel}>{category.label}</Text>
               </Pressable>
             ))}
@@ -192,6 +310,9 @@ const activityCards: ActivityCard[] = [
                   description: activity.description,
                   image: activity.image, 
                   tags: activity.tags.join(","),
+                  price: activity.price,
+                  rating: activity.rating,
+                  ratingCount: activity.ratingCount, 
                 } 
               })}
             > 
@@ -199,8 +320,27 @@ const activityCards: ActivityCard[] = [
                 source={activity.image}
                 style={styles.cardImage}
               /> 
+              
               <View style={styles.cardInfo}>
-                <Text style={styles.cardDetails}><FontAwesome name="map-pin" size={12} color={Colors.coral}></FontAwesome> {activity.address}</Text>
+                <View style={styles.cardHeader}>
+                  <View style={styles.addressContainer}>
+                    <FontAwesome name="map-pin" size={12} color={Colors.coral} />
+                    <Text style={styles.cardDetails}>{activity.address}</Text>
+                  </View>
+                  <View style={styles.priceRatingContainer}>
+                    <View style={styles.priceRatingTags}>
+                      <Text style={styles.priceRatingText}>{activity.price}</Text>
+                    </View>
+                    <View style={styles.priceRatingTags}>
+                      <FontAwesome name="star" size={12} color="#FFD700" />
+                      <Text style={styles.priceRatingText}>
+                        {activity.rating}
+                        { /* Add rating count to activity cards? */}
+                        {activity.ratingCount && ` (${activity.ratingCount})`}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
                 <Text style={styles.cardTitle}>{activity.title}</Text>
               </View>
             </Pressable>
@@ -214,7 +354,7 @@ const activityCards: ActivityCard[] = [
       </ScrollView>
     </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   safeContainer: {
@@ -226,7 +366,7 @@ const styles = StyleSheet.create({
     width: "100%",  
     flexDirection: "row",
     alignItems: "center", 
-    paddingVertical: 5, 
+    paddingVertical: 8, 
     paddingHorizontal: 20,
     borderRadius: 15,
     borderWidth: 1.5, 
@@ -254,9 +394,68 @@ const styles = StyleSheet.create({
     color: Colors.grey, 
   },
   header: {
-    fontSize: 24,  
+    fontSize: 28,  
     fontFamily: "quicksand-bold",
-    marginTop: 20,
+    color: Colors.primary,
+  },
+  headerContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 15,
+    marginBottom: 5,
+  },
+  sortButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: Colors.palePink,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 10,
+    gap: 6,
+    marginRight: 5,
+  },
+  sortText: {
+    fontSize: 14,
+    fontFamily: "quicksand-bold",
+    color: Colors.coral,
+  },
+  dropdownBackdrop: {
+    position: "absolute",
+    zIndex: 100,  // Takes priority 
+    top: 0, 
+    left: 0,
+    right: 0, 
+    bottom: 0, 
+  },
+  sortDropdown: {
+    position: "absolute",
+    top: 100,
+    right: 18,
+    backgroundColor: Colors.white,
+    borderRadius: 10,
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 2},
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    zIndex: 1000,
+    minWidth: 160,
+  },
+  sortOption: {
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderBottomWidth: 0.2,
+    borderBottomColor: Colors.grey,
+  },
+  sortOptionText: {
+    fontSize: 14,
+    fontFamily: "quicksand-semibold",
+    color: Colors.primary,
+  },
+  selectedSortOption: {
+    color: Colors.coral,
+    fontFamily: "quicksand-bold",
   },
   categoriesWrapper: {
     minHeight: 85, 
@@ -281,13 +480,12 @@ const styles = StyleSheet.create({
   },
   categoryLabel: {
     marginTop: 5,
-    fontSize: 10,
+    fontSize: 11,
     fontFamily: "quicksand-semibold",
-    color: Colors.primary,
   },
   selectedCategory: {
+    borderColor: "#FF9B8D",
     borderWidth: 3,
-    borderColor: Colors.coral,
   },
   cardsContainer: {
     flexGrow: 1,
@@ -313,15 +511,58 @@ const styles = StyleSheet.create({
     resizeMode: "cover", 
   },
   cardInfo: {
-    padding: 10,
+    padding: 12,
     marginLeft: 10,
-  }, 
+    marginBottom: 2,
+  },
   cardTitle: {
     fontSize: 18,
-    fontFamily: "quicksand-bold",  
-  }, 
+    fontFamily: "quicksand-bold",
+    marginTop: -1,
+    color: Colors.primary,
+  },
   cardDetails: {
     fontSize: 14, 
-    fontFamily: "quicksand-regular",
+    fontFamily: "quicksand-semibold",
+    marginBottom: 2,
+    color: Colors.grey,
+  },
+  cardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 2,
+  },
+  addressContainer: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  priceRatingContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  priceRatingTags: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FF9B8D", // Between peachySalmon and coral
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    gap: 5,
+    height: 30,
+    shadowColor: "#E0877D", // Darker shadow effect 
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 6,
+    elevation: 5,
+  },
+  priceRatingText: {
+    fontSize: 13,
+    fontFamily: "quicksand-bold",
+    color: Colors.white,    
+    lineHeight: 16,
   },
 });
