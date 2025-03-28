@@ -21,8 +21,11 @@
 2. Install dependencies ➡ ``npm install`` 
 3. Run the server ➡ ``npm run dev`` 
 
-
 ---
+#### General Troubleshooting
+- Front-End & Back-End not connecting?
+    - Enter in the terminal ``r`` to reload the app 
+    - Enter in the terminal ``rs`` to reload the server
 
 #### Troubleshooting for Front-End
 - Issues with dependencies? Remove and reinstall
