@@ -242,7 +242,7 @@ export default function Itinerary() {
                       {`${formatDate(item.fromDate)} - ${formatDate(item.toDate)}`}
                     </Text>
                     <Text style={styles.description}>{item.description}</Text>
-                    <Pressable style={styles.viewButtonOngoing} onPress={() => console.log("View Details Clicked!")}>
+                    <Pressable style={styles.viewButtonOngoing} onPress={() => router.push('/screens/DetailedItinerary')}>
                       <Text style={styles.buttonText}>View Details</Text>
                     </Pressable>
                   </View>
