@@ -37,17 +37,18 @@ const [showItineraryDropdown, setShowItineraryDropdown] = useState(false);
 const itineraryOptions = ["Calgary Outdoors", "Calgary Food Tour", "Niche Spots", "Business Meet Trip"];
 
 // Date/time states 
-const [startDate, setStartDate] = useState(new Date());
-const [endDate, setEndDate] = useState(new Date());
-const [startTime, setStartTime] = useState(new Date());
-const [endTime, setEndTime] = useState(new Date());
+const [startDate, setStartDate] = useState<Date | null>(null);
+const [endDate, setEndDate] = useState<Date | null>(null);
+const [startTime, setStartTime] = useState<Date | null>(null);
+const [endTime, setEndTime] = useState<Date | null>(null);
 const [showStartDatePicker, setShowStartDatePicker] = useState(false);
 const [showEndDatePicker, setShowEndDatePicker] = useState(false);
 const [showStartTimePicker, setShowStartTimePicker] = useState(false);
 const [showEndTimePicker, setShowEndTimePicker] = useState(false);
 
-// Formats date
-const formatDate = (date: Date) => {
+// Formats date with default placeholder
+const formatDate = (date: Date | null) => {
+  if (!date) return "MM/DD/YYYY";
   return date.toLocaleDateString("en-US", {
     month: "2-digit",
     day: "2-digit",
@@ -55,8 +56,9 @@ const formatDate = (date: Date) => {
   });
 };
 
-// Formats time 
-const formatTime = (date: Date) => {
+// Formats time with default placeholder
+const formatTime = (date: Date | null) => {
+  if (!date) return "--:-- (MST)";
   return date.toLocaleTimeString("en-US", {
     hour: "numeric",
     minute: "2-digit",
@@ -64,7 +66,7 @@ const formatTime = (date: Date) => {
   }) + " " + "(MST)";
 };
 
-// Reset all selections 
+// Reset all selections to default
 const resetSelections = () => {
   setSelectedItinerary("--Itinerary Name--");
   setShowItineraryDropdown(false);
@@ -72,6 +74,10 @@ const resetSelections = () => {
   setShowEndDatePicker(false);
   setShowStartTimePicker(false);
   setShowEndTimePicker(false);
+  setStartDate(null);
+  setEndDate(null);
+  setStartTime(null);
+  setEndTime(null);
 };
 
 // Handles date/time changes, if picker is cancelled then no updates 
@@ -112,6 +118,11 @@ const handleAddItem = () => {
     return;
   }
 
+  if (!startDate || !endDate || !startTime || !endTime) {
+    Alert.alert("Error", "Please fill in all missing date and time fields");
+    return;
+  }
+  
   // Full datetime objects for form validation - handles AM/PM 
   const startDateTime = new Date(
     startDate.getFullYear(),
@@ -264,7 +275,7 @@ const handleAddItem = () => {
                 {showStartDatePicker && (
                   <View style={styles.pickerContainer}>
                     <DateTimePicker 
-                      value={startDate}
+                      value={startDate || new Date()}
                       mode="date"
                       display="spinner"
                       onChange={(event, date) => handleDateChange(event, date, "startDate")}
@@ -290,12 +301,12 @@ const handleAddItem = () => {
                 {showEndDatePicker && (
                   <View style={styles.pickerContainer}>
                     <DateTimePicker
-                      value={endDate}
+                      value={endDate || new Date()}
                       mode="date"
                       display="spinner"
                       onChange={(event, date) => handleDateChange(event, date, "endDate")}
-                      // Minimum date for end date selection should start only from start date's minimum date set 
-                      minimumDate={startDate}
+                       // Minimum date for end date selection should start only from start date's minimum date set 
+                      minimumDate={startDate || new Date()}
                     />
                   </View>
                 )}
@@ -319,7 +330,7 @@ const handleAddItem = () => {
                 {showStartTimePicker && (
                   <View style={styles.pickerContainer}>
                     <DateTimePicker
-                      value={startTime}
+                      value={startTime || new Date()}
                       mode="time"
                       display="spinner"
                       onChange={(event, date) => handleDateChange(event, date, "startTime")}
@@ -343,7 +354,7 @@ const handleAddItem = () => {
                 {showEndTimePicker && (
                   <View style={styles.pickerContainer}>
                     <DateTimePicker
-                      value={endTime}
+                      value={endTime || new Date()}
                       mode="time"
                       display="spinner"
                       onChange={(event, date) => handleDateChange(event, date, "endTime")}
