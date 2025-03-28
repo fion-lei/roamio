@@ -283,13 +283,13 @@ export default function AddItinerary() {
                style={[styles.modalButtons, styles.cancelButton]}
                onPress={() => setModalVisible(false)}
              >
-               <Text style={styles.cancelButtonText}>Cancel</Text>
+               <Text style={styles.buttonText}>Cancel</Text>
              </Pressable>
              <Pressable
                style={[styles.modalButtons, styles.addButton]}
                onPress={handleAddItem}
              >
-               <Text style={styles.addButtonText}>Add Item</Text>
+               <Text style={styles.buttonText}>Add Item</Text>
              </Pressable>
            </View>
          </View>
@@ -473,12 +473,7 @@ const styles = StyleSheet.create({
  addButton: {
    backgroundColor: Colors.coral,
  },
- cancelButtonText: {
-   color: Colors.white,
-   fontFamily: "quicksand-bold",
-   fontSize: 14,
- },
- addButtonText: {
+ buttonText: {
    color: Colors.white,
    fontFamily: "quicksand-bold",
    fontSize: 14,
