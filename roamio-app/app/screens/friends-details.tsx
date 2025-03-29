@@ -51,9 +51,9 @@ const DetailScreen = () => {
   const navigation = useNavigation();
   const [sent, setSent] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedItinerary, setSelectedItinerary] = useState<string | null>(null);
+  const [selectedItinerary, setSelectedItinerary] = useState<any | null>(null);
   const [accessType, setAccessType] = useState<'trip-mate' | 'viewer'>('viewer');
-  const [itineraries, setItineraries] = useState<string[]>([]);
+  const [itineraries, setItineraries] = useState<any[]>([]);
 
 
   const SERVER_IP = 'http://10.0.0.197:3000';
@@ -91,8 +91,7 @@ const handleToggleFavorite = async () => {
       try {
         const res = await fetch(`${SERVER_IP}/itineraries?email=${encodeURIComponent(currentUserEmail)}`);
         const data = await res.json();
-        const titles = data.itineraries.map((it: any) => it.trip_title);
-        setItineraries(titles);
+        setItineraries(data.itineraries);
       } catch (err) {
         console.error("Error fetching itineraries:", err);
       }
@@ -147,18 +146,35 @@ useEffect(() => {
   };
 
 
-  const handleSend = () => {
-    if (!selectedItinerary) return alert('Please select an itinerary.');
-    setSent(true);
+  const handleSend = async () => {
+    if (!selectedItinerary) return alert("Please select an itinerary.");
+  
+    try {
+      const res = await fetch(`${SERVER_IP}/shareItinerary`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          itinerary_id: selectedItinerary.itinerary_id, 
+          friend_email: email_friend,
+          access_type: accessType,
+        }),
+      });
+  
+      if (res.ok) {
+        Alert.alert("Shared!", "Itinerary successfully shared.");
+        setSent(true);
+      } else {
+        Alert.alert("Error", "Failed to share itinerary.");
+      }
+    } catch (error) {
+      console.error("Share itinerary error:", error);
+      Alert.alert("Error", "Something went wrong.");
+    }
+  
     setModalVisible(false);
-    console.log(`Shared '${selectedItinerary}' as a ${accessType}!`);
-    setTimeout(() => {
-      setSent(false);
-      setSelectedItinerary(null);
-      setAccessType('viewer');
-    }, 2000);
   };
-
+  
+  
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -217,19 +233,19 @@ useEffect(() => {
           <View style={styles.modalContainer}>
             <Text style={styles.modalTitle}>Share Itinerary</Text>
 
-
             {itineraries.map((itinerary) => (
-              <TouchableOpacity
-                key={itinerary}
-                onPress={() => setSelectedItinerary(itinerary)}
-                style={[
-                  styles.itineraryOption,
-                  selectedItinerary === itinerary && styles.itinerarySelected,
-                ]}
-              >
-                <Text style={styles.itineraryText}>{itinerary}</Text>
-              </TouchableOpacity>
-            ))}
+                <TouchableOpacity
+                  key={itinerary.itinerary_id}
+                  onPress={() => setSelectedItinerary(itinerary)}
+                  style={[
+                    styles.itineraryOption,
+                    selectedItinerary?.itinerary_id === itinerary.itinerary_id && styles.itinerarySelected,
+                  ]}
+                >
+                  <Text style={styles.itineraryText}>{itinerary.trip_title}</Text>
+                </TouchableOpacity>
+              ))}
+
 
 
             <View style={styles.accessButtons}>

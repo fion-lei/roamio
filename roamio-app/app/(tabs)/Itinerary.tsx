@@ -92,7 +92,7 @@ export default function Itinerary() {
           return;
         }
         const response = await fetch(
-          `http://10.0.2.2:3000/itineraries?email=${encodeURIComponent(user.email)}`
+          `http://10.0.0.197:3000/itineraries?email=${encodeURIComponent(user.email)}`
         );
         const data = await response.json();
         if (response.ok) {
@@ -167,7 +167,7 @@ export default function Itinerary() {
         end_date: formatDate(newTrip.toDate),
       };
       try {
-        const response = await fetch("http://10.0.2.2:3000/itineraries", {
+        const response = await fetch("http://10.0.0.197:3000/itineraries", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
@@ -177,7 +177,7 @@ export default function Itinerary() {
         if (response.ok) {
           // Re-fetch itinerary list from backend after adding trip
           const updatedResponse = await fetch(
-            `http://10.0.2.2:3000/itineraries?email=${encodeURIComponent(user.email)}`
+            `http://10.0.0.197:3000/itineraries?email=${encodeURIComponent(user.email)}`
           );
           const updatedData = await updatedResponse.json();
           console.log("GET response:", updatedData); // Log GET response
