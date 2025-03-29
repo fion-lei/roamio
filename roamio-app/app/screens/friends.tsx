@@ -1,4 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useIsFocused } from '@react-navigation/native';
+
+
 import {
   TextInput,
   View,
@@ -15,184 +18,224 @@ import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useFonts } from "expo-font";
 import { Colors } from "@/constants/Colors";
+import { useUser } from "@/contexts/UserContext";
 
-// Types
+
+
+
 type RootStackParamList = {
   FriendsScreen: undefined;
-  Detail: { name: string; phone: string; avatar: any };
+  Detail: { name: string; phone: string; avatar: any; email_friend:string };
 };
 type NavigationProp = NativeStackNavigationProp<
   RootStackParamList,
   "FriendsScreen"
 >;
 
-// Mock friend search data
-const mockUsers = [
-  {
-    name: "Jessica Pearson",
-    phone: "+1 403-555-1234",
-    email: "jessica@pearson.com",
-  },
-  { name: "Mike Ross", phone: "+1 587-333-9999", email: "mike@ross.com" },
-  {
-    name: "Harvey Specter",
-    phone: "+1 587-000-8888",
-    email: "harvey@zane.com",
-  },
-];
 
-// Default friends list
-const defaultFriends = [
-  {
-    id: "1",
-    name: "Courtney Smith",
-    phone: "+1 403-888-0000",
-    avatar: require("../../assets/images/avatar1.png"),
-    favorited: false,
-  },
-  {
-    id: "2",
-    name: "Gary Wilson",
-    phone: "+84 91 234 5678",
-    avatar: require("../../assets/images/avatar4.png"),
-    favorited: false,
-  },
-  {
-    id: "3",
-    name: "Brooklyn Simmons",
-    phone: "+66 96 876 5432",
-    avatar: require("../../assets/images/avatar3.png"),
-    favorited: true,
-  },
-];
+const SERVER_IP = "http://10.0.0.197:3000"; // Replace with your actual backend address
 
-// Trip data
-const trips = [
-  {
-    id: "1",
-    name: "Courtney",
-    price: "Stampede",
-    image: require("../../assets/images/avatar1.png"),
-  },
-  {
-    id: "2",
-    name: "Gary",
-    price: "Seniores-Pizza",
-    image: require("../../assets/images/avatar4.png"),
-  },
-  {
-    id: "3",
-    name: "Anna",
-    price: "Stampede",
-    image: require("../../assets/images/avatar3.png"),
-  },
-];
 
-// Mock friend request data
-const mockFriendRequests = [
-  {
-    id: "req1",
-    name: "John Zane",
-    phone: "+1 123-456-7890",
-    avatar: require("../../assets/images/avatar2.png"),
-  },
-  {
-    id: "req2",
-    name: "Louis Litt",
-    phone: "+1 987-654-3210",
-    avatar: require("../../assets/images/avatar3.png"),
-  },
-];
+export default function FriendsScreen() {
+  const { user } = useUser();
+  const isFocused = useIsFocused(); // 👈 TRACK FOCUS
 
-const FriendsScreen = () => {
+
   const [fontsLoaded] = useFonts({
     "quicksand-regular": require("../../assets/fonts/Quicksand-Regular.ttf"),
     "quicksand-bold": require("../../assets/fonts/Quicksand-Bold.ttf"),
   });
 
+
+  const [friendsList, setFriendsList] = useState<any[]>([]);
+  const [friendRequests, setFriendRequests] = useState<any[]>([]);
   const [searchText, setSearchText] = useState("");
   const [filterType, setFilterType] = useState<
     "default" | "alphabetical" | "reverse" | "favorites"
   >("default");
   const [showDropdown, setShowDropdown] = useState(false);
-
-  const [friendsList, setFriendsList] = useState(defaultFriends);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [showFriendRequestModal, setShowFriendRequestModal] = useState(false);
   const [searchType, setSearchType] = useState<"phone" | "email">("phone");
   const [countryCode, setCountryCode] = useState("+1");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [emailSearch, setEmailSearch] = useState("");
-  const [friendRequests, setFriendRequests] = useState(mockFriendRequests);
+  const [showFriendRequestModal, setShowFriendRequestModal] = useState(false);
+
 
   const navigation = useNavigation<NavigationProp>();
 
-  if (!fontsLoaded) return null;
 
-  const filteredFriends = [...friendsList]
-    .filter((friend) => {
-      const matchesSearch = friend.name
-        .toLowerCase()
-        .includes(searchText.toLowerCase());
-      if (filterType === "favorites") {
-        return matchesSearch && friend.favorited;
+  // For prototyping, we define the current user email.
+  const currentUserEmail = user.email;
+
+
+  const fetchFriendsList = async () => {
+    try {
+      const res = await fetch(`${SERVER_IP}/friends?email=${encodeURIComponent(currentUserEmail)}`);
+      const data = await res.json();
+      console.log("DEBUG: /friends endpoint returned:", data);
+ 
+      const mappedFriends = data.map((friend: any, idx: number) => ({
+        id: friend.id ? friend.id.toString() : String(idx),
+        name: `${friend.first_name || ""} ${friend.last_name || ""}`.trim(),
+        phone: friend.phone_number || "",
+        avatar: require("../../assets/images/avatar1.png"),
+        email_friend: friend.email || "",
+        favorited: false,
+      }));
+ 
+      setFriendsList(mappedFriends);
+    } catch (error) {
+      console.error("Error fetching friends list:", error);
+    }
+  };
+  // Fetch user profile, friends list, and friend requests from backend
+  //useEffect(() => {
+
+
+    //fetchFriendsList();
+
+
+    const fetchFriendRequests = async () => {
+      try {
+        const res = await fetch(
+          `${SERVER_IP}/friendRequests?email=${encodeURIComponent(currentUserEmail)}`
+        );
+        const requests = await res.json();
+        const mappedRequests = await Promise.all(
+          requests.map(async (req: any) => {
+            const res = await fetch(
+              `${SERVER_IP}/profile?email=${encodeURIComponent(req.from_email)}`
+            );
+            const senderProfile = await res.json();
+            return {
+              id: req.id,
+              name: `${senderProfile.first_name || ""} ${senderProfile.last_name || ""}`.trim(),
+              phone: senderProfile.phone_number || "",
+              avatar: require("../../assets/images/avatar1.png"),
+              email: req.from_email,
+            };
+          })
+        );
+        setFriendRequests(mappedRequests);
+      } catch (error) {
+        console.error("Error fetching friend requests:", error);
       }
-      return matchesSearch;
-    })
+    };
+ 
+    useEffect(() => {
+      if (isFocused) {
+        fetchFriendsList();
+        fetchFriendRequests();
+      }
+    }, [isFocused, currentUserEmail]);
+ 
+
+
+  const filteredFriends = friendsList
+    .filter((friend) =>
+      friend.name.toLowerCase().includes(searchText.toLowerCase())
+    )
     .sort((a, b) => {
       if (filterType === "alphabetical") return a.name.localeCompare(b.name);
       if (filterType === "reverse") return b.name.localeCompare(a.name);
+      if (filterType === "favorites") {
+        return a.favorited === b.favorited ? 0 : a.favorited ? -1 : 1;
+      }
       return 0;
     });
 
-  const handleAddFriend = () => {
-    let match = null;
 
-    if (searchType === "phone") {
-      const fullPhone = `${countryCode} ${phoneNumber}`.trim();
-      match = mockUsers.find((user) => user.phone === fullPhone);
-    } else {
-      match = mockUsers.find(
-        (user) => user.email?.toLowerCase() === emailSearch.toLowerCase()
-      );
-    }
-
-    if (match) {
-      const newFriend = {
-        id: Date.now().toString(),
-        name: match.name,
-        phone: match.phone,
-        avatar: require("../../assets/images/avatar1.png"),
-        favorited: false,
-      };
-      setFriendsList([newFriend, ...friendsList]);
-      setCountryCode("+1");
-      setPhoneNumber("");
-      setEmailSearch("");
-      setShowAddModal(false);
-    } else {
-      Alert.alert("Friend not found", "Check the info and try again.");
-    }
-  };
-
-  const handleAcceptFriendRequest = (requestId: string) => {
-    const request = friendRequests.find((r) => r.id === requestId);
-    if (request) {
-      const newFriend = {
-        id: Date.now().toString(),
-        name: request.name,
-        phone: request.phone,
-        avatar: request.avatar,
-        favorited: false,
-      };
-      setFriendsList([newFriend, ...friendsList]);
-      setFriendRequests(friendRequests.filter((r) => r.id !== requestId));
+  // Handle sending friend request
+  const handleAddFriend = async () => {
+    try {
+      let queryParam = "";
+      if (searchType === "phone") {
+        const fullPhone = `${countryCode} ${phoneNumber}`.trim();
+        queryParam = `phone=${encodeURIComponent(fullPhone)}`;
+      } else {
+        queryParam = `email=${encodeURIComponent(emailSearch)}`;
+      }
+      // Assumes an endpoint to search users exists, e.g., GET /users?search=...
+      const res = await fetch(`${SERVER_IP}/users?${queryParam}`);
+      const users = await res.json();
+      const match = users[0]; // Take the first match
+      if (match) {
+        const requestRes = await fetch(`${SERVER_IP}/sendFriendRequest`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            from_email: currentUserEmail,
+            to_email: match.email,
+          }),
+        });
+        if (requestRes.ok) {
+          Alert.alert("Success", "Friend request sent");
+          setShowAddModal(false);
+        } else {
+          Alert.alert("Error", "Failed to send friend request.");
+        }
+      } else {
+        Alert.alert("Friend not found", "Check the info and try again.");
+      }
+    } catch (error) {
+      console.error("Error sending friend request:", error);
+      Alert.alert("Error", "Something went wrong while sending the request.");
     }
   };
 
-  const handleDeclineFriendRequest = (requestId: string) => {
-    setFriendRequests(friendRequests.filter((r) => r.id !== requestId));
+
+  const handleAcceptFriendRequest = async (requestId: string) => {
+    try {
+      const request = friendRequests.find((r) => r.id === requestId);
+      if (!request) {
+        console.error("No matching request found for ID:", requestId);
+        return;
+      }
+ 
+      const reqRes = await fetch(`${SERVER_IP}/acceptFriendRequest`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: requestId,
+          from_email: request.email,
+          to_email: currentUserEmail,
+        }),
+      });
+ 
+      if (reqRes.ok) {
+        setFriendRequests((prev) => prev.filter((r) => r.id !== requestId));
+        await fetchFriendsList();
+      } else {
+        console.error("Failed to accept request");
+      }
+    } catch (error) {
+      console.error("Error accepting friend request:", error);
+    }
   };
+ 
+ 
+
+
+  // Handle declining a friend request
+  const handleDeclineFriendRequest = async (requestId: string) => {
+    try {
+      const res = await fetch(`${SERVER_IP}/declineFriendRequest`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: requestId }),
+      });
+      if (res.ok) {
+        setFriendRequests((prev) => prev.filter((r) => r.id !== requestId));
+      }
+    } catch (error) {
+      console.error("Error declining friend request:", error);
+    }
+  };
+
+
+  if (!fontsLoaded) return null;
+
 
   return (
     <View style={styles.container}>
@@ -200,13 +243,14 @@ const FriendsScreen = () => {
       <View style={styles.searchBarContainer}>
         <Feather name="search" size={18} color="#888" />
         <TextInput
-          placeholder="Search friends..."
+          placeholder="   Search friends (first name last name)"
           value={searchText}
           onChangeText={setSearchText}
           placeholderTextColor="#aaa"
           style={styles.searchInput}
         />
       </View>
+
 
       {/* Header Row */}
       <View style={styles.headerRow}>
@@ -229,6 +273,7 @@ const FriendsScreen = () => {
           </TouchableOpacity>
         </View>
       </View>
+
 
       {/* Filter Dropdown Modal */}
       <Modal visible={showDropdown} transparent animationType="fade">
@@ -256,12 +301,12 @@ const FriendsScreen = () => {
         </TouchableOpacity>
       </Modal>
 
+
       {/* Add Friend Modal */}
       <Modal visible={showAddModal} transparent animationType="slide">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Find a Friend</Text>
-
             {/* Toggle between phone/email */}
             <View style={styles.toggleContainer}>
               <TouchableOpacity
@@ -283,7 +328,6 @@ const FriendsScreen = () => {
                 <Text style={styles.toggleText}>Email</Text>
               </TouchableOpacity>
             </View>
-
             {searchType === "phone" ? (
               <View style={styles.phoneInputRow}>
                 <TextInput
@@ -312,34 +356,24 @@ const FriendsScreen = () => {
                 keyboardType="email-address"
               />
             )}
-
-            <TouchableOpacity
-              style={styles.addButton}
-              onPress={handleAddFriend}
-            >
-              <Text style={styles.addButtonText}>Add Friend</Text>
+            <TouchableOpacity style={styles.addButton} onPress={handleAddFriend}>
+              <Text style={styles.addButtonText}>Send Friend Request</Text>
             </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => setShowAddModal(false)}
-              style={{ marginTop: 10 }}
-            >
+            <TouchableOpacity onPress={() => setShowAddModal(false)} style={{ marginTop: 10 }}>
               <Text style={{ color: "#888" }}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </View>
       </Modal>
 
+
       {/* Friend Requests Modal */}
       <Modal visible={showFriendRequestModal} transparent animationType="slide">
         <View style={styles.modalOverlay}>
-          {/* Increased modal size by adjusting width */}
           <View style={[styles.modalContent, { width: 340 }]}>
             <Text style={styles.modalTitle}>Friend Requests</Text>
             {friendRequests.length === 0 ? (
-              <Text
-                style={{ fontFamily: "quicksand-regular", marginBottom: 10 }}
-              >
+              <Text style={{ fontFamily: "quicksand-regular", marginBottom: 10 }}>
                 No friend requests at the moment.
               </Text>
             ) : (
@@ -354,9 +388,7 @@ const FriendsScreen = () => {
                       marginBottom: 5,
                     }}
                   />
-                  <Text
-                    style={{ fontFamily: "quicksand-bold", marginBottom: 5 }}
-                  >
+                  <Text style={{ fontFamily: "quicksand-bold", marginBottom: 5 }}>
                     {request.name}
                   </Text>
                   <View style={{ flexDirection: "row", gap: 10 }}>
@@ -368,9 +400,7 @@ const FriendsScreen = () => {
                       }}
                       onPress={() => handleAcceptFriendRequest(request.id)}
                     >
-                      <Text
-                        style={{ color: "#fff", fontFamily: "quicksand-bold" }}
-                      >
+                      <Text style={{ color: "#fff", fontFamily: "quicksand-bold" }}>
                         Accept
                       </Text>
                     </TouchableOpacity>
@@ -382,9 +412,7 @@ const FriendsScreen = () => {
                       }}
                       onPress={() => handleDeclineFriendRequest(request.id)}
                     >
-                      <Text
-                        style={{ color: "#333", fontFamily: "quicksand-bold" }}
-                      >
+                      <Text style={{ color: "#333", fontFamily: "quicksand-bold" }}>
                         Decline
                       </Text>
                     </TouchableOpacity>
@@ -392,17 +420,13 @@ const FriendsScreen = () => {
                 </View>
               ))
             )}
-            <TouchableOpacity
-              onPress={() => setShowFriendRequestModal(false)}
-              style={{ marginTop: 10 }}
-            >
-              <Text style={{ color: "#888", fontFamily: "quicksand-regular" }}>
-                Close
-              </Text>
+            <TouchableOpacity onPress={() => setShowFriendRequestModal(false)} style={{ marginTop: 10 }}>
+              <Text style={{ color: "#888", fontFamily: "quicksand-regular" }}>Close</Text>
             </TouchableOpacity>
           </View>
         </View>
       </Modal>
+
 
       {/* Friends List */}
       <FlatList
@@ -415,7 +439,7 @@ const FriendsScreen = () => {
               <Text style={styles.friendName}>
                 {item.name}{" "}
                 {item.favorited && (
-                  <Feather name="star" size={16} color="#BCCDB1" />
+                  <Feather name="star" size={16} color="#D5AB55" />
                 )}
               </Text>
               <Text style={styles.friendPhone}>{item.phone}</Text>
@@ -426,6 +450,7 @@ const FriendsScreen = () => {
                   name: item.name,
                   phone: item.phone,
                   avatar: item.avatar,
+                  email_friend: item.email_friend
                 })
               }
             >
@@ -435,11 +460,31 @@ const FriendsScreen = () => {
         )}
       />
 
-      {/* Trips Section */}
+
+      {/* Trips Section (static for now) */}
       <Text style={styles.sectionTitle}>Trips With Friends</Text>
       <FlatList
         horizontal
-        data={trips}
+        data={[
+          {
+            id: "1",
+            name: "Courtney",
+            price: "Stampede",
+            image: require("../../assets/images/avatar1.png"),
+          },
+          {
+            id: "2",
+            name: "Gary",
+            price: "Seniores-Pizza",
+            image: require("../../assets/images/avatar4.png"),
+          },
+          {
+            id: "3",
+            name: "Anna",
+            price: "Stampede",
+            image: require("../../assets/images/avatar3.png"),
+          },
+        ]}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <View style={styles.tripCard}>
@@ -452,9 +497,9 @@ const FriendsScreen = () => {
       />
     </View>
   );
-};
+}
 
-// Styles
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -609,9 +654,7 @@ const styles = StyleSheet.create({
     borderColor: Colors.coral,
   },
   tripImage: { width: 50, height: 50, borderRadius: 25, marginBottom: 6 },
-  friendName: { fontSize: 16, fontFamily: "quicksand-bold" },
   friendTripName: { color: Colors.grey, fontFamily: "quicksand-semibold" },
-  // New style for friend request items
   requestItem: {
     marginBottom: 10,
     alignItems: "center",
@@ -623,4 +666,5 @@ const styles = StyleSheet.create({
   },
 });
 
-export default FriendsScreen;
+
+//export default FriendsScreen;
