@@ -3,14 +3,23 @@ const path = require('path');
 const csv = require('csv-parser');
 
 const USERS_CSV = path.join(__dirname, '..', 'data', 'users.csv');
-const HEADER = 'id,email,password,first_name,last_name,phone_number,traveller_type,bio';
-const HEADER_FIELDS = ['id','email','password','first_name','last_name','phone_number','traveller_type','bio'];
+const HEADER = 'id,email,password,first_name,last_name,phone_number,traveller_type,bio,friends';
+const HEADER_FIELDS = ['id','email','password','first_name','last_name','phone_number','traveller_type','bio','friends'];
 
 
 // Ensure the CSV file exists with the correct header
 if (!fs.existsSync(USERS_CSV)) {
   fs.writeFileSync(USERS_CSV, HEADER);
 }
+
+// Escape CSV-safe values (especially strings with commas or quotes)
+const escapeCSV = (value) => {
+  if (typeof value !== 'string') value = String(value);
+  if (value.includes(',') || value.includes('"') || value.includes('\n')) {
+    return `"${value.replace(/"/g, '""')}"`;
+  }
+  return value;
+};
 
 // Function to read users from the CSV file
 const readUsers = () => {
@@ -43,7 +52,7 @@ const appendUser = (user) => {
 };
 
 // Function to update an existing user's details based on their email
-const updateUserDetails = (email, details) => {
+/*const updateUserDetails = (email, details) => {
   return new Promise((resolve, reject) => {
     readUsers().then((users) => {
       let updated = false;
@@ -61,6 +70,39 @@ const updateUserDetails = (email, details) => {
       // Rebuild CSV content using the HEADER and correct order of fields.
       const lines = updatedUsers.map(user => HEADER_FIELDS.map(key => user[key] || "").join(","));
       const csvData = HEADER + "\n" + lines.join("\n");
+      fs.writeFile(USERS_CSV, csvData, (err) => {
+        if (err) return reject(err);
+        resolve();
+      });
+    }).catch(reject);
+  });
+};*/
+
+// Function to update an existing user's details based on their email
+const updateUserDetails = (email, details) => {
+  return new Promise((resolve, reject) => {
+    readUsers().then((users) => {
+      let updated = false;
+      const updatedUsers = users.map(user => {
+        if (user.email === email) {
+          updated = true;
+          return { ...user, ...details };
+        }
+        return user;
+      });
+
+
+      if (!updated) {
+        return reject(new Error("User not found"));
+      }
+
+
+      const lines = updatedUsers.map(user =>
+        HEADER_FIELDS.map(key => escapeCSV(user[key] || "")).join(",")
+      );
+      const csvData = HEADER + "\n" + lines.join("\n");
+
+
       fs.writeFile(USERS_CSV, csvData, (err) => {
         if (err) return reject(err);
         resolve();
