@@ -2,8 +2,19 @@ const express = require('express');
 const { readUsers, appendUser, updateUserDetails } = require('./helpers/usersHelpers');
 const { appendItinerary, readItineraries, updateItinerary, deleteItinerary } = require('./helpers/itineraryHelpers');
 const app = express();
+const cors = require('cors'); // Add this
+const { readFriendRequests } = require('./helpers/friendsHelper'); // if not already imported
+const {
+  getIncomingFriendRequests,
+  addFriend,
+  removeFriend,
+  clearRequest,
+  getFriends,
+  toggleFavorite,
+} = require('./helpers/friendsHelper');
 
 const PORT = process.env.PORT || 3000;
+app.use(cors()); //Add this before routes (try deleting if not work on emulator)
 
 // Middleware to parse JSON bodies
 app.use(express.json());
@@ -330,5 +341,20 @@ app.post('/unFriend', async (req, res) => {
     res.status(200).json({ message: 'Friend removed successfully.' });
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/Favorite', async (req, res) => {
+  const { user_email, friend_email, favorited } = req.body;
+  if (!user_email || !friend_email || typeof favorited !== 'boolean') {
+    return res.status(400).json({ error: "Missing required fields." });
+  }
+
+  try {
+    await toggleFavorite(user_email, friend_email, favorited);
+    return res.status(200).json({ message: "Favorite status updated." });
+  } catch (error) {
+    console.error("Error toggling favorite:", error);
+    return res.status(500).json({ error: "Failed to update favorite status." });
   }
 });

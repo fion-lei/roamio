@@ -60,6 +60,32 @@ const DetailScreen = () => {
   const currentUserEmail = user.email;
 
 
+const [favorited, setFavorited] = useState(false); // NEW
+
+// NEW: Toggle favorite and sync with backend
+const handleToggleFavorite = async () => {
+  try {
+    const res = await fetch(`${SERVER_IP}/favorite`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_email: currentUserEmail,
+        friend_email: email_friend,
+        favorited: !favorited,
+      }),
+    });
+
+    if (res.ok) {
+      setFavorited(!favorited);
+    } else {
+      Alert.alert('Oops!', 'Could not update favorite status.');
+    }
+  } catch (error) {
+    console.error('Favorite toggle error:', error);
+    Alert.alert('Error', 'Something went wrong.');
+  }
+};
+
   useEffect(() => {
     const fetchItineraries = async () => {
       try {
@@ -75,6 +101,25 @@ const DetailScreen = () => {
 
     fetchItineraries();
   }, []);
+
+  // Add this just below your existing useEffect(() => { fetchItineraries(); })
+useEffect(() => {
+  const fetchFavorites = async () => {
+    try {
+      const res = await fetch(`${SERVER_IP}/friends?email=${encodeURIComponent(currentUserEmail)}`);
+      const data = await res.json();
+      const friend = data.find((f: any) => f.email === email_friend);
+      if (friend) {
+        setFavorited(!!friend.favorite);
+      }
+    } catch (error) {
+      console.error('Error fetching favorite status:', error);
+    }
+  };
+
+  fetchFavorites();
+}, [currentUserEmail, email_friend]);
+
 
 
   const handleUnfriend = async () => {
@@ -124,7 +169,13 @@ const DetailScreen = () => {
       />
       <View style={styles.nameRow}>
         <Text style={styles.title}>{name}</Text>
-        <Feather name="star" size={25} style={{ marginLeft: 20, marginBottom: 15 }} />
+        <TouchableOpacity onPress={handleToggleFavorite}>
+  {favorited ? (
+    <FontAwesome name="star" size={25} color="#FFD700" style={{ marginLeft: 20, marginBottom: 15 }} />
+  ) : (
+    <Feather name="star" size={25} color="#999" style={{ marginLeft: 20, marginBottom: 15 }} />
+  )}
+</TouchableOpacity>
       </View>
 
 

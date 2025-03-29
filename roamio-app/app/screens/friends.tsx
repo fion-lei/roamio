@@ -81,7 +81,7 @@ export default function FriendsScreen() {
         phone: friend.phone_number || "",
         avatar: require("../../assets/images/avatar1.png"),
         email_friend: friend.email || "",
-        favorited: false,
+        favorited: friend.favorite === true,
       }));
  
       setFriendsList(mappedFriends);
@@ -439,7 +439,7 @@ export default function FriendsScreen() {
               <Text style={styles.friendName}>
                 {item.name}{" "}
                 {item.favorited && (
-                  <Feather name="star" size={16} color="#D5AB55" />
+                  <Feather name="star" size={16} color="#FFD700" />
                 )}
               </Text>
               <Text style={styles.friendPhone}>{item.phone}</Text>
