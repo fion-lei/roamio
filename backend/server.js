@@ -244,3 +244,91 @@ app.delete('/itineraries/:id', async (req, res) => {
     return res.status(500).json({ error: error.message || "Error deleting itinerary." });
   }
 });
+
+// ----------------------
+// Get Friends Endpoint
+// ----------------------
+app.get('/friends', async (req, res) => {
+  const { email } = req.query;
+  if (!email) {
+    return res.status(400).json({ error: "Email is required." });
+  }
+
+  try {
+    const friends = await getFriends(email);
+    return res.status(200).json(friends);
+  } catch (error) {
+    console.error("Error fetching friends:", error);
+    return res.status(500).json({ error: "Failed to fetch friends." });
+  }
+});
+
+// ----------------------
+// Friend Request End Point
+// ----------------------
+app.get("/friendRequests", async (req, res) => {
+  try {
+    const { email } = req.query;
+    if (!email) return res.status(400).json({ error: "Email is required." });
+
+    const requests = await readFriendRequests();
+    const incoming = requests.filter(r => r.to_email === email);
+    res.status(200).json(incoming);
+  } catch (err) {
+    console.error("Error fetching friend requests:", err);
+    res.status(500).json({ error: "Failed to get friend requests." });
+  }
+});
+
+app.post('/acceptFriendRequest', async (req, res) => {
+  const { id, from_email, to_email } = req.body;
+
+  if (!id || !from_email || !to_email) {
+    return res.status(400).json({ error: "Missing required fields." });
+  }
+
+  try {
+    await addFriend(to_email, from_email); // The recipient adds the sender
+    await addFriend(from_email, to_email); // Optionally make it mutual
+    await clearRequest(id);
+    res.status(200).json({ message: "Friend request accepted." });
+  } catch (error) {
+    console.error("Error accepting request:", error);
+    res.status(500).json({ error: "Failed to accept friend request." });
+  }
+});
+app.post('/declineFriendRequest', async (req, res) => {
+  const { id } = req.body;
+
+  if (!id) {
+    return res.status(400).json({ error: "Request ID is required." });
+  }
+
+  try {
+    await clearRequest(id);
+    res.status(200).json({ message: "Friend request declined." });
+  } catch (error) {
+    console.error("Error declining request:", error);
+    res.status(500).json({ error: "Failed to decline request." });
+  }
+});
+
+app.post('/addFriend', async (req, res) => {
+  const { user_email, friend_email } = req.body;
+  try {
+    await addFriend(user_email, friend_email);
+    res.status(200).json({ message: 'Friend added successfully.' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/unFriend', async (req, res) => {
+  const { user_email, friend_email } = req.body;
+  try {
+    await removeFriend(user_email, friend_email);
+    res.status(200).json({ message: 'Friend removed successfully.' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
