@@ -1,4 +1,3 @@
-// Add "community reviews" section to activity card? 
 import React, { useState, useEffect } from "react";
 import { View, Text, Image, StyleSheet, SafeAreaView, Pressable, ScrollView, Modal, Alert, } from "react-native";
 import { Colors } from "@/constants/Colors";
@@ -10,7 +9,7 @@ import { useUser } from "@/contexts/UserContext";
 export default function AddItinerary() {
   
   // Get the user context
-  const { user } = useUser();
+  const user = useUser();
   
   // Retrieve activity card Data passed as params 
   const params = useLocalSearchParams();
@@ -50,14 +49,14 @@ export default function AddItinerary() {
   const [showStartTimePicker, setShowStartTimePicker] = useState(false);
   const [showEndTimePicker, setShowEndTimePicker] = useState(false);
 
-  // Fetch itinerary options when modal is opened
+  // Fetch itinerary options from backend when modal opens 
   useEffect(() => {
     if (isModalVisible) {
       fetchItineraryOptions();
     }
   }, [isModalVisible]);
 
-  // Fetch available itineraries
+  // Fetch available itineraries from backend 
   const fetchItineraryOptions = async () => {
     try {
       if (!user.email) {
@@ -66,7 +65,7 @@ export default function AddItinerary() {
       }
       
       const response = await fetch(
-        `http://10.0.2.2:3000/itineraries?email=${encodeURIComponent(user.email)}`,
+        `http://10.0.2.2:3000/active-itineraries?email=${encodeURIComponent(user.email)}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -79,16 +78,14 @@ export default function AddItinerary() {
       if (response.ok && data.itineraries && data.itineraries.length > 0) {
         const options = data.itineraries.map((itinerary: any) => itinerary.trip_title);
         setItineraryOptions(options);
-        console.log("Fetched itinerary options:", options);
       } else {
-        console.log("No itineraries found, using fallback options");
-        // Fallback to default options if no itineraries found
-        setItineraryOptions(["Calgary Outdoors", "Calgary Food Tour", "Niche Spots", "Business Meet Trip"]);
+        // No active itineraries found 
+        setItineraryOptions([]);
+        Alert.alert("No Active Trips", "You don't have any currently active trips to add to. Please create a new trip first."); 
       }
     } catch (error) {
-      console.error("Error fetching itinerary options:", error);
-      // Fallback to default options
-      setItineraryOptions(["Calgary Outdoors", "Calgary Food Tour", "Niche Spots", "Business Meet Trip"]);
+      setItineraryOptions([]);
+      Alert.alert("Error", "Failed to load your active itineraries.");
     }
   };
 
@@ -192,25 +189,21 @@ export default function AddItinerary() {
     }
     
     try {
+      
       if (!user.email) {
         Alert.alert("Error", "User email not found. Please log in.");
         return;
       }
       
-      const response = await fetch(`http://10.0.2.2:3000/itineraries?email=${encodeURIComponent(user.email)}`);
+      const response = await fetch(`http://10.0.2.2:3000/active-itineraries?email=${encodeURIComponent(user.email)}`);
       const data = await response.json();
       
       if (!response.ok) {
-        Alert.alert("Error", data.error || "Failed to get itineraries");
+        Alert.alert("Error", data.error || "Failed to get active itineraries");
         return;
       }
       
-      console.log("Available itineraries:", data.itineraries);
-      console.log("Selected itinerary name:", selectedItinerary);
-      
       const selectedItineraryObj = data.itineraries.find((it: any) => it.trip_title === selectedItinerary);
-      
-      console.log("Selected itinerary object:", selectedItineraryObj);
       
       if (!selectedItineraryObj) {
         Alert.alert("Error", "Failed to find the selected itinerary");
@@ -241,9 +234,7 @@ export default function AddItinerary() {
         end_time: formatTime(endTime)
       };
       
-      console.log("Sending event data:", eventData);
-      
-      // Make the API call to add the event
+      // API call to add the event 
       const eventResponse = await fetch("http://10.0.2.2:3000/events", {
         method: "POST",
         headers: {
@@ -256,20 +247,16 @@ export default function AddItinerary() {
       const eventResult = await eventResponse.json();
       
       if (!eventResponse.ok) {
-        console.error("Failed to add event:", eventResult);
         Alert.alert("Error", eventResult.error || "Failed to add event to itinerary");
         return;
       }
       
-      console.log("Event added successfully:", eventResult);
-      
       // Verify the event was added by checking the count
       try {
         const countResponse = await fetch(`http://10.0.2.2:3000/event-counts/${itineraryId}`);
-        const countData = await countResponse.json();
-        console.log(`Current event count for itinerary ${itineraryId}:`, countData);
+        await countResponse.json();
       } catch (countError) {
-        console.error("Error checking event count:", countError);
+        Alert.alert("Error", "Failed to verify addition of event.");
       }
       
       Alert.alert(
@@ -284,8 +271,7 @@ export default function AddItinerary() {
         }]
       );
     } catch (error) {
-      console.error("Error adding event:", error);
-      Alert.alert("Error", "Failed to add event. Please try again.");
+      Alert.alert("Error", "Failed to add event.");
     }
   };
 
@@ -309,7 +295,6 @@ export default function AddItinerary() {
               <FontAwesome name="star" size={12} color="#FFD700" />
               <Text style={styles.priceRatingText}>
                 {activity.rating}
-                { /* Add rating count to activity cards? */}
                 {activity.ratingCount && ` (${activity.ratingCount})`}
               </Text>
             </View>

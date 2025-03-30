@@ -377,7 +377,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 10,
-    gap: 6,
+    gap: 3,
     marginRight: 5,
   },
   sortText: {

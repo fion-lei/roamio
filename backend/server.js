@@ -218,6 +218,41 @@ app.get('/itineraries', async (req, res) => {
 });
 
 // ----------------------
+// Get active itineraries (ongoing or upcoming) 
+// ----------------------
+app.get('/active-itineraries', async (req, res) => {
+  const { email } = req.query;
+  if (!email) {
+    return res.status(400).json({ error: "Email parameter is required" });
+  }
+  try {
+    const itineraries = await readItineraries();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Filter itineraries to include only those belonging to the specified emailND that are either ongoing or upcoming 
+    // (end date >= today)
+    const filtered = itineraries.filter(it => {
+      if (it.user_email !== email) return false;
+      
+      // Parse the end date from MM/DD/YYYY format
+      if (!it.end_date) return true; // If no end date, include it
+      
+      const [month, day, year] = it.end_date.split('/');
+      const endDate = new Date(Number(year), Number(month) - 1, Number(day));
+      
+      // Keep only if end date is today or in future
+      return endDate >= today;
+    });
+    
+    return res.status(200).json({ itineraries: filtered });
+  } catch (error) {
+    console.error("Error fetching active itineraries:", error);
+    return res.status(500).json({ error: "Error fetching active itineraries" });
+  }
+});
+
+// ----------------------
 // Update trip Endpoint
 // ----------------------
 app.put('/itineraries/:id', async (req, res) => {

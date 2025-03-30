@@ -14,15 +14,14 @@ import {
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Colors } from "../../constants/Colors";
-import { AntDesign } from "@expo/vector-icons";
+import { AntDesign, Entypo, FontAwesome } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
-import { Entypo } from "@expo/vector-icons";
 
 import { useUser } from "@/contexts/UserContext";
 
 // Function to format dates in "MMM DD, YYYY" format
 const formatDate = (date: Date | null) => {
-  if (!date) return "MM DD, YYYY"; // Default placeholder
+  if (!date) return "MM/DD/YYYY"; // Default placeholder
   return date.toLocaleDateString("en-US", {
     month: "2-digit",
     day: "2-digit",
@@ -158,15 +157,16 @@ export default function Itinerary() {
     return eventCounts[itineraryId] || 0;
   };
 
-  // Format event count display text
-  const formatEventCountText = (itineraryId: string) => {
+  // Format event count display text for itineraries 
+  const formatEventCountText = (itineraryId: string, isPastTrip: boolean = false) => {
     const count = getEventCount(itineraryId);
+    
     if (count === 0) {
-      return "No events added";
+      return "No events scheduled yet. Start browsing to add!";
     } else if (count === 1) {
-      return "1 event added";
+      return "1 event scheduled";
     } else {
-      return `${count} events added`;
+      return `${count} events scheduled`;
     }
   };
 
@@ -286,7 +286,16 @@ export default function Itinerary() {
                       {`${formatDate(item.fromDate)} - ${formatDate(item.toDate)}`}
                     </Text>
                     <Text style={styles.description}>{item.description}</Text>
-                    <Text style={styles.eventCount}>{formatEventCountText(item.id)}</Text>
+                    {getEventCount(item.id) > 0 ? (
+                      <View style={styles.eventCountContainer}>
+                        <FontAwesome name="check-circle" size={16} color={Colors.coral} />
+                        <Text style={styles.eventCountText}>
+                          {formatEventCountText(item.id, false)}
+                        </Text>
+                      </View>
+                    ) : (
+                      <Text style={styles.emptyEventText}>{formatEventCountText(item.id, false)}</Text>
+                    )}
                     <Pressable style={styles.viewButtonOngoing} onPress={() => router.push('/screens/DetailedItinerary')}>
                       <Text style={styles.buttonText}>View Details</Text>
                     </Pressable>
@@ -309,7 +318,16 @@ export default function Itinerary() {
                       {`${formatDate(item.fromDate)} - ${formatDate(item.toDate)}`}
                     </Text>
                     <Text style={styles.description}>{item.description}</Text>
-                    <Text style={styles.eventCount}>{formatEventCountText(item.id)}</Text>
+                    {getEventCount(item.id) > 0 ? (
+                      <View style={styles.eventCountContainer}>
+                        <FontAwesome name="check-circle" size={16} color={Colors.coral} />
+                        <Text style={styles.eventCountText}>
+                          {formatEventCountText(item.id, false)}
+                        </Text>
+                      </View>
+                    ) : (
+                      <Text style={styles.emptyEventText}>{formatEventCountText(item.id, false)}</Text>
+                    )}
                     <Pressable style={styles.viewButtonUpcoming} onPress={() => console.log("View Details Clicked!")}>
                       <Text style={styles.buttonText}>View Details</Text>
                     </Pressable>
@@ -332,7 +350,15 @@ export default function Itinerary() {
                       {`${formatDate(item.fromDate)} - ${formatDate(item.toDate)}`}
                     </Text>
                     <Text style={styles.description}>{item.description}</Text>
-                    <Text style={styles.eventCount}>{formatEventCountText(item.id)}</Text>
+                    {/* Only show event count assuming past trips have items already added */}
+                    {getEventCount(item.id) > 0 && (
+                      <View style={[styles.pastEventCountContainer]}>
+                        <FontAwesome name="check-circle" size={16} color={Colors.grey} />
+                        <Text style={styles.pastEventCountText}>
+                          {formatEventCountText(item.id, true)}
+                        </Text>
+                      </View>
+                    )}
                     <Pressable style={styles.viewButtonPast} onPress={() => console.log("View Details Clicked!")}>
                       <Text style={styles.buttonText}>View Details</Text>
                     </Pressable>
@@ -371,7 +397,7 @@ export default function Itinerary() {
                     <Text style={styles.dateText}>
                       {newTrip.fromDate
                         ? formatDate(newTrip.fromDate)
-                        : "MM DD, YYYY"}
+                        : "MM/DD/YYYY"}
                     </Text>
                   </Pressable>
                 </View>
@@ -386,7 +412,7 @@ export default function Itinerary() {
                     <Text style={styles.dateText}>
                       {newTrip.toDate
                         ? formatDate(newTrip.toDate)
-                        : "MM DD, YYYY"}
+                        : "MM/DD/YYYY"}
                     </Text>
                   </Pressable>
                 </View>
@@ -700,11 +726,41 @@ viewButtonPast: {
   marginTop: 10,
 },
 
-eventCount: {
-  fontSize: 14,
-  fontFamily: "quicksand-semibold",
-  color: Colors.coral,
-  marginTop: 8,
-  marginBottom: 5,
+eventCountContainer: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: 8,
+  marginVertical: 8,
+  backgroundColor: Colors.palePink,
+  borderWidth: 1,
+  borderColor: Colors.peachySalmon,
+  borderRadius: 8,
+  paddingHorizontal: 12,
+  paddingVertical: 6,
+  alignSelf: 'flex-start',
 },
+
+pastEventCountContainer: {
+  backgroundColor: '#F5F5F5',
+  borderColor: Colors.grey,
+},
+
+emptyEventText: {
+  fontSize: 14,
+  fontFamily: "quicksand-bold",
+  color: Colors.coral,
+  marginVertical: 6,
+},
+
+eventCountText: {
+  fontSize: 14,
+  fontFamily: "quicksand-bold",
+  color: Colors.coral,
+},
+
+pastEventCountText: {
+  fontSize: 14, 
+  fontFamily: "quicksand-bold",
+  color: Colors.grey,
+}
 });
