@@ -3,14 +3,13 @@ const path = require('path');
 
 const eventsCSV = path.join(__dirname, '..', 'data', 'events.csv');
 const EVENTS_HEADER = 'event_id,itinerary_id,title,description,address,contact,hours,price,rating,rating_count,tags,image_path,start_date,start_time,end_date,end_time';
-const EVENTS_FIELDS = ['event_id', 'itinerary_id', 'title', 'description', 'address', 'contact', 'hours', 'price', 'rating', 'rating_count', 'tags', 'image_path', 'start_date', 'start_time', 'end_date', 'end_time'];
 
 // Ensure the CSV file exists with the correct header
 if (!fs.existsSync(eventsCSV)) {
   fs.writeFileSync(eventsCSV, EVENTS_HEADER);
 }
 
-// Function to read events from the CSV file
+// Reads events from events.csv and converts to objects 
 const readEvents = () => {
   return new Promise((resolve, reject) => {
     fs.readFile(eventsCSV, 'utf8', (err, data) => {
@@ -34,7 +33,7 @@ const readEvents = () => {
   });
 };
 
-// Function to append a new event to the CSV file
+// Appends an event to events.csv 
 const appendEvent = (event) => {
   return new Promise((resolve, reject) => {
     fs.stat(eventsCSV, (err, stats) => {
@@ -50,14 +49,13 @@ const appendEvent = (event) => {
   });
 };
 
-// Function to get events for a specific itinerary
-const getEventsByItineraryId = (itineraryId) => {
+// Gets events by itinerary id for viewing 
+const getEvents = (itineraryId) => {
   return new Promise(async (resolve, reject) => {
     try {
       const events = await readEvents();
       const itineraryIdStr = String(itineraryId);
       const filteredEvents = events.filter(event => String(event.itinerary_id) === itineraryIdStr);
-      console.log(`Found ${filteredEvents.length} events for itinerary ${itineraryIdStr}`);
       resolve(filteredEvents);
     } catch (error) {
       reject(error);
@@ -65,8 +63,8 @@ const getEventsByItineraryId = (itineraryId) => {
   });
 };
 
-// Function to count events for each itinerary
-const countEventsByItineraryId = async () => {
+// Counts events per itinerary 
+const countEvents = async () => {
   try {
     const events = await readEvents();
     const counts = {};
@@ -80,12 +78,11 @@ const countEventsByItineraryId = async () => {
       }
     });
     
-    console.log("Event counts:", counts);
     return counts;
+  
   } catch (error) {
-    console.error("Error counting events:", error);
     throw error;
   }
 };
 
-module.exports = { readEvents, appendEvent, getEventsByItineraryId, countEventsByItineraryId };
+module.exports = { appendEvent, readEvents, getEvents, countEvents };

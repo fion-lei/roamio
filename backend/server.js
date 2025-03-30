@@ -1,7 +1,7 @@
 const express = require('express');
 const { readUsers, appendUser, updateUserDetails } = require('./helpers/usersHelpers');
 const { appendItinerary, readItineraries, updateItinerary, deleteItinerary } = require('./helpers/itineraryHelpers');
-const { readEvents, appendEvent, getEventsByItineraryId, countEventsByItineraryId } = require('./helpers/eventsHelpers');
+const { appendEvent, readEvents, getEvents, countEvents } = require('./helpers/eventsHelpers');
 const app = express();
 
 const PORT = process.env.PORT || 3000;
@@ -251,7 +251,7 @@ app.delete('/itineraries/:id', async (req, res) => {
 // ---------------------------------------------------------------------------------
 
 // ----------------------
-// Add event to itinerary endpoint
+// Add event to itinerary 
 // ----------------------
 app.post('/events', async (req, res) => {
   const { 
@@ -273,22 +273,38 @@ app.post('/events', async (req, res) => {
   } = req.body;
 
   if (!itinerary_id || !title) {
-    return res.status(400).json({ error: 'Missing required fields (itinerary_id and title are required).' });
+    return res.status(400).json({ error: 'Missing required fields for itinerary id and title.' });
   }
 
   try {
     // Check if the itinerary exists
     const itineraries = await readItineraries();
-    console.log("Looking for itinerary with ID:", itinerary_id);
-    console.log("Type of itinerary_id in request:", typeof itinerary_id);
     
     // Convert to string for comparison since IDs from CSV will be strings
     const itineraryIdStr = String(itinerary_id);
-    const itinerary = itineraries.find(it => String(it.itinerary_id) === itineraryIdStr);
+    const itinerary = itineraries.find(id => String(id.itinerary_id) === itineraryIdStr);
     
     if (!itinerary) {
-      console.log("Available itinerary IDs:", itineraries.map(it => it.itinerary_id));
       return res.status(404).json({ error: 'Itinerary not found.' });
+    }
+    
+    // Validates that event dates are set within itinerary dates 
+    if (start_date && itinerary.start_date && itinerary.end_date) {
+      
+      const eventStartDate = new Date(start_date);
+      const eventEndDate = end_date ? new Date(end_date) : eventStartDate;
+      const itineraryStartDate = new Date(itinerary.start_date);
+      const itineraryEndDate = new Date(itinerary.end_date);
+      
+      if (eventStartDate < itineraryStartDate || eventEndDate > itineraryEndDate) {
+        return res.status(400).json({
+          error: 'Event dates must be within itinerary date range.',
+          details: {
+            eventDates: { start: start_date, end: end_date || start_date },
+            itineraryDates: { start: itinerary.start_date, end: itinerary.end_date }
+          }
+        });
+      }
     }
 
     const event = {
@@ -322,13 +338,13 @@ app.post('/events', async (req, res) => {
 });
 
 // ----------------------
-// Get events for a specific itinerary endpoint
+// Get events for a specific itinerary 
 // ----------------------
 app.get('/events/:itineraryId', async (req, res) => {
   const itineraryId = req.params.itineraryId;
   
   try {
-    const events = await getEventsByItineraryId(itineraryId);
+    const events = await getEvents(itineraryId);
     return res.status(200).json({ events });
   } catch (error) {
     console.error("Error fetching events:", error);
@@ -337,11 +353,11 @@ app.get('/events/:itineraryId', async (req, res) => {
 });
 
 // ----------------------
-// Get event counts for all itineraries endpoint
+// Get event counts for all itineraries 
 // ----------------------
 app.get('/event-counts', async (req, res) => {
   try {
-    const counts = await countEventsByItineraryId();
+    const counts = await countEvents();
     return res.status(200).json({ counts });
   } catch (error) {
     console.error("Error fetching event counts:", error);
@@ -350,13 +366,13 @@ app.get('/event-counts', async (req, res) => {
 });
 
 // ----------------------
-// Get event counts for a specific itinerary endpoint
+// Get event counts for a specific itinerary 
 // ----------------------
 app.get('/event-counts/:itineraryId', async (req, res) => {
   const itineraryId = req.params.itineraryId;
   
   try {
-    const events = await getEventsByItineraryId(itineraryId);
+    const events = await getEvents(itineraryId);
     return res.status(200).json({ count: events.length });
   } catch (error) {
     console.error("Error fetching event count:", error);
