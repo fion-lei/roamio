@@ -388,12 +388,40 @@ app.get('/events/:itineraryId', async (req, res) => {
 });
 
 // ----------------------
-// Get event counts for all itineraries 
+// Get event counts for active itineraries 
 // ----------------------
 app.get('/event-counts', async (req, res) => {
   try {
     const counts = await countEvents();
-    return res.status(200).json({ counts });
+    const itineraries = await readItineraries();
+    
+    // Filter out past itineraries
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const filteredCounts = {};
+    
+    // Only include counts for non-past itineraries
+    Object.keys(counts).forEach(itineraryId => {
+      const itinerary = itineraries.find(it => String(it.itinerary_id) === itineraryId);
+      
+      // If no itinerary found or no end date, keep the count
+      if (!itinerary || !itinerary.end_date) {
+        filteredCounts[itineraryId] = counts[itineraryId];
+        return;
+      }
+      
+      // Parse the end date from MM/DD/YYYY format
+      const [month, day, year] = itinerary.end_date.split('/');
+      const endDate = new Date(Number(year), Number(month) - 1, Number(day));
+      
+      // Only include counts for active itineraries 
+      if (endDate >= today) {
+        filteredCounts[itineraryId] = counts[itineraryId];
+      }
+    });
+    
+    return res.status(200).json({ counts: filteredCounts });
   } catch (error) {
     console.error("Error fetching event counts:", error);
     return res.status(500).json({ error: 'Error fetching event counts.' });
@@ -407,6 +435,25 @@ app.get('/event-counts/:itineraryId', async (req, res) => {
   const itineraryId = req.params.itineraryId;
   
   try {
+    // First check if the itinerary is past
+    const itineraries = await readItineraries();
+    const itinerary = itineraries.find(it => String(it.itinerary_id) === itineraryId);
+    
+    if (itinerary && itinerary.end_date) {
+      
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      // Parse the end date from MM/DD/YYYY format
+      const [month, day, year] = itinerary.end_date.split('/');
+      const endDate = new Date(Number(year), Number(month) - 1, Number(day));
+      
+      // If itinerary is past, return empty object without count field so it does not show up in the interface
+      if (endDate < today) {
+        return res.status(200).json({});
+      }
+    }
+    
     const events = await getEvents(itineraryId);
     return res.status(200).json({ count: events.length });
   } catch (error) {

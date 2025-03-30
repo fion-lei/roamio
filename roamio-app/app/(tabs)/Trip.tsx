@@ -1,4 +1,3 @@
-// Populate with more activity cards of different categories 
 import React, { useState } from "react"; 
 import { View, Text, Image, TextInput, SafeAreaView, StyleSheet, Pressable, ScrollView } from "react-native"; // Images reference: https://undraw.co/
 import { Colors } from "@/constants/Colors"; 

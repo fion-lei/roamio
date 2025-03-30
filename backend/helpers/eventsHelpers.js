@@ -39,8 +39,8 @@ const appendEvent = (event) => {
     fs.stat(eventsCSV, (err, stats) => {
       if (err) return reject(err);
       const newLine = stats.size > 0
-        ? `\n${event.event_id},${event.itinerary_id},${event.title},${event.description},${event.address},${event.contact},${event.hours},${event.price},${event.rating},${event.rating_count},${event.tags},${event.image_path},${event.start_date},${event.start_time},${event.end_date},${event.end_time}`
-        : `${event.event_id},${event.itinerary_id},${event.title},${event.description},${event.address},${event.contact},${event.hours},${event.price},${event.rating},${event.rating_count},${event.tags},${event.image_path},${event.start_date},${event.start_time},${event.end_date},${event.end_time}`;
+        ? `\n${event.event_id},${event.itinerary_id},${event.title},${event.description},${event.address},${event.contact},${event.hours},${event.price},${event.rating},${event.rating_count},${event.tags || ""},${event.image_path},${event.start_date},${event.start_time},${event.end_date},${event.end_time},`
+        : `${event.event_id},${event.itinerary_id},${event.title},${event.description},${event.address},${event.contact},${event.hours},${event.price},${event.rating},${event.rating_count},${event.tags || ""},${event.image_path},${event.start_date},${event.start_time},${event.end_date},${event.end_time},`;
       fs.appendFile(eventsCSV, newLine, (err) => {
         if (err) return reject(err);
         resolve();

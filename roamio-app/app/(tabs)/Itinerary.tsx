@@ -158,7 +158,7 @@ export default function Itinerary() {
   };
 
   // Format event count display text for itineraries 
-  const formatEventCountText = (itineraryId: string, isPastTrip: boolean = false) => {
+  const formatEventCountText = (itineraryId: string) => {
     const count = getEventCount(itineraryId);
     
     if (count === 0) {
@@ -290,11 +290,11 @@ export default function Itinerary() {
                       <View style={styles.eventCountContainer}>
                         <FontAwesome name="check-circle" size={16} color={Colors.coral} />
                         <Text style={styles.eventCountText}>
-                          {formatEventCountText(item.id, false)}
+                          {formatEventCountText(item.id)}
                         </Text>
                       </View>
                     ) : (
-                      <Text style={styles.emptyEventText}>{formatEventCountText(item.id, false)}</Text>
+                      <Text style={styles.emptyEventText}>{formatEventCountText(item.id)}</Text>
                     )}
                     <Pressable style={styles.viewButtonOngoing} onPress={() => router.push('/screens/DetailedItinerary')}>
                       <Text style={styles.buttonText}>View Details</Text>
@@ -322,11 +322,11 @@ export default function Itinerary() {
                       <View style={styles.eventCountContainer}>
                         <FontAwesome name="check-circle" size={16} color={Colors.coral} />
                         <Text style={styles.eventCountText}>
-                          {formatEventCountText(item.id, false)}
+                          {formatEventCountText(item.id)}
                         </Text>
                       </View>
                     ) : (
-                      <Text style={styles.emptyEventText}>{formatEventCountText(item.id, false)}</Text>
+                      <Text style={styles.emptyEventText}>{formatEventCountText(item.id)}</Text>
                     )}
                     <Pressable style={styles.viewButtonUpcoming} onPress={() => console.log("View Details Clicked!")}>
                       <Text style={styles.buttonText}>View Details</Text>
@@ -350,15 +350,6 @@ export default function Itinerary() {
                       {`${formatDate(item.fromDate)} - ${formatDate(item.toDate)}`}
                     </Text>
                     <Text style={styles.description}>{item.description}</Text>
-                    {/* Only show event count assuming past trips have items already added */}
-                    {getEventCount(item.id) > 0 && (
-                      <View style={[styles.pastEventCountContainer]}>
-                        <FontAwesome name="check-circle" size={16} color={Colors.grey} />
-                        <Text style={styles.pastEventCountText}>
-                          {formatEventCountText(item.id, true)}
-                        </Text>
-                      </View>
-                    )}
                     <Pressable style={styles.viewButtonPast} onPress={() => console.log("View Details Clicked!")}>
                       <Text style={styles.buttonText}>View Details</Text>
                     </Pressable>
@@ -725,10 +716,9 @@ viewButtonPast: {
   justifyContent: "center",
   marginTop: 10,
 },
-
 eventCountContainer: {
-  flexDirection: 'row',
-  alignItems: 'center',
+  flexDirection: "row",
+  alignItems: "center",
   gap: 8,
   marginVertical: 8,
   backgroundColor: Colors.palePink,
@@ -737,30 +727,17 @@ eventCountContainer: {
   borderRadius: 8,
   paddingHorizontal: 12,
   paddingVertical: 6,
-  alignSelf: 'flex-start',
+  alignSelf: "flex-start",
 },
-
-pastEventCountContainer: {
-  backgroundColor: '#F5F5F5',
-  borderColor: Colors.grey,
-},
-
 emptyEventText: {
   fontSize: 14,
   fontFamily: "quicksand-bold",
   color: Colors.coral,
   marginVertical: 6,
 },
-
 eventCountText: {
   fontSize: 14,
   fontFamily: "quicksand-bold",
   color: Colors.coral,
 },
-
-pastEventCountText: {
-  fontSize: 14, 
-  fontFamily: "quicksand-bold",
-  color: Colors.grey,
-}
 });

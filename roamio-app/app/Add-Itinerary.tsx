@@ -9,7 +9,7 @@ import { useUser } from "@/contexts/UserContext";
 export default function AddItinerary() {
   
   // Get the user context
-  const user = useUser();
+  const { user } = useUser();
   
   // Retrieve activity card Data passed as params 
   const params = useLocalSearchParams();
@@ -215,6 +215,7 @@ export default function AddItinerary() {
       
       // Prepare the event data
       const eventData = {
+        event_id: Date.now().toString(),
         itinerary_id: itineraryId,
         title: activity.title || "",
         description: activity.description || "",
