@@ -288,7 +288,7 @@ export default function Itinerary() {
                     <Text style={styles.description}>{item.description}</Text>
                     {getEventCount(item.id) > 0 ? (
                       <View style={styles.eventCountContainer}>
-                        <FontAwesome name="check-circle" size={16} color={Colors.coral} />
+                        <FontAwesome name="check-circle" size={16} color={Colors.peachySalmon} />
                         <Text style={styles.eventCountText}>
                           {formatEventCountText(item.id)}
                         </Text>
@@ -320,7 +320,7 @@ export default function Itinerary() {
                     <Text style={styles.description}>{item.description}</Text>
                     {getEventCount(item.id) > 0 ? (
                       <View style={styles.eventCountContainer}>
-                        <FontAwesome name="check-circle" size={16} color={Colors.coral} />
+                        <FontAwesome name="check-circle" size={16} color={Colors.peachySalmon} />
                         <Text style={styles.eventCountText}>
                           {formatEventCountText(item.id)}
                         </Text>
@@ -719,15 +719,14 @@ viewButtonPast: {
 eventCountContainer: {
   flexDirection: "row",
   alignItems: "center",
+  alignSelf: "flex-start",
   gap: 8,
   marginVertical: 8,
   backgroundColor: Colors.palePink,
-  borderWidth: 1,
-  borderColor: Colors.peachySalmon,
-  borderRadius: 8,
-  paddingHorizontal: 12,
+  borderRadius: 6,
+  paddingHorizontal: 14,
   paddingVertical: 6,
-  alignSelf: "flex-start",
+
 },
 emptyEventText: {
   fontSize: 14,
