@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -15,7 +15,7 @@ import {
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Colors } from "../../constants/Colors";
 import { AntDesign } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { Entypo } from "@expo/vector-icons";
 
 import { useUser } from "@/contexts/UserContext";
@@ -47,6 +47,7 @@ export default function Itinerary() {
   const [showFromDatePicker, setShowFromDatePicker] = useState(false);
   const [showToDatePicker, setShowToDatePicker] = useState(false);
   const [itineraryList, setItineraryList] = useState<any[]>([]);
+  const [eventCounts, setEventCounts] = useState<{[key: string]: number}>({});
   const today = new Date();
   today.setHours(0, 0, 0, 0); 
 
@@ -84,47 +85,90 @@ export default function Itinerary() {
   
   
   // Fetch itineraries from backend 
-  useEffect(() => {
-    const fetchItineraries = async () => {
-      try {
-        if (!user.email) {
-          Alert.alert("Error", "User email not found. Please log in.");
-          return;
-        }
-        const response = await fetch(
-          `http://10.0.2.2:3000/itineraries?email=${encodeURIComponent(user.email)}`
-        );
-        const data = await response.json();
-        if (response.ok) {
-              const formattedItineraries = (data.itineraries || []).map((trip: any) => ({
-                ...trip,
-                fromDate: parseDate(trip.start_date),
-                toDate: parseDate(trip.end_date),
+  const fetchItineraries = async () => {
+    try {
+      if (!user.email) {
+        Alert.alert("Error", "User email not found. Please log in.");
+        return;
+      }
+      const response = await fetch(
+        `http://10.0.2.2:3000/itineraries?email=${encodeURIComponent(user.email)}`
+      );
+      const data = await response.json();
+      if (response.ok) {
+            const formattedItineraries = (data.itineraries || []).map((trip: any) => ({
+              ...trip,
+              fromDate: parseDate(trip.start_date),
+              toDate: parseDate(trip.end_date),
 
-                title: trip.trip_title,
-                description: trip.trip_description,
-                id: trip.itinerary_id,
-              }));
-              
-              setItineraryList(
-                formattedItineraries.length > 0
-                  ? formattedItineraries
-                  : defaultItineraryData
-              );
-              
-        } else {
-          Alert.alert("Error", data.error || "Failed to load itineraries.");
-          setItineraryList(defaultItineraryData);
-        }
-      } catch (error) {
-        console.error("Error fetching itineraries:", error);
-        Alert.alert("Error", "Failed to load itineraries.");
+              title: trip.trip_title,
+              description: trip.trip_description,
+              id: trip.itinerary_id,
+            }));
+            
+            setItineraryList(
+              formattedItineraries.length > 0
+                ? formattedItineraries
+                : defaultItineraryData
+            );
+            
+            // Fetch event counts
+            fetchEventCounts();
+      } else {
+        Alert.alert("Error", data.error || "Failed to load itineraries.");
         setItineraryList(defaultItineraryData);
       }
-    };
+    } catch (error) {
+      console.error("Error fetching itineraries:", error);
+      Alert.alert("Error", "Failed to load itineraries.");
+      setItineraryList(defaultItineraryData);
+    }
+  };
 
+  useEffect(() => {
     fetchItineraries();
   }, [user.email]);
+
+  // Refresh data whenever screen is focused
+  useFocusEffect(
+    useCallback(() => {
+      fetchItineraries();
+      fetchEventCounts();
+      return () => {};
+    }, [user.email])
+  );
+
+  // Fetch event counts for all itineraries
+  const fetchEventCounts = async () => {
+    try {
+      const response = await fetch('http://10.0.2.2:3000/event-counts');
+      if (response.ok) {
+        const data = await response.json();
+        setEventCounts(data.counts || {});
+      } else {
+        console.error("Failed to fetch event counts");
+      }
+    } catch (error) {
+      console.error("Error fetching event counts:", error);
+    }
+  };
+
+  // Get event count for a specific itinerary
+  const getEventCount = (itineraryId: string) => {
+    return eventCounts[itineraryId] || 0;
+  };
+
+  // Format event count display text
+  const formatEventCountText = (itineraryId: string) => {
+    const count = getEventCount(itineraryId);
+    if (count === 0) {
+      return "No events added";
+    } else if (count === 1) {
+      return "1 event added";
+    } else {
+      return `${count} events added`;
+    }
+  };
 
   // Handle date selection
   const handleDateChange = (
@@ -242,6 +286,7 @@ export default function Itinerary() {
                       {`${formatDate(item.fromDate)} - ${formatDate(item.toDate)}`}
                     </Text>
                     <Text style={styles.description}>{item.description}</Text>
+                    <Text style={styles.eventCount}>{formatEventCountText(item.id)}</Text>
                     <Pressable style={styles.viewButtonOngoing} onPress={() => router.push('/screens/DetailedItinerary')}>
                       <Text style={styles.buttonText}>View Details</Text>
                     </Pressable>
@@ -264,6 +309,7 @@ export default function Itinerary() {
                       {`${formatDate(item.fromDate)} - ${formatDate(item.toDate)}`}
                     </Text>
                     <Text style={styles.description}>{item.description}</Text>
+                    <Text style={styles.eventCount}>{formatEventCountText(item.id)}</Text>
                     <Pressable style={styles.viewButtonUpcoming} onPress={() => console.log("View Details Clicked!")}>
                       <Text style={styles.buttonText}>View Details</Text>
                     </Pressable>
@@ -286,6 +332,7 @@ export default function Itinerary() {
                       {`${formatDate(item.fromDate)} - ${formatDate(item.toDate)}`}
                     </Text>
                     <Text style={styles.description}>{item.description}</Text>
+                    <Text style={styles.eventCount}>{formatEventCountText(item.id)}</Text>
                     <Pressable style={styles.viewButtonPast} onPress={() => console.log("View Details Clicked!")}>
                       <Text style={styles.buttonText}>View Details</Text>
                     </Pressable>
@@ -651,5 +698,13 @@ viewButtonPast: {
   alignItems: "center",
   justifyContent: "center",
   marginTop: 10,
+},
+
+eventCount: {
+  fontSize: 14,
+  fontFamily: "quicksand-semibold",
+  color: Colors.coral,
+  marginTop: 8,
+  marginBottom: 5,
 },
 });
