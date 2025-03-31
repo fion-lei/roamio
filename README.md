@@ -2,14 +2,17 @@
 
 App Description:
 
+
+
 Instructions to Run Frontend & Backend:
-- See SETUP.md
+- See [SETUP.md](SETUP.md)
 
 Project Group:
 - Fion Lei
-
-
-
+- Wish Li
+- Maheen Nizamani
+- Zaki Salam
+- Sukhpreet Sandhu
 
 
 #### Tech Stack:
@@ -27,7 +30,7 @@ Project Group:
 - Android Studio
 - Visual Studio Code
 - GitHub/Git
-- 
+
 
 
 
