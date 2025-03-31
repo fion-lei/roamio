@@ -247,7 +247,6 @@ app.get('/active-itineraries', async (req, res) => {
     
     return res.status(200).json({ itineraries: filtered });
   } catch (error) {
-    console.error("Error fetching active itineraries:", error);
     return res.status(500).json({ error: "Error fetching active itineraries" });
   }
 });
@@ -342,6 +341,21 @@ app.post('/events', async (req, res) => {
       }
     }
 
+    // Process tags to ensure they're handled as an array
+    let processedTags = [];
+    if (tags) {
+      if (Array.isArray(tags)) {
+        processedTags = tags;
+      } else if (typeof tags === 'string') {
+        // Handle comma-separated tags or already formatted JSON string
+        try {
+          processedTags = tags.startsWith('[') ? JSON.parse(tags) : tags.split(',').map(tag => tag.trim().replace(/^#/, ''));
+        } catch (e) {
+          processedTags = tags.split(',').map(tag => tag.trim().replace(/^#/, ''));
+        }
+      }
+    }
+
     const event = {
       event_id: Date.now().toString(),
       itinerary_id: itineraryIdStr,
@@ -353,7 +367,7 @@ app.post('/events', async (req, res) => {
       price: price || "",
       rating: rating || "",
       rating_count: rating_count || "",
-      tags: tags || "",
+      tags: processedTags,
       image_path: image_path || "",
       start_date: start_date || "",
       start_time: start_time || "",
@@ -362,10 +376,7 @@ app.post('/events', async (req, res) => {
     };
 
     await appendEvent(event);
-    return res.status(201).json({ 
-      message: 'Event added to itinerary successfully.', 
-      event 
-    });
+    return res.status(201).json({ message: 'Event added successfully', event });
   } catch (error) {
     console.error("Error adding event:", error);
     return res.status(500).json({ error: 'Error adding event to itinerary.' });

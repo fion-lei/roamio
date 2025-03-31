@@ -19,7 +19,7 @@ import { router, useFocusEffect } from "expo-router";
 
 import { useUser } from "@/contexts/UserContext";
 
-// Function to format dates in "MMM DD, YYYY" format
+// Function to format dates in "MM/DD/YYYY" format
 const formatDate = (date: Date | null) => {
   if (!date) return "MM/DD/YYYY"; // Default placeholder
   return date.toLocaleDateString("en-US", {
@@ -288,7 +288,7 @@ export default function Itinerary() {
                     <Text style={styles.description}>{item.description}</Text>
                     {getEventCount(item.id) > 0 ? (
                       <View style={styles.eventCountContainer}>
-                        <FontAwesome name="check-circle" size={16} color={Colors.peachySalmon} />
+                        <FontAwesome name="check-square-o" size={16} color={Colors.peachySalmon} style={{ top: 2 }} />
                         <Text style={styles.eventCountText}>
                           {formatEventCountText(item.id)}
                         </Text>
@@ -320,7 +320,7 @@ export default function Itinerary() {
                     <Text style={styles.description}>{item.description}</Text>
                     {getEventCount(item.id) > 0 ? (
                       <View style={styles.eventCountContainer}>
-                        <FontAwesome name="check-circle" size={16} color={Colors.peachySalmon} />
+                        <FontAwesome name="check-square-o" size={16} color={Colors.peachySalmon} style={{ top: 2 }} />
                         <Text style={styles.eventCountText}>
                           {formatEventCountText(item.id)}
                         </Text>
@@ -732,7 +732,7 @@ emptyEventText: {
   fontSize: 14,
   fontFamily: "quicksand-bold",
   color: Colors.coral,
-  marginVertical: 6,
+  marginVertical: 8,
 },
 eventCountText: {
   fontSize: 14,

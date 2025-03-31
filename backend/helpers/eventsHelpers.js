@@ -19,15 +19,55 @@ const readEvents = () => {
         // Only header exists
         return resolve([]);
       }
+      
       const header = lines[0].split(',');
       const events = lines.slice(1).map(line => {
-        const values = line.split(',');
+        // Handle quoted fields in CSV properly
+        const values = [];
+        let currentValue = '';
+        let insideQuotes = false;
+        
+        for (let i = 0; i < line.length; i++) {
+          const char = line[i];
+          
+          if (char === '"' && (i === 0 || line[i-1] !== '\\')) {
+            insideQuotes = !insideQuotes;
+          } else if (char === ',' && !insideQuotes) {
+            values.push(currentValue);
+            currentValue = '';
+          } else {
+            currentValue += char;
+          }
+        }
+        
+        // Add the last value
+        values.push(currentValue);
+        
         let event = {};
         header.forEach((key, index) => {
-          event[key.trim()] = values[index] ? values[index].trim() : "";
+          // Remove surrounding quotes if present
+          let value = values[index] ? values[index].trim() : "";
+          if (value.startsWith('"') && value.endsWith('"')) {
+            value = value.substring(1, value.length - 1);
+          }
+          
+          // Parse tags as JSON if the field is tags
+          if (key.trim() === 'tags' && value) {
+            try {
+              // Try to parse as JSON
+              event[key.trim()] = JSON.parse(value);
+            } catch (e) {
+              // If parsing fails, handle old format (hashtags separated by commas)
+              event[key.trim()] = value.split(',').map(tag => tag.trim().replace(/^#/, ''));
+            }
+          } else {
+            event[key.trim()] = value;
+          }
         });
+        
         return event;
       });
+      
       resolve(events);
     });
   });
@@ -38,9 +78,31 @@ const appendEvent = (event) => {
   return new Promise((resolve, reject) => {
     fs.stat(eventsCSV, (err, stats) => {
       if (err) return reject(err);
+      
+      // Convert tags to JSON array string if it's not already
+      let tagsField = "";
+      if (event.tags) {
+        let tagsArray;
+        if (typeof event.tags === 'string') {
+          // Handle existing hashtag format by splitting on commas and removing hashtags
+          tagsArray = event.tags.startsWith('[') 
+            ? JSON.parse(event.tags) // Already JSON array
+            : event.tags.split(',').map(tag => tag.trim().replace(/^#/, ''));
+        } else if (Array.isArray(event.tags)) {
+          tagsArray = event.tags;
+        } else {
+          tagsArray = [];
+        }
+        tagsField = `"${JSON.stringify(tagsArray)}"`;
+      }
+      
+      // Ensure description is properly escaped 
+      const descriptionField = event.description ? `"${event.description}"` : "";
+      
       const newLine = stats.size > 0
-        ? `\n${event.event_id},${event.itinerary_id},${event.title},${event.description},${event.address},${event.contact},${event.hours},${event.price},${event.rating},${event.rating_count},${event.tags || ""},${event.image_path},${event.start_date},${event.start_time},${event.end_date},${event.end_time},`
-        : `${event.event_id},${event.itinerary_id},${event.title},${event.description},${event.address},${event.contact},${event.hours},${event.price},${event.rating},${event.rating_count},${event.tags || ""},${event.image_path},${event.start_date},${event.start_time},${event.end_date},${event.end_time},`;
+        ? `\n${event.event_id},${event.itinerary_id},${event.title},${descriptionField},${event.address},${event.contact},${event.hours},${event.price},${event.rating},${event.rating_count},${tagsField},${event.image_path},${event.start_date},${event.start_time},${event.end_date},${event.end_time}`
+        : `${event.event_id},${event.itinerary_id},${event.title},${descriptionField},${event.address},${event.contact},${event.hours},${event.price},${event.rating},${event.rating_count},${tagsField},${event.image_path},${event.start_date},${event.start_time},${event.end_date},${event.end_time}`;
+      
       fs.appendFile(eventsCSV, newLine, (err) => {
         if (err) return reject(err);
         resolve();

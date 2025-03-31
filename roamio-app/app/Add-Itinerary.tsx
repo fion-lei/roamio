@@ -6,6 +6,18 @@ import { useLocalSearchParams } from "expo-router";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useUser } from "@/contexts/UserContext";
 
+// Gets the appropriate image filename based on activity
+const getImageForActivity = (title: string): string => {
+  // Map activity titles to specific images
+  const activityImageMap: Record<string, string> = {
+    "Elgin Hill": "camp.jpg",
+    "OEB Breakfast Co.": "food.png",
+  };
+  
+  // Returns the mapped image 
+  return activityImageMap[title];
+};
+
 export default function AddItinerary() {
   
   // Get the user context
@@ -212,7 +224,9 @@ export default function AddItinerary() {
       
       // Convert itinerary_id to string to ensure consistent type
       const itineraryId = String(selectedItineraryObj.itinerary_id);
-      
+
+      // Add validation check for events not overlapping with existing events in select itinerary? 
+
       // Prepare the event data
       const eventData = {
         event_id: Date.now().toString(),
@@ -226,9 +240,7 @@ export default function AddItinerary() {
         rating: activity.rating || "",
         rating_count: activity.ratingCount || "",
         tags: activity.tags || "",
-        image_path: typeof activity.imagePath === "number" ? activity.imagePath.toString() : 
-                    typeof activity.imagePath === "string" ? activity.imagePath : 
-                    activity.imagePath?.uri ? activity.imagePath.uri : "",
+        image_path: getImageForActivity(activity.title), // Descriptive image path for the activity 
         start_date: formatDate(startDate),
         start_time: formatTime(startTime),
         end_date: formatDate(endDate),
