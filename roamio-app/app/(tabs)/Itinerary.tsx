@@ -217,14 +217,14 @@ export default function Itinerary() {
           body: JSON.stringify(payload),
         });
         const result = await response.json();
-        console.log("POST response:", result); // Log POST response
+        
         if (response.ok) {
           // Re-fetch itinerary list from backend after adding trip
           const updatedResponse = await fetch(
             `http://10.0.2.2:3000/itineraries?email=${encodeURIComponent(user.email)}`
           );
           const updatedData = await updatedResponse.json();
-          console.log("GET response:", updatedData); // Log GET response
+          
           if (updatedResponse.ok) {
             const formattedUpdatedItineraries = (updatedData.itineraries || []).map((trip: any) => ({
               ...trip,
