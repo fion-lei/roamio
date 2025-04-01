@@ -120,13 +120,31 @@ const DetailedItinerary = () => {
     };
   };
 
+  // function to calculate end time from start time and duration
+  const calculateEndTime = (startTime: string, durationHours: number) => {
+    const [hours, minutes] = startTime.split(":").map(Number);
+    
+    // Calculate total minutes
+    let totalMinutes = hours * 60 + minutes + durationHours * 60;
+    
+    // Handle overflow (more than 24 hours) by wrapping around
+    totalMinutes = totalMinutes % (24 * 60);
+    
+    // Convert back to hours and minutes
+    const endHours = Math.floor(totalMinutes / 60);
+    const endMinutes = Math.floor(totalMinutes % 60);
+    
+    // Format as HH:MM
+    return `${endHours}:${endMinutes.toString().padStart(2, "0")}`;
+  };
+
   // event content
   const renderEventContent = (item: any, index: number) => (
     <View style={styles.eventContent}>
       <View style={styles.eventTextContainer}>
         <Text style={styles.activityText}>{item.activity}</Text>
         <Text style={styles.durationText}>
-          {`${formatTimeToAMPM(item.time)} (${item.duration}h)`}
+          {`${formatTimeToAMPM(item.time)} - ${formatTimeToAMPM(calculateEndTime(item.time, item.duration))}`}
         </Text>
       </View>
       {/* If in edit mode, show delete button */}
@@ -693,7 +711,7 @@ const styles = StyleSheet.create({
   },
   calendarDropdown: {
     width: '100%',
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.palestPink,
     zIndex: 10,
     elevation: 5,
     borderBottomWidth: 1,

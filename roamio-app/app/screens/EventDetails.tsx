@@ -62,6 +62,24 @@ const formatTimeToAMPM = (time: string) => {
     return `${displayHour}:${minutes.toString().padStart(2, '0')} ${ampm}`;
 };
 
+// Function to calculate end time from start time and duration
+const calculateEndTime = (startTime: string, durationHours: number) => {
+    const [hours, minutes] = startTime.split(":").map(Number);
+    
+    // Calculate total minutes
+    let totalMinutes = hours * 60 + minutes + durationHours * 60;
+    
+    // Handle overflow (more than 24 hours) by wrapping around
+    totalMinutes = totalMinutes % (24 * 60);
+    
+    // Convert back to hours and minutes
+    const endHours = Math.floor(totalMinutes / 60);
+    const endMinutes = Math.floor(totalMinutes % 60);
+    
+    // Format as HH:MM
+    return `${endHours}:${endMinutes.toString().padStart(2, "0")}`;
+};
+
 const EventDetails = () => {
     const route = useRoute();
     const navigation = useNavigation();
@@ -98,8 +116,8 @@ const EventDetails = () => {
 
     // Format duration to include one decimal place if it's not a whole number
     const formattedDuration = Number.isInteger(duration) ? 
-        `${duration} hour${duration !== 1 ? 's' : ''}` : 
-        `${duration} hour${duration !== 1 ? 's' : ''}`;
+        `${duration} hour(s)` : 
+        `${duration} hour(s)`;
 
     // Handle image source (very basic, doesn't take into account if other activities are added)
     const getImageSource = () => {
@@ -130,7 +148,7 @@ const EventDetails = () => {
             <View style={styles.infoList}>
                 <InfoItem
                     icon={<FontAwesome name="clock-o" size={20} color={Colors.coral} />}
-                    text={formatTimeToAMPM(time)}
+                    text={`${formatTimeToAMPM(time)} - ${formatTimeToAMPM(calculateEndTime(time, duration))}`}
                 />
                 <InfoItem
                     icon={<MaterialCommunityIcons name="timer-outline" size={20} color={Colors.coral} />}
