@@ -1,161 +1,292 @@
-// Add "community reviews" section to activity card? 
-import React, { useState} from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, Image, StyleSheet, SafeAreaView, Pressable, ScrollView, Modal, Alert, } from "react-native";
 import { Colors } from "@/constants/Colors";
 import { FontAwesome } from "@expo/vector-icons";
 import { useLocalSearchParams } from "expo-router";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { useUser } from "@/contexts/UserContext";
+
+// Gets the appropriate image filename based on activity
+const getImageForActivity = (title: string): string => {
+  // Map activity titles to specific images
+  const activityImageMap: Record<string, string> = {
+    "Elgin Hill": "camp.png",
+    "OEB Breakfast Co.": "food.png",
+  };
+  
+  // Returns the mapped image 
+  return activityImageMap[title];
+};
 
 export default function AddItinerary() {
   
-// Retrieve activity card data passed as params 
-const params = useLocalSearchParams();
+  // Get the user context
+  const { user } = useUser();
+  
+  // Retrieve activity card Data passed as params 
+  const params = useLocalSearchParams();
 
-// Get values from activity cards 
-const activity = {
-  title: params.title as string,
-  address: params.address as string,
-  contact: params.contact as string,
-  hours: params.hours as string,
-  description: params.description as string,
-  tags: params.tags as string,
-  imagePath: params.image as any, // Images usually loaded as "any" type
-  price: params.price as string, 
-  rating: params.rating as string, 
-  ratingCount: params.ratingCount as string,
-};
+  // Get values from activity cards 
+  const activity = {
+    title: params.title as string,
+    address: params.address as string,
+    contact: params.contact as string,
+    hours: params.hours as string,
+    description: params.description as string,
+    tags: params.tags as string,
+    imagePath: params.image as any, // Images usually loaded as "any" type
+    price: params.price as string, 
+    rating: params.rating as string, 
+    ratingCount: params.ratingCount as string,
+  };
 
-// Convert tags string back into an array if needed
-const tagsArray = activity.tags ? activity.tags.split(",") : [];
+  // Convert tags string back into an array if needed
+  const tagsArray = activity.tags ? activity.tags.split(",") : [];
 
-// Modal state 
-const [isModalVisible, setIsModalVisible] = useState(false);
+  // Modal state 
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
-// Itinerary states 
-const [selectedItinerary, setSelectedItinerary] = useState("--Itinerary Name--");
-const [showItineraryDropdown, setShowItineraryDropdown] = useState(false);
-const itineraryOptions = ["Calgary Outdoors", "Calgary Food Tour", "Niche Spots", "Business Meet Trip"];
+  // Itinerary states 
+  const [selectedItinerary, setSelectedItinerary] = useState("--Itinerary Name--");
+  const [showItineraryDropdown, setShowItineraryDropdown] = useState(false);
+  const [itineraryOptions, setItineraryOptions] = useState<string[]>([]);
 
-// Date/time states 
-const [startDate, setStartDate] = useState<Date | null>(null);
-const [endDate, setEndDate] = useState<Date | null>(null);
-const [startTime, setStartTime] = useState<Date | null>(null);
-const [endTime, setEndTime] = useState<Date | null>(null);
-const [showStartDatePicker, setShowStartDatePicker] = useState(false);
-const [showEndDatePicker, setShowEndDatePicker] = useState(false);
-const [showStartTimePicker, setShowStartTimePicker] = useState(false);
-const [showEndTimePicker, setShowEndTimePicker] = useState(false);
+  // Date/time states 
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
+  const [startTime, setStartTime] = useState<Date | null>(null);
+  const [endTime, setEndTime] = useState<Date | null>(null);
+  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
+  const [showEndDatePicker, setShowEndDatePicker] = useState(false);
+  const [showStartTimePicker, setShowStartTimePicker] = useState(false);
+  const [showEndTimePicker, setShowEndTimePicker] = useState(false);
 
-// Formats date with default placeholder
-const formatDate = (date: Date | null) => {
-  if (!date) return "MM/DD/YYYY";
-  return date.toLocaleDateString("en-US", {
-    month: "2-digit",
-    day: "2-digit",
-    year: "numeric"
-  });
-};
-
-// Formats time with default placeholder
-const formatTime = (date: Date | null) => {
-  if (!date) return "--:-- (MST)";
-  return date.toLocaleTimeString("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true
-  }) + " " + "(MST)";
-};
-
-// Reset all selections to default
-const resetSelections = () => {
-  setSelectedItinerary("--Itinerary Name--");
-  setShowItineraryDropdown(false);
-  setShowStartDatePicker(false);
-  setShowEndDatePicker(false);
-  setShowStartTimePicker(false);
-  setShowEndTimePicker(false);
-  setStartDate(null);
-  setEndDate(null);
-  setStartTime(null);
-  setEndTime(null);
-};
-
-// Handles date/time changes, if picker is cancelled then no updates 
-const handleDateChange = (event: any, selectedDate?: Date, type?: string) => {
-  if (event.type === "dismissed") {
-    switch (type) {
-      case "startDate": 
-        setShowStartDatePicker(false); break;
-      case "endDate": 
-        setShowEndDatePicker(false); break;
-      case "startTime": 
-        setShowStartTimePicker(false); break;
-      case "endTime": 
-        setShowEndTimePicker(false); break;
+  // Fetch itinerary options from backend when modal opens 
+  useEffect(() => {
+    if (isModalVisible) {
+      fetchItineraryOptions();
     }
-    return;
-  }
-  // Set to selected date/time 
-  if (selectedDate) {
-    switch (type) {
-      case "startDate": 
-        setStartDate(selectedDate); setShowStartDatePicker(false); break;
-      case "endDate": 
-        setEndDate(selectedDate); setShowEndDatePicker(false); break;
-      case "startTime": 
-        setStartTime(selectedDate); setShowStartTimePicker(false); break;
-      case "endTime": 
-        setEndTime(selectedDate); setShowEndTimePicker(false); break;
-    }
-  }
-};
+  }, [isModalVisible]);
 
-// Handles adding itinerary items 
-const handleAddItem = () => {
-  
-  if (selectedItinerary === "--Itinerary Name--") {
-    Alert.alert("Error", "Please select a valid itinerary from your list");
-    return;
-  }
-
-  if (!startDate || !endDate || !startTime || !endTime) {
-    Alert.alert("Error", "Please fill in all missing date and time fields for this item");
-    return;
-  }
-  
-  // Full datetime objects for form validation - handles AM/PM 
-  const startDateTime = new Date(
-    startDate.getFullYear(),
-    startDate.getMonth(),
-    startDate.getDate(),
-    startTime.getHours(),
-    startTime.getMinutes()
-  );
-
-  const endDateTime = new Date(
-    endDate.getFullYear(),
-    endDate.getMonth(),
-    endDate.getDate(),
-    endTime.getHours(),
-    endTime.getMinutes()
-  );
-
-  if (endDateTime <= startDateTime) {
-    Alert.alert("Error", "Please enter an end time slot that is after the start time slot for this item");
-    return;
-  }
-  
-  Alert.alert(
-    "Success!",
-    `${activity.title} has been added to: ${selectedItinerary}`,
-    [{text: "Ok", 
-      onPress: () => {
-        setIsModalVisible(false);
-        resetSelections();
+  // Fetch available itineraries from backend 
+  const fetchItineraryOptions = async () => {
+    try {
+      if (!user.email) {
+        Alert.alert("Error", "User email not found. Please log in.");
+        return;
       }
-    }]
-  );
-};
+      
+      const response = await fetch(
+        `http://10.0.2.2:3000/active-itineraries?email=${encodeURIComponent(user.email)}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          }
+        }
+      );
+      const data = await response.json();
+      
+      if (response.ok && data.itineraries && data.itineraries.length > 0) {
+        const options = data.itineraries.map((itinerary: any) => itinerary.trip_title);
+        setItineraryOptions(options);
+      } else {
+        // No active itineraries found 
+        setItineraryOptions([]);
+        Alert.alert("No Active Trips", "You don't have any currently active trips to add to. Please create a new trip first."); 
+      }
+    } catch (error) {
+      setItineraryOptions([]);
+      Alert.alert("Error", "Failed to load your active itineraries.");
+    }
+  };
+
+  // Formats date with default placeholder
+  const formatDate = (date: Date | null) => {
+    if (!date) return "MM/DD/YYYY";
+    return date.toLocaleDateString("en-US", {
+      month: "2-digit",
+      day: "2-digit",
+      year: "numeric"
+    });
+  };
+
+  // Formats time with default placeholder
+  const formatTime = (date: Date | null) => {
+    if (!date) return "--:-- (MST)";
+    return date.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true
+    }) + " " + "(MST)";
+  };
+
+  // Reset all selections to default
+  const resetSelections = () => {
+    setSelectedItinerary("--Itinerary Name--");
+    setShowItineraryDropdown(false);
+    setShowStartDatePicker(false);
+    setShowEndDatePicker(false);
+    setShowStartTimePicker(false);
+    setShowEndTimePicker(false);
+    setStartDate(null);
+    setEndDate(null);
+    setStartTime(null);
+    setEndTime(null);
+  };
+
+  // Handles date/time changes, if picker is cancelled then no updates 
+  const handleDateChange = (event: any, selectedDate?: Date, type?: string) => {
+    if (event.type === "dismissed") {
+      switch (type) {
+        case "startDate": 
+          setShowStartDatePicker(false); break;
+        case "endDate": 
+          setShowEndDatePicker(false); break;
+        case "startTime": 
+          setShowStartTimePicker(false); break;
+        case "endTime": 
+          setShowEndTimePicker(false); break;
+      }
+      return;
+    }
+    // Set to selected date/time 
+    if (selectedDate) {
+      switch (type) {
+        case "startDate": 
+          setStartDate(selectedDate); setShowStartDatePicker(false); break;
+        case "endDate": 
+          setEndDate(selectedDate); setShowEndDatePicker(false); break;
+        case "startTime": 
+          setStartTime(selectedDate); setShowStartTimePicker(false); break;
+        case "endTime": 
+          setEndTime(selectedDate); setShowEndTimePicker(false); break;
+      }
+    }
+  };
+
+  // Handles adding itinerary items 
+  const handleAddItem = async () => {
+    
+    if (selectedItinerary === "--Itinerary Name--") {
+      Alert.alert("Error", "Please select a valid itinerary from your list");
+      return;
+    }
+
+    if (!startDate || !endDate || !startTime || !endTime) {
+      Alert.alert("Error", "Please fill in all missing date and time fields for this item");
+      return;
+    }
+    
+    // Full datetime objects for form validation - handles AM/PM 
+    const startDateTime = new Date(
+      startDate.getFullYear(),
+      startDate.getMonth(),
+      startDate.getDate(),
+      startTime.getHours(),
+      startTime.getMinutes()
+    );
+
+    const endDateTime = new Date(
+      endDate.getFullYear(),
+      endDate.getMonth(),
+      endDate.getDate(),
+      endTime.getHours(),
+      endTime.getMinutes()
+    );
+
+    if (endDateTime <= startDateTime) {
+      Alert.alert("Error", "Please enter an end time slot that is after the start time slot for this item");
+      return;
+    }
+    
+    try {
+      
+      if (!user.email) {
+        Alert.alert("Error", "User email not found. Please log in.");
+        return;
+      }
+      
+      const response = await fetch(`http://10.0.2.2:3000/active-itineraries?email=${encodeURIComponent(user.email)}`);
+      const data = await response.json();
+      
+      if (!response.ok) {
+        Alert.alert("Error", data.error || "Failed to get active itineraries");
+        return;
+      }
+      
+      const selectedItineraryObj = data.itineraries.find((it: any) => it.trip_title === selectedItinerary);
+      
+      if (!selectedItineraryObj) {
+        Alert.alert("Error", "Failed to find the selected itinerary");
+        return;
+      }
+      
+      // Convert itinerary_id to string to ensure consistent type
+      const itineraryId = String(selectedItineraryObj.itinerary_id);
+
+      // Add validation check for events not overlapping with existing events in select itinerary? 
+
+      // Prepare the event data
+      const eventData = {
+        event_id: Date.now().toString(),
+        itinerary_id: itineraryId,
+        title: activity.title || "",
+        description: activity.description || "",
+        address: activity.address || "",
+        contact: activity.contact || "",
+        hours: activity.hours || "",
+        price: activity.price || "",
+        rating: activity.rating || "",
+        rating_count: activity.ratingCount || "",
+        tags: activity.tags || "",
+        image_path: getImageForActivity(activity.title), // Descriptive image path for the activity 
+        start_date: formatDate(startDate),
+        start_time: formatTime(startTime),
+        end_date: formatDate(endDate),
+        end_time: formatTime(endTime)
+      };
+      
+      // API call to add the event 
+      const eventResponse = await fetch("http://10.0.2.2:3000/events", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify(eventData)
+      });
+      
+      const eventResult = await eventResponse.json();
+      
+      if (!eventResponse.ok) {
+        Alert.alert("Error", eventResult.error || "Failed to add event to itinerary");
+        return;
+      }
+      
+      // Verify the event was added by checking the count
+      try {
+        const countResponse = await fetch(`http://10.0.2.2:3000/event-counts/${itineraryId}`);
+        await countResponse.json();
+      } catch (countError) {
+        Alert.alert("Error", "Failed to verify addition of event.");
+      }
+      
+      Alert.alert(
+        "Success!",
+        `${activity.title} has been added to: ${selectedItinerary}`,
+        [{
+          text: "Ok", 
+          onPress: () => {
+            setIsModalVisible(false);
+            resetSelections();
+          }
+        }]
+      );
+    } catch (error) {
+      Alert.alert("Error", "Failed to add event.");
+    }
+  };
 
   return (
     <SafeAreaView style={styles.safeContainer}>
@@ -177,7 +308,6 @@ const handleAddItem = () => {
               <FontAwesome name="star" size={12} color="#FFD700" />
               <Text style={styles.priceRatingText}>
                 {activity.rating}
-                { /* Add rating count to activity cards? */}
                 {activity.ratingCount && ` (${activity.ratingCount})`}
               </Text>
             </View>

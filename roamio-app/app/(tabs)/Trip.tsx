@@ -1,4 +1,3 @@
-// Populate with more activity cards of different categories 
 import React, { useState } from "react"; 
 import { View, Text, Image, TextInput, SafeAreaView, StyleSheet, Pressable, ScrollView } from "react-native"; // Images reference: https://undraw.co/
 import { Colors } from "@/constants/Colors"; 
@@ -377,7 +376,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 10,
-    gap: 6,
+    gap: 3,
     marginRight: 5,
   },
   sortText: {
