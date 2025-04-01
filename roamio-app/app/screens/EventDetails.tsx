@@ -21,6 +21,18 @@ interface RouteParams {
     activity: string;
     time: string;
     duration: number;
+    description?: string;
+    address?: string;
+    contact?: string;
+    hours?: string;
+    price?: string;
+    rating?: string;
+    ratingCount?: string;
+    image?: string;
+    eventId?: string;
+    tags?: string;
+    isMultiDay?: boolean;
+    date?: string;
 }
 
 interface InfoItemProps {
@@ -54,8 +66,24 @@ const EventDetails = () => {
     const route = useRoute();
     const navigation = useNavigation();
 
-    // parameters from the event we are looking at (will have to add more for the placeholder images, location, date and description)
-    const { activity, time, duration } = route.params as RouteParams; 
+    // Get all parameters from the route
+    const { 
+        activity,
+        time, 
+        duration, 
+        description, 
+        address, 
+        contact, 
+        hours, 
+        price, 
+        rating, 
+        ratingCount,
+        image,
+        eventId,
+        tags,
+        isMultiDay,
+        date
+    } = route.params as RouteParams; 
 
 
     useEffect(() => {
@@ -68,18 +96,35 @@ const EventDetails = () => {
         // do something when share button is pressed
     };
 
+    // Format duration to include one decimal place if it's not a whole number
+    const formattedDuration = Number.isInteger(duration) ? 
+        `${duration} hour${duration !== 1 ? 's' : ''}` : 
+        `${duration} hour${duration !== 1 ? 's' : ''}`;
+
+    // Handle image source (very basic, doesn't take into account if other activities are added)
+    const getImageSource = () => {
+        // Simple mapping of activities to images
+        if (activity === "Elgin Hill") {
+            return require('../../assets/images/camp.png');
+        } else if (activity === "OEB Breakfast Co.") {
+            return require('../../assets/images/food.png');
+        }
+        
+        // Default fallback image
+        return require('../../assets/images/logo_coral.png');
+    };
+
     return (
         <ScrollView contentContainerStyle={styles.container}>
             {/* image at the top */}
             <Image
-                source={require('../../assets/images/outsideTables.jpg')} // placeholder pic
+                source={getImageSource()}
                 style={styles.image}
                 resizeMode="cover"
             />
 
             {/* event name */}
             <Text style={styles.title}>{activity}</Text>
-
 
             {/* info */}
             <View style={styles.infoList}>
@@ -89,24 +134,31 @@ const EventDetails = () => {
                 />
                 <InfoItem
                     icon={<MaterialCommunityIcons name="timer-outline" size={20} color={Colors.coral} />}
-                    text={`${duration} ${'hour(s)'}`}
-
+                    text={formattedDuration}
                 />
-                <InfoItem
-                    icon={<Entypo name="location-pin" size={20} color={Colors.coral} />}
-                    text="3rd Street" // placeholder location
-                />
-                <InfoItem
-                    icon={<FontAwesome name="calendar" size={20} color={Colors.coral} />}
-                    text="November 3rd, 2025" // placeholder date
-                />
+                {address && (
+                    <InfoItem
+                        icon={<Entypo name="location-pin" size={20} color={Colors.coral} />}
+                        text={address}
+                    />
+                )}
+                {date && (
+                    <InfoItem
+                        icon={<FontAwesome name="calendar" size={20} color={Colors.coral} />}
+                        text={date}
+                    />
+                )}
             </View>
 
-            <View style={styles.descriptionContainer}>
-                <Text style={styles.descriptionText}>
-                    The best in the city! We offer amazing food and drink. {/* placeholder description */}
-                </Text>
-            </View>
+
+            {description && (
+                <View style={styles.descriptionContainer}>
+                    <Text style={styles.descriptionHeader}>About</Text>
+                    <Text style={styles.descriptionText}>
+                        {description}
+                    </Text>
+                </View>
+            )}
 
             <View style={styles.shareCard}>
                 <View style={styles.avatarContainer}>
@@ -116,9 +168,7 @@ const EventDetails = () => {
                     <Text style={styles.shareTitle}>Share Event</Text>
                 </View>
                 <TouchableOpacity onPress={handleShare}>
-
                     <Ionicons name="share-outline" size={24} color={Colors.coral} style={styles.shareIcon} />
-
                 </TouchableOpacity>
             </View>
         </ScrollView>
@@ -161,8 +211,14 @@ const styles = StyleSheet.create({
         marginTop: 20,
         marginBottom: 30,
     },
+    descriptionHeader: {
+        fontSize: 22,
+        fontFamily: 'quicksand-bold',
+        color: Colors.primary,
+        marginBottom: 10,
+    },
     descriptionText: {
-        fontSize: 20,
+        fontSize: 18,
         fontFamily: 'quicksand-regular',
         color: Colors.primary,
     },
