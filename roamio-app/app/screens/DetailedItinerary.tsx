@@ -179,7 +179,7 @@ const DetailedItinerary = () => {
           }
 
           setAvailableDates(dates);
-          
+
           // Set the selected date to the first date in the range if not already set
           if (dates.length > 0 && !selectedDate) {
             setSelectedDate(dates[0]);
@@ -191,74 +191,307 @@ const DetailedItinerary = () => {
     }
   };
 
-  // Function to fetch events for the current itinerary
-  const fetchItineraryItems = async (date = selectedDate) => {
+  // Function to fetch events for a specific date within the itinerary
+  const fetchItineraryItems = async (date: string) => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const response = await fetch(`http://10.0.2.2:3000/events/${itineraryId}?date=${encodeURIComponent(date)}`);
+   //   console.log(`Fetching events for itinerary: ${itineraryId}, date: ${date}`);
 
-      if (response.ok) {
-        const data = await response.json();
+      // get all events for this itinerary
+      const response = await fetch(`http://10.0.2.2:3000/events/${itineraryId}`);
 
-        if (data.events && data.events.length > 0) {
-          // Format the events for the timeline display
-          const formattedEvents = data.events.map((event: any) => {
-            // Extract time from start_time
-            const timeMatch = event.start_time ? event.start_time.match(/(\d+):(\d+)/) : null;
-            let time = "00:00";
-            if (timeMatch && timeMatch.length >= 3) {
-              time = `${timeMatch[1].padStart(2, '0')}:${timeMatch[2].padStart(2, '0')}`;
+      if (!response.ok) {
+        console.error(`Failed to fetch events: ${response.status} ${response.statusText}`);
+        setItineraryItems([]);
+        setLoading(false);
+        return;
+      }
+
+      const data = await response.json();
+      const events = data.events || [];
+      //    console.log(`Retrieved ${events.length} events for itinerary ${itineraryId}`);
+
+      if (events.length === 0) {
+        //      console.log("No events found for this itinerary");
+        setItineraryItems([]);
+        setLoading(false);
+        return;
+      }
+
+      // console.log("First event start_date format:", events[0]?.start_date);
+      // console.log("Selected date format:", date);
+
+      // Parse the selected date from "Month Day, Year" format (e.g., "April 2, 2025")
+      const selectedDateParts = date.match(/(\w+)\s+(\d+),\s+(\d+)/);
+      let selectedDateObj;
+
+      if (selectedDateParts) {
+        const month = selectedDateParts[1];
+        const day = parseInt(selectedDateParts[2]);
+        const year = parseInt(selectedDateParts[3]);
+
+        // Convert month name to month number (0-11)
+        const months = ["January", "February", "March", "April", "May", "June",
+          "July", "August", "September", "October", "November", "December"];
+        const monthIndex = months.findIndex(m => m === month);
+
+        if (monthIndex !== -1) {
+          selectedDateObj = new Date(year, monthIndex, day);
+          //     console.log("Parsed selected date:", selectedDateObj.toDateString());
+        }
+      }
+
+      if (!selectedDateObj || isNaN(selectedDateObj.getTime())) {
+        //   console.error("Failed to parse selected date:", date);
+        setItineraryItems([]);
+        setLoading(false);
+        return;
+      }
+
+      // Filter events that occur on the selected date
+      const eventsOnSelectedDate = events.filter((event: { start_date: string | number | Date; end_date?: string | number | Date; event_id: any; title: any; }) => {
+        if (!event.start_date) {
+          console.log(`Event ${event.event_id} has no start_date`);
+          return false;
+        }
+
+        let eventStartDate;
+        let eventEndDate;
+
+        // Parse start date
+        if (typeof event.start_date === 'string' && event.start_date.includes('/')) {
+          const [month, day, year] = event.start_date.split('/').map(Number);
+          eventStartDate = new Date(year, month - 1, day);
+        } else {
+          eventStartDate = new Date(event.start_date);
+        }
+
+        // Parse end date (if available) or use start date
+        if (event.end_date) {
+          if (typeof event.end_date === 'string' && event.end_date.includes('/')) {
+            const [month, day, year] = event.end_date.split('/').map(Number);
+            eventEndDate = new Date(year, month - 1, day);
+          } else {
+            eventEndDate = new Date(event.end_date);
+          }
+        } else {
+          eventEndDate = eventStartDate; // Single day event
+        }
+
+    //(`Event ${event.title} date range: ${eventStartDate.toDateString()} to ${eventEndDate.toDateString()}, Selected date: ${selectedDateObj.toDateString()}`);
+
+        // Check if the selected date falls within the event's date range
+        const isInDateRange =
+          selectedDateObj >= eventStartDate &&
+          selectedDateObj <= eventEndDate;
+
+    //    console.log(`Event ${event.title} is in selected date range: ${isInDateRange}`);
+        return isInDateRange;
+      });
+
+   //   console.log(`Found ${eventsOnSelectedDate.length} events for selected date ${date}`);
+
+      // Format the events for display in the timeline
+      const formattedEvents = eventsOnSelectedDate.map((event: any) => {
+    //    console.log(`Processing event time: ${event.start_time}, ${event.end_time}`);
+        // Calculate duration based on start and end times
+        let duration = 1; // Default duration is 1 hour
+        let formattedStartTime = "00:00"; // Default to midnight (beginning of day)
+        let isMultiDayEvent = false;
+        let isFirstDay = false;
+        let isLastDay = false;
+
+        // Parse dates to determine if this is a multi-day event
+        let eventStartDate;
+        let eventEndDate;
+
+        if (typeof event.start_date === 'string' && event.start_date.includes('/')) {
+          const [month, day, year] = event.start_date.split('/').map(Number);
+          eventStartDate = new Date(year, month - 1, day);
+        } else {
+          eventStartDate = new Date(event.start_date);
+        }
+
+        if (event.end_date) {
+          if (typeof event.end_date === 'string' && event.end_date.includes('/')) {
+            const [month, day, year] = event.end_date.split('/').map(Number);
+            eventEndDate = new Date(year, month - 1, day);
+          } else {
+            eventEndDate = new Date(event.end_date);
+          }
+        } else {
+          eventEndDate = eventStartDate;
+        }
+
+        isMultiDayEvent = eventStartDate.getTime() !== eventEndDate.getTime();
+        isFirstDay = selectedDateObj.getTime() === eventStartDate.getTime();
+        isLastDay = selectedDateObj.getTime() === eventEndDate.getTime();
+
+        // Handle time display differently based on which day of the multi-day event we're on
+        if (isMultiDayEvent) {
+          if (isFirstDay) {
+            // for first day, use the start time and set duration to end of day
+            if (event.start_time) {
+              const timeRegex = /(\d+):(\d+)\s*(AM|PM)/i;
+              const match = event.start_time.match(timeRegex);
+
+              if (match) {
+                let hours = parseInt(match[1]);
+                const minutes = parseInt(match[2]);
+                const ampm = match[3].toUpperCase();
+
+                // Convert to 24-hour format
+                if (ampm === "PM" && hours < 12) {
+                  hours += 12;
+                } else if (ampm === "AM" && hours === 12) {
+                  hours = 0;
+                }
+
+                formattedStartTime = `${hours}:${minutes.toString().padStart(2, '0')}`;
+                // Duration from start time to end of day (24:00)
+                duration = 24 - hours - (minutes / 60);
+                duration = Math.round(duration * 10) / 10; // round to nearest tenth
+              } else {
+                // If time format is not recognized, default to full day
+                formattedStartTime = "00:00";
+                duration = 24;
+              }
+            } else {
+              // No start time specified, assume full day
+              formattedStartTime = "00:00";
+              duration = 24;
             }
+          } else if (isLastDay) {
+            // For the last day, start at beginning of day and use end time
+            formattedStartTime = "00:00";
 
-            // Calculate duration - if end_time exists, calculate difference
-            // Otherwise default to 1 hour
-            let duration = 1;
-            if (event.end_time && event.start_time) {
-              const startTimeMatch = event.start_time.match(/(\d+):(\d+)/);
-              const endTimeMatch = event.end_time.match(/(\d+):(\d+)/);
+            if (event.end_time) {
+              const timeRegex = /(\d+):(\d+)\s*(AM|PM)/i;
+              const match = event.end_time.match(timeRegex);
 
-              if (startTimeMatch && endTimeMatch) {
-                const startHours = parseInt(startTimeMatch[1]);
-                const startMinutes = parseInt(startTimeMatch[2]);
-                const endHours = parseInt(endTimeMatch[1]);
-                const endMinutes = parseInt(endTimeMatch[2]);
+              if (match) {
+                let hours = parseInt(match[1]);
+                const minutes = parseInt(match[2]);
+                const ampm = match[3].toUpperCase();
 
-                // Calculate duration in hours
-                duration = (endHours - startHours) + (endMinutes - startMinutes) / 60;
-                // If duration is negative (like overnight), add 24 hours
-                if (duration <= 0) {
-                  duration += 24;
+                // Convert to 24-hour format
+                if (ampm === "PM" && hours < 12) {
+                  hours += 12;
+                } else if (ampm === "AM" && hours === 12) {
+                  hours = 0;
+                }
+
+                // Duration from beginning of day to end time
+                duration = hours + (minutes / 60);
+                duration = Math.round(duration * 10) / 10; // round to nearest tenth
+              } else {
+                // If time format is not recognized, default to full day
+                duration = 24;
+              }
+            } else {
+              // No end time specified, assume full day
+              duration = 24;
+            }
+          } else {
+            // For middle days, show full day
+            formattedStartTime = "00:00";
+            duration = 24;
+          }
+        } else {
+          // Single day event - using existing time parsing logic
+          if (event.start_time) {
+            // Parse the start time which might be in various formats
+            const timeRegex = /(\d+):(\d+)\s*(AM|PM)/i;
+            const match = event.start_time.match(timeRegex);
+
+            if (match) {
+              let hours = parseInt(match[1]);
+              const minutes = parseInt(match[2]);
+              const ampm = match[3].toUpperCase();
+
+              // Convert to 24-hour format
+              if (ampm === "PM" && hours < 12) {
+                hours += 12;
+              } else if (ampm === "AM" && hours === 12) {
+                hours = 0;
+              }
+
+              formattedStartTime = `${hours}:${minutes.toString().padStart(2, '0')}`;
+         //     console.log(`Parsed start time: ${formattedStartTime}`);
+
+              // If there's an end time, calculate duration
+              if (event.end_time) {
+                const endMatch = event.end_time.match(timeRegex);
+
+                if (endMatch) {
+                  let endHours = parseInt(endMatch[1]);
+                  const endMinutes = parseInt(endMatch[2]);
+                  const endAmpm = endMatch[3].toUpperCase();
+
+                  // Convert end time to 24-hour format
+                  if (endAmpm === "PM" && endHours < 12) {
+                    endHours += 12;
+                  } else if (endAmpm === "AM" && endHours === 12) {
+                    endHours = 0;
+                  }
+
+                  // Calculate duration in hours
+                  duration = (endHours - hours) + (endMinutes - minutes) / 60;
+                  duration = Math.round(duration * 10) / 10; // Round to nearest tenth
+
+           //       console.log(`Calculated duration: ${duration}h`);
+
+                  // Ensure minimum duration for display
+                  duration = Math.max(duration, 0.5);
                 }
               }
+            } else {
+              // Try a simpler time format HH:MM
+              const simpleTimes = event.start_time.split(':').map(Number);
+              if (simpleTimes.length >= 2) {
+                formattedStartTime = `${simpleTimes[0]}:${simpleTimes[1].toString().padStart(2, '0')}`;
+                console.log(`Using simple time format: ${formattedStartTime}`);
+              }
             }
-
-            return {
-              time,
-              duration,
-              activity: event.title,
-              description: event.description,
-              address: event.address,
-              contact: event.contact,
-              hours: event.hours,
-              price: event.price,
-              rating: event.rating,
-              ratingCount: event.rating_count,
-              imagePath: event.image_path,
-              eventId: event.event_id,
-              tags: event.tags
-            };
-          });
-
-          setItineraryItems(formattedEvents);
-        } else {
-          setItineraryItems([]);
+          }
         }
-      } else {
-        console.error('Failed to fetch events');
-        setItineraryItems([]);
-      }
+
+   //     console.log(`Formatted event: ${event.title}, time: ${formattedStartTime}, duration: ${duration}h, multiday: ${isMultiDayEvent ? 'yes' : 'no'}`);
+
+
+        return {
+          eventId: event.event_id,
+          activity: event.title,
+          description: event.description,
+          address: event.address,
+          contact: event.contact,
+          hours: event.hours,
+          price: event.price,
+          rating: event.rating,
+          ratingCount: event.rating_count,
+          time: formattedStartTime,
+          duration: duration,
+          imagePath: event.image_path,
+          tags: event.tags,
+          isMultiDay: isMultiDayEvent
+        };
+      });
+
+      // Sort events by start time
+      formattedEvents.sort((a: any, b: any) => {
+        const [aHours, aMinutes] = a.time.split(':').map(Number);
+        const [bHours, bMinutes] = b.time.split(':').map(Number);
+
+        const aTime = aHours * 60 + aMinutes;
+        const bTime = bHours * 60 + bMinutes;
+
+        return aTime - bTime;
+      });
+
+//      console.log(`Setting ${formattedEvents.length} formatted events`);
+      setItineraryItems(formattedEvents);
     } catch (error) {
-      console.error('Error fetching itinerary items:', error);
+      console.error("Error fetching itinerary items:", error);
       setItineraryItems([]);
     } finally {
       setLoading(false);
