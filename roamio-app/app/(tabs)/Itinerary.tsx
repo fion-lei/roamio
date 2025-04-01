@@ -220,7 +220,9 @@ export default function Itinerary() {
       });
       const result = await response.json();
       
-      if (response.ok) {
+      // Re-fetch itinerary list from backend after adding trip
+      if (response.ok) { 
+       
         const updatedResponse = await fetch(
           `http://10.0.2.2:3000/itineraries?email=${encodeURIComponent(user.email)}`
         );
@@ -286,7 +288,7 @@ export default function Itinerary() {
                     <Text style={styles.description}>{item.description}</Text>
                     {getEventCount(item.id) > 0 ? (
                       <View style={styles.eventCountContainer}>
-                        <FontAwesome name="check-square-o" size={16} color={Colors.peachySalmon} style={{ top: 2}} />
+                        <FontAwesome name="check-square-o" size={16} color={Colors.coral} style={{top: 2}} />
                         <Text style={styles.eventCountText}>
                           {formatEventCountText(item.id)}
                         </Text>
@@ -318,7 +320,7 @@ export default function Itinerary() {
                     <Text style={styles.description}>{item.description}</Text>
                     {getEventCount(item.id) > 0 ? (
                       <View style={styles.eventCountContainer}>
-                        <FontAwesome name="check-square-o" size={16} color={Colors.peachySalmon} top={2} />
+                        <FontAwesome name="check-square-o" size={16} color={Colors.coral} styles={{top: 2}} />
                         <Text style={styles.eventCountText}>
                           {formatEventCountText(item.id)}
                         </Text>
