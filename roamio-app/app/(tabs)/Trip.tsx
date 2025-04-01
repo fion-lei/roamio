@@ -112,6 +112,15 @@ const activityCards: ActivityCard[] = [
   },
 ]; 
   
+  // Holds all sort options (relevance, price, rating)
+  const sortOptions: {id: SortOption; label: string}[] = [
+    { id: "relevance", label: "Relevance" },
+    { id: "price-low-high", label: "Price: Low - High" },
+    { id: "price-high-low", label: "Price: High - Low" },
+    { id: "rating-high-low", label: "Rating: High - Low" },
+    { id: "rating-low-high", label: "Rating: Low - High" },
+  ];
+
   // ✅ Get router instance for navigation
   const router = useRouter(); 
   
@@ -133,8 +142,9 @@ const activityCards: ActivityCard[] = [
         activity.title.toLowerCase().includes(searchText.toLowerCase()) ||  
         activity.address.toLowerCase().includes(searchText.toLowerCase());
       
-      const matchesCategory = selectedCategory.every(category =>
-        activity.category.includes(category)
+      const matchesCategory = selectedCategory.length === 0 || 
+        selectedCategory.some(categoryId =>
+          activity.category.includes(categoryId)
       );
       
       return matchesSearch && matchesCategory;
@@ -150,7 +160,7 @@ const activityCards: ActivityCard[] = [
         case "rating-low-high":
           return optionA.rating - optionB.rating;
         default:
-          return 0;
+          return 0; // Relevance
       }
     });
 
@@ -165,7 +175,7 @@ const activityCards: ActivityCard[] = [
       return [...prevCategory, categoryId]; 
     }); 
   };
-  
+
   return (
     
     <SafeAreaView style={styles.safeContainer}> 
@@ -193,72 +203,28 @@ const activityCards: ActivityCard[] = [
         </Pressable>
       </View>
 
-      {/* Sort Dropdown */}
+      {/* Sort Options Dropdown */}
       {showSortDropdown && (
         <>
           <Pressable style={styles.dropdownBackdrop}
             onPress={() => setShowSortDropdown(false)} />
+          
           <View style={styles.sortDropdown}>
-            
-            <Pressable style={styles.sortOption}
-              onPress={() => {
-                setSortOption("relevance");
-                setShowSortDropdown(false);
-              }}
-            ><Text style={[styles.sortOptionText,
-              sortOption === "relevance" && styles.selectedSortOption
-              ]}>Relevance</Text>
-            </Pressable>
-            
-            <Pressable 
-              style={styles.sortOption}
-              onPress={() => {
-                setSortOption("price-low-high");
-                setShowSortDropdown(false);
-              }}
-            >
-              <Text style={[
-                styles.sortOptionText,
-                sortOption === "price-low-high" && styles.selectedSortOption
-              ]}>Price: Low - High</Text>
-            </Pressable>
-            
-            <Pressable 
-              style={styles.sortOption}
-              onPress={() => {
-                setSortOption("price-high-low");
-                setShowSortDropdown(false);
-              }}
-            >
-              <Text style={[
-                styles.sortOptionText,
-                sortOption === "price-high-low" && styles.selectedSortOption
-              ]}>Price: High - Low</Text>
-            </Pressable>
-            
-            <Pressable 
-              style={styles.sortOption}
-              onPress={() => {
-                setSortOption("rating-high-low");
-                setShowSortDropdown(false);
-              }}
-            >
-              <Text style={[styles.sortOptionText,
-                sortOption === "rating-high-low" && styles.selectedSortOption
-              ]}>Rating: High - Low</Text>
-            </Pressable>
-            
-            <Pressable style={styles.sortOption}
-              onPress={() => {
-                setSortOption("rating-low-high");
-                setShowSortDropdown(false);
-              }}>
-              
-              <Text style={[
-                styles.sortOptionText,
-                sortOption === "rating-low-high" && styles.selectedSortOption
-              ]}>Rating: Low - High</Text>
-            </Pressable>
+            {sortOptions.map((option) => (
+              <Pressable 
+                key={option.id}
+                style={styles.sortOption}
+                onPress={() => {
+                  setSortOption(option.id);
+                  setShowSortDropdown(false);
+                }}
+              >
+                <Text style={[
+                  styles.sortOptionText,
+                  sortOption === option.id && styles.selectedSortOption
+                ]}>{option.label}</Text>
+              </Pressable>
+            ))}
           </View>
         </>
       )}
@@ -335,7 +301,6 @@ const activityCards: ActivityCard[] = [
                       <FontAwesome name="star" size={12} color="#FFD700" />
                       <Text style={styles.priceRatingText}>
                         {activity.rating}
-                        { /* Add rating count to activity cards? */}
                         {activity.ratingCount && ` (${activity.ratingCount})`}
                       </Text>
                     </View>
@@ -422,7 +387,7 @@ const styles = StyleSheet.create({
   },
   dropdownBackdrop: {
     position: "absolute",
-    zIndex: 100,  // Takes priority 
+    zIndex: 100, 
     top: 0, 
     left: 0,
     right: 0, 
@@ -439,7 +404,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
-    zIndex: 1000,
+    zIndex: 1000, // Dropdown takes priority 
     minWidth: 160,
   },
   sortOption: {
@@ -491,19 +456,16 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   tripCard: {
-    backgroundColor: Colors.white, 
+    backgroundColor: Colors.white,
     borderRadius: 15,
-    elevation: 3, 
-    overflow: "hidden", 
-    // Box Shadow Generator: https://ethercreative.github.io/react-native-shadow-generator/
-    shadowColor: Colors.primary,    
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    }, 
-    shadowOpacity: 0.30,
-    shadowRadius: 3.84,
-    marginBottom: 25, 
+    // Box shadow generator: https://ethercreative.github.io/react-native-shadow-generator/
+    elevation: 4,
+    overflow: "hidden",
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.23,
+    shadowRadius: 2.62,
+    marginBottom: 22,
   },
   cardImage: {
     width: "100%", 
