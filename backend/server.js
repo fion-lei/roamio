@@ -1,6 +1,7 @@
 const express = require('express');
 const { readUsers, appendUser, updateUserDetails } = require('./helpers/usersHelpers');
 const { appendItinerary, readItineraries, updateItinerary, deleteItinerary } = require('./helpers/itineraryHelpers');
+const { appendEvent, readEvents, getEvents, countEvents } = require('./helpers/eventsHelpers');
 const app = express();
 const cors = require('cors'); // Add this
 const { readFriendRequests } = require('./helpers/friendsHelper'); // if not already imported
@@ -228,6 +229,40 @@ app.get('/itineraries', async (req, res) => {
 });
 
 // ----------------------
+// Get active itineraries (ongoing or upcoming) 
+// ----------------------
+app.get('/active-itineraries', async (req, res) => {
+  const { email } = req.query;
+  if (!email) {
+    return res.status(400).json({ error: "Email parameter is required" });
+  }
+  try {
+    const itineraries = await readItineraries();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Filter itineraries to include only those belonging to the specified emailND that are either ongoing or upcoming 
+    // (end date >= today)
+    const filtered = itineraries.filter(it => {
+      if (it.user_email !== email) return false;
+      
+      // Parse the end date from MM/DD/YYYY format
+      if (!it.end_date) return true; // If no end date, include it
+      
+      const [month, day, year] = it.end_date.split('/');
+      const endDate = new Date(Number(year), Number(month) - 1, Number(day));
+      
+      // Keep only if end date is today or in future
+      return endDate >= today;
+    });
+    
+    return res.status(200).json({ itineraries: filtered });
+  } catch (error) {
+    return res.status(500).json({ error: "Error fetching active itineraries" });
+  }
+});
+
+// ----------------------
 // Update trip Endpoint
 // ----------------------
 app.put('/itineraries/:id', async (req, res) => {
@@ -253,6 +288,199 @@ app.delete('/itineraries/:id', async (req, res) => {
   } catch (error) {
     console.error("Error deleting itinerary:", error);
     return res.status(500).json({ error: error.message || "Error deleting itinerary." });
+  }
+});
+
+// ---------------------------------------------------------------------------------
+// Events Endpoints
+// ---------------------------------------------------------------------------------
+
+// ----------------------
+// Add event to itinerary 
+// ----------------------
+app.post('/events', async (req, res) => {
+  const { 
+    itinerary_id, 
+    title, 
+    description, 
+    address, 
+    contact, 
+    hours, 
+    price, 
+    rating, 
+    rating_count, 
+    tags,
+    image_path,
+    start_date,
+    start_time,
+    end_date,
+    end_time
+  } = req.body;
+
+  if (!itinerary_id || !title) {
+    return res.status(400).json({ error: 'Missing required fields for itinerary id and title.' });
+  }
+
+  try {
+    // Check if the itinerary exists
+    const itineraries = await readItineraries();
+    
+    // Convert to string for comparison since IDs from CSV will be strings
+    const itineraryIdStr = String(itinerary_id);
+    const itinerary = itineraries.find(id => String(id.itinerary_id) === itineraryIdStr);
+    
+    if (!itinerary) {
+      return res.status(404).json({ error: 'Itinerary not found.' });
+    }
+    
+    // Validates that event dates are set within itinerary dates 
+    if (start_date && itinerary.start_date && itinerary.end_date) {
+      
+      const eventStartDate = new Date(start_date);
+      const eventEndDate = end_date ? new Date(end_date) : eventStartDate;
+      const itineraryStartDate = new Date(itinerary.start_date);
+      const itineraryEndDate = new Date(itinerary.end_date);
+      
+      if (eventStartDate < itineraryStartDate || eventEndDate > itineraryEndDate) {
+        return res.status(400).json({
+          error: 'Event dates must be within itinerary date range.',
+          details: {
+            eventDates: { start: start_date, end: end_date || start_date },
+            itineraryDates: { start: itinerary.start_date, end: itinerary.end_date }
+          }
+        });
+      }
+    }
+
+    // Process tags to ensure they're handled as an array
+    let processedTags = [];
+    if (tags) {
+      if (Array.isArray(tags)) {
+        processedTags = tags;
+      } else if (typeof tags === 'string') {
+        // Handle comma-separated tags or already formatted JSON string
+        try {
+          processedTags = tags.startsWith('[') ? JSON.parse(tags) : tags.split(',').map(tag => tag.trim().replace(/^#/, ''));
+        } catch (e) {
+          processedTags = tags.split(',').map(tag => tag.trim().replace(/^#/, ''));
+        }
+      }
+    }
+
+    const event = {
+      event_id: Date.now().toString(),
+      itinerary_id: itineraryIdStr,
+      title,
+      description: description || "",
+      address: address || "",
+      contact: contact || "",
+      hours: hours || "",
+      price: price || "",
+      rating: rating || "",
+      rating_count: rating_count || "",
+      tags: processedTags,
+      image_path: image_path || "",
+      start_date: start_date || "",
+      start_time: start_time || "",
+      end_date: end_date || "",
+      end_time: end_time || ""
+    };
+
+    await appendEvent(event);
+    return res.status(201).json({ message: 'Event added successfully', event });
+  } catch (error) {
+    console.error("Error adding event:", error);
+    return res.status(500).json({ error: 'Error adding event to itinerary.' });
+  }
+});
+
+// ----------------------
+// Get events for a specific itinerary 
+// ----------------------
+app.get('/events/:itineraryId', async (req, res) => {
+  const itineraryId = req.params.itineraryId;
+  
+  try {
+    const events = await getEvents(itineraryId);
+    return res.status(200).json({ events });
+  } catch (error) {
+    console.error("Error fetching events:", error);
+    return res.status(500).json({ error: 'Error fetching events.' });
+  }
+});
+
+// ----------------------
+// Get event counts for active itineraries 
+// ----------------------
+app.get('/event-counts', async (req, res) => {
+  try {
+    const counts = await countEvents();
+    const itineraries = await readItineraries();
+    
+    // Filter out past itineraries
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const filteredCounts = {};
+    
+    // Only include counts for non-past itineraries
+    Object.keys(counts).forEach(itineraryId => {
+      const itinerary = itineraries.find(it => String(it.itinerary_id) === itineraryId);
+      
+      // If no itinerary found or no end date, keep the count
+      if (!itinerary || !itinerary.end_date) {
+        filteredCounts[itineraryId] = counts[itineraryId];
+        return;
+      }
+      
+      // Parse the end date from MM/DD/YYYY format
+      const [month, day, year] = itinerary.end_date.split('/');
+      const endDate = new Date(Number(year), Number(month) - 1, Number(day));
+      
+      // Only include counts for active itineraries 
+      if (endDate >= today) {
+        filteredCounts[itineraryId] = counts[itineraryId];
+      }
+    });
+    
+    return res.status(200).json({ counts: filteredCounts });
+  } catch (error) {
+    console.error("Error fetching event counts:", error);
+    return res.status(500).json({ error: 'Error fetching event counts.' });
+  }
+});
+
+// ----------------------
+// Get event counts for a specific itinerary 
+// ----------------------
+app.get('/event-counts/:itineraryId', async (req, res) => {
+  const itineraryId = req.params.itineraryId;
+  
+  try {
+    // First check if the itinerary is past
+    const itineraries = await readItineraries();
+    const itinerary = itineraries.find(it => String(it.itinerary_id) === itineraryId);
+    
+    if (itinerary && itinerary.end_date) {
+      
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      // Parse the end date from MM/DD/YYYY format
+      const [month, day, year] = itinerary.end_date.split('/');
+      const endDate = new Date(Number(year), Number(month) - 1, Number(day));
+      
+      // If itinerary is past, return empty object without count field so it does not show up in the interface
+      if (endDate < today) {
+        return res.status(200).json({});
+      }
+    }
+    
+    const events = await getEvents(itineraryId);
+    return res.status(200).json({ count: events.length });
+  } catch (error) {
+    console.error("Error fetching event count:", error);
+    return res.status(500).json({ error: 'Error fetching event count.' });
   }
 });
 
