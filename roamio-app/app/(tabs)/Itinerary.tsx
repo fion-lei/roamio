@@ -296,7 +296,16 @@ export default function Itinerary() {
                     ) : (
                       <Text style={styles.emptyEventText}>{formatEventCountText(item.id)}</Text>
                     )}
-                    <Pressable style={styles.viewButtonOngoing} onPress={() => router.push('/screens/DetailedItinerary')}>
+                    <Pressable 
+                      style={styles.viewButtonOngoing} 
+                      onPress={() => router.push({
+                        pathname: '/screens/DetailedItinerary',
+                        params: {
+                          id: item.id,
+                          title: item.title,
+                          date: `${formatDate(item.fromDate)} - ${formatDate(item.toDate)}`
+                        }
+                      })}>
                       <Text style={styles.buttonText}>View Details</Text>
                     </Pressable>
                   </View>
@@ -328,7 +337,16 @@ export default function Itinerary() {
                     ) : (
                       <Text style={styles.emptyEventText}>{formatEventCountText(item.id)}</Text>
                     )}
-                    <Pressable style={styles.viewButtonUpcoming} onPress={() => console.log("View Details Clicked!")}>
+                    <Pressable 
+                      style={styles.viewButtonUpcoming} 
+                      onPress={() => router.push({
+                        pathname: '/screens/DetailedItinerary',
+                        params: {
+                          id: item.id,
+                          title: item.title,
+                          date: `${formatDate(item.fromDate)} - ${formatDate(item.toDate)}`
+                        }
+                      })}>
                       <Text style={styles.buttonText}>View Details</Text>
                     </Pressable>
                   </View>
@@ -350,7 +368,16 @@ export default function Itinerary() {
                       {`${formatDate(item.fromDate)} - ${formatDate(item.toDate)}`}
                     </Text>
                     <Text style={styles.description}>{item.description}</Text>
-                    <Pressable style={styles.viewButtonPast} onPress={() => console.log("View Details Clicked!")}>
+                    <Pressable 
+                      style={styles.viewButtonPast} 
+                      onPress={() => router.push({
+                        pathname: '/screens/DetailedItinerary',
+                        params: {
+                          id: item.id,
+                          title: item.title,
+                          date: `${formatDate(item.fromDate)} - ${formatDate(item.toDate)}`
+                        }
+                      })}>
                       <Text style={styles.buttonText}>View Details</Text>
                     </Pressable>
                   </View>
