@@ -7,6 +7,7 @@ import {
   Dimensions,
   Pressable,
   ActivityIndicator,
+  SafeAreaView,
 } from "react-native";
 import { Colors } from "@/constants/Colors";
 import { FontAwesome } from "@expo/vector-icons";
@@ -511,7 +512,7 @@ const DetailedItinerary = () => {
   }, [selectedDate, itineraryId]);
 
   return (
-    <ScrollView style={styles.container}>
+    <SafeAreaView style={styles.mainContainer}>
       {/* Calendar dropdown */}
       {showCalendar && (
         <View style={styles.calendarDropdown}>
@@ -539,72 +540,78 @@ const DetailedItinerary = () => {
           ))}
         </View>
       )}
+      
+      <ScrollView style={styles.container}>
+        <View style={styles.timelineContainer}>
+          {/* Time markers */}
+          <View style={styles.timeMarkers}>
+            {timeSlots.map((time, index) => (
+              <View key={index} style={styles.timeSlot}>
+                <Text style={styles.timeText}>{time}</Text>
+              </View>
+            ))}
+          </View>
 
-      <View style={styles.timelineContainer}>
-        {/* Time markers */}
-        <View style={styles.timeMarkers}>
-          {timeSlots.map((time, index) => (
-            <View key={index} style={styles.timeSlot}>
-              <Text style={styles.timeText}>{time}</Text>
-            </View>
-          ))}
+          {/* Events container */}
+          <View style={styles.eventsContainer}>
+            {loading ? (
+              <ActivityIndicator
+                size="large"
+                color={Colors.primary}
+                style={{ marginTop: 100 }}
+              />
+            ) : itineraryItems.length === 0 ? (
+              <View style={styles.noEventsContainer}>
+                <Text style={styles.noEventsText}>No events scheduled for this day.</Text>
+              </View>
+            ) : (
+              itineraryItems.map((item, index) => (
+                <Pressable
+                  key={index}
+                  style={[
+                    styles.eventBubble,
+                    getEventStyle(item.time, item.duration),
+                  ]}
+                  onPress={() => {
+                    if (!isEditMode) {
+                      router.push({
+                        pathname: "/screens/EventDetails",
+                        params: {
+                          activity: item.activity,
+                          time: item.time,
+                          duration: item.duration,
+                          description: item.description || "",
+                          address: item.address || "",
+                          contact: item.contact || "",
+                          hours: item.hours || "",
+                          price: item.price || "",
+                          rating: item.rating || "",
+                          ratingCount: item.ratingCount || "",
+                          image: item.imagePath || "",
+                          eventId: item.eventId || "",
+                          tags: item.tags ? (Array.isArray(item.tags) ? item.tags.join(',') : item.tags) : ""
+                        },
+                      });
+                    }
+                  }}
+                  disabled={isEditMode}
+                >
+                  {renderEventContent(item, index)}
+                </Pressable>
+              ))
+            )}
+          </View>
         </View>
-
-        {/* Events container */}
-        <View style={styles.eventsContainer}>
-          {loading ? (
-            <ActivityIndicator
-              size="large"
-              color={Colors.primary}
-              style={{ marginTop: 100 }}
-            />
-          ) : itineraryItems.length === 0 ? (
-            <View style={styles.noEventsContainer}>
-              <Text style={styles.noEventsText}>No events scheduled for this day.</Text>
-            </View>
-          ) : (
-            itineraryItems.map((item, index) => (
-              <Pressable
-                key={index}
-                style={[
-                  styles.eventBubble,
-                  getEventStyle(item.time, item.duration),
-                ]}
-                onPress={() => {
-                  if (!isEditMode) {
-                    router.push({
-                      pathname: "/screens/EventDetails",
-                      params: {
-                        activity: item.activity,
-                        time: item.time,
-                        duration: item.duration,
-                        description: item.description || "",
-                        address: item.address || "",
-                        contact: item.contact || "",
-                        hours: item.hours || "",
-                        price: item.price || "",
-                        rating: item.rating || "",
-                        ratingCount: item.ratingCount || "",
-                        image: item.imagePath || "",
-                        eventId: item.eventId || "",
-                        tags: item.tags ? (Array.isArray(item.tags) ? item.tags.join(',') : item.tags) : ""
-                      },
-                    });
-                  }
-                }}
-                disabled={isEditMode}
-              >
-                {renderEventContent(item, index)}
-              </Pressable>
-            ))
-          )}
-        </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  mainContainer: {
+    flex: 1,
+    backgroundColor: Colors.white,
+  },
   container: {
     flex: 1,
     backgroundColor: Colors.white,
@@ -685,10 +692,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   calendarDropdown: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    left: 0,
+    width: '100%',
     backgroundColor: Colors.white,
     zIndex: 10,
     elevation: 5,
