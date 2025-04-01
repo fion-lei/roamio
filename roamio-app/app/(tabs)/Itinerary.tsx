@@ -192,66 +192,64 @@ export default function Itinerary() {
 
   // Handle adding a new trip
   const handleAddTrip = async () => {
-    if (
-      newTrip.title &&
-      newTrip.fromDate &&
-      newTrip.toDate &&
-      newTrip.description
-    ) {
-      if (!user.email) {
-        Alert.alert("Error", "User email not found. Please log in.");
-        return;
-      }
-      // Build payload to pass into backend
-      const payload = {
-        user_email: user.email,
-        trip_title: newTrip.title,
-        trip_description: newTrip.description,
-        start_date: formatDate(newTrip.fromDate),
-        end_date: formatDate(newTrip.toDate),
-      };
-      try {
-        const response = await fetch("http://10.0.2.2:3000/itineraries", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-        const result = await response.json();
-        
-        if (response.ok) {
-          // Re-fetch itinerary list from backend after adding trip
-          const updatedResponse = await fetch(
-            `http://10.0.2.2:3000/itineraries?email=${encodeURIComponent(user.email)}`
-          );
-          const updatedData = await updatedResponse.json();
-          
-          if (updatedResponse.ok) {
-            const formattedUpdatedItineraries = (updatedData.itineraries || []).map((trip: any) => ({
-              ...trip,
-              fromDate: parseDate(trip.start_date),
-              toDate: parseDate(trip.end_date),
-              title: trip.trip_title,
-              description: trip.trip_description,
-              id: trip.itinerary_id,
-            }));
-            setItineraryList(
-              formattedUpdatedItineraries.length > 0
-                ? formattedUpdatedItineraries
-                : defaultItineraryData
-            );
-          }
-          
-          setModalVisible(false);
-          setNewTrip({ title: "", fromDate: null, toDate: null, description: "" });
-        } else {
-          Alert.alert("Error", result.error || "Failed to add trip.");
-        }
-      } catch (error) {
-        console.error("Error adding trip:", error);
-        Alert.alert("Error", "Failed to add trip.");
-      }
-    } else {
+    
+    if (!newTrip.title || !newTrip.fromDate || !newTrip.toDate || !newTrip.description) {
       Alert.alert("Error", "Please fill in all fields.");
+      return;
+    }
+
+    if (newTrip.toDate < newTrip.fromDate) {
+      Alert.alert("Error", "Please select an end date that is on or after the start date.");
+      return;
+    }
+    
+    // Build payload to pass into backend
+    const payload = {
+      user_email: user.email,
+      trip_title: newTrip.title,
+      trip_description: newTrip.description,
+      start_date: formatDate(newTrip.fromDate),
+      end_date: formatDate(newTrip.toDate),
+    };
+
+    try {
+      const response = await fetch("http://10.0.2.2:3000/itineraries", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const result = await response.json();
+      
+      if (response.ok) {
+        const updatedResponse = await fetch(
+          `http://10.0.2.2:3000/itineraries?email=${encodeURIComponent(user.email)}`
+        );
+        const updatedData = await updatedResponse.json();
+        
+        if (updatedResponse.ok) {
+          const formattedUpdatedItineraries = (updatedData.itineraries || []).map((trip: any) => ({
+            ...trip,
+            fromDate: parseDate(trip.start_date),
+            toDate: parseDate(trip.end_date),
+            title: trip.trip_title,
+            description: trip.trip_description,
+            id: trip.itinerary_id,
+          }));
+          setItineraryList(
+            formattedUpdatedItineraries.length > 0
+              ? formattedUpdatedItineraries
+              : defaultItineraryData
+          );
+        }
+        
+        setModalVisible(false);
+        setNewTrip({ title: "", fromDate: null, toDate: null, description: "" });
+      } else {
+        Alert.alert("Error", result.error || "Failed to add trip.");
+      }
+    } catch (error) {
+      console.error("Error adding trip:", error);
+      Alert.alert("Error", "Failed to add trip.");
     }
   };
   
@@ -288,7 +286,7 @@ export default function Itinerary() {
                     <Text style={styles.description}>{item.description}</Text>
                     {getEventCount(item.id) > 0 ? (
                       <View style={styles.eventCountContainer}>
-                        <FontAwesome name="check-square-o" size={16} color={Colors.peachySalmon} style={{ top: 2 }} />
+                        <FontAwesome name="check-square-o" size={16} color={Colors.peachySalmon} style={{ top: 2}} />
                         <Text style={styles.eventCountText}>
                           {formatEventCountText(item.id)}
                         </Text>
@@ -320,7 +318,7 @@ export default function Itinerary() {
                     <Text style={styles.description}>{item.description}</Text>
                     {getEventCount(item.id) > 0 ? (
                       <View style={styles.eventCountContainer}>
-                        <FontAwesome name="check-square-o" size={16} color={Colors.peachySalmon} style={{ top: 2 }} />
+                        <FontAwesome name="check-square-o" size={16} color={Colors.peachySalmon} top={2} />
                         <Text style={styles.eventCountText}>
                           {formatEventCountText(item.id)}
                         </Text>

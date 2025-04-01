@@ -10,7 +10,7 @@ import { useUser } from "@/contexts/UserContext";
 const getImageForActivity = (title: string): string => {
   // Map activity titles to specific images
   const activityImageMap: Record<string, string> = {
-    "Elgin Hill": "camp.jpg",
+    "Elgin Hill": "camp.png",
     "OEB Breakfast Co.": "food.png",
   };
   
