@@ -1,7 +1,7 @@
 const express = require('express');
 const { readUsers, appendUser, updateUserDetails } = require('./helpers/usersHelpers');
 const { appendItinerary, readItineraries, updateItinerary, deleteItinerary } = require('./helpers/itineraryHelpers');
-const { appendEvent, readEvents, getEvents, countEvents } = require('./helpers/eventsHelpers');
+const { appendEvent, readEvents, getEvents, countEvents, deleteEvent } = require('./helpers/eventsHelpers');
 const app = express();
 
 const PORT = process.env.PORT || 3000;
@@ -470,5 +470,21 @@ app.get('/event-counts/:itineraryId', async (req, res) => {
   } catch (error) {
     console.error("Error fetching event count:", error);
     return res.status(500).json({ error: 'Error fetching event count.' });
+  }
+});
+
+// ----------------------
+// Delete event from itinerary
+// ----------------------
+app.delete('/events/:id', async (req, res) => {
+  const eventId = req.params.id;
+  try {
+    await deleteEvent(eventId);
+    return res.status(200).json({ message: "Event deleted successfully." });
+  } catch (error) {
+    console.error("Error deleting event:", error);
+    return res.status(error.message === "Event not found" ? 404 : 500).json({ 
+      error: error.message || "Error deleting event." 
+    });
   }
 });

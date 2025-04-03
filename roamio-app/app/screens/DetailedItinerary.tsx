@@ -8,6 +8,7 @@ import {
   Pressable,
   ActivityIndicator,
   SafeAreaView,
+  Alert,
 } from "react-native";
 import { Colors } from "@/constants/Colors";
 import { FontAwesome } from "@expo/vector-icons";
@@ -123,17 +124,17 @@ const DetailedItinerary = () => {
   // function to calculate end time from start time and duration
   const calculateEndTime = (startTime: string, durationHours: number) => {
     const [hours, minutes] = startTime.split(":").map(Number);
-    
+
     // Calculate total minutes
     let totalMinutes = hours * 60 + minutes + durationHours * 60;
-    
+
     // Handle overflow (more than 24 hours) by wrapping around
     totalMinutes = totalMinutes % (24 * 60);
-    
+
     // Convert back to hours and minutes
     const endHours = Math.floor(totalMinutes / 60);
     const endMinutes = Math.floor(totalMinutes % 60);
-    
+
     // Format as HH:MM
     return `${endHours}:${endMinutes.toString().padStart(2, "0")}`;
   };
@@ -152,7 +153,49 @@ const DetailedItinerary = () => {
         <Pressable
           style={styles.deleteButton}
           onPress={() => {
-            /* delete functionality here */
+            console.log("trying to delete event with ID:", item.eventId);
+            Alert.alert(
+              "Confirm Removal",
+              `Are you sure you want to remove ${item.activity} from your itinerary?`,
+              [
+                {
+                  text: "Cancel",
+                  style: "cancel"
+                },
+                {
+                  text: "Remove",
+                  onPress: async () => {
+                    try {
+                      setLoading(true);
+                      
+                      // getting backend info and deleting event
+                      const response = await fetch(`http://10.0.2.2:3000/events/${item.eventId}`, {
+                        method: 'DELETE',
+                      });
+                      
+                      if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || 'Failed to delete event');
+                      }
+                      
+                      // Remove the event from local state
+                      setItineraryItems(currentItems => 
+                        currentItems.filter(event => event.eventId !== item.eventId)
+                      );
+                      
+                      // Show success message
+                      Alert.alert("Success", `${item.activity} has been removed from your itinerary.`);
+                    } catch (error) {
+                      // Show error message
+                      console.error('Error deleting event:', error);
+                      Alert.alert("Error", `Failed to remove ${item.activity}. Please try again.`);
+                    } finally {
+                      setLoading(false);
+                    }
+                  }
+                }
+              ]
+            );
           }}
         >
           <View style={styles.iconContainer}>
@@ -214,7 +257,7 @@ const DetailedItinerary = () => {
   const fetchItineraryItems = async (date: string) => {
     setLoading(true);
     try {
-   //   console.log(`Fetching events for itinerary: ${itineraryId}, date: ${date}`);
+      //   console.log(`Fetching events for itinerary: ${itineraryId}, date: ${date}`);
 
       // get all events for this itinerary
       const response = await fetch(`http://10.0.2.2:3000/events/${itineraryId}`);
@@ -297,22 +340,22 @@ const DetailedItinerary = () => {
           eventEndDate = eventStartDate; // Single day event
         }
 
-    //(`Event ${event.title} date range: ${eventStartDate.toDateString()} to ${eventEndDate.toDateString()}, Selected date: ${selectedDateObj.toDateString()}`);
+        //(`Event ${event.title} date range: ${eventStartDate.toDateString()} to ${eventEndDate.toDateString()}, Selected date: ${selectedDateObj.toDateString()}`);
 
         // Check if the selected date falls within the event's date range
         const isInDateRange =
           selectedDateObj >= eventStartDate &&
           selectedDateObj <= eventEndDate;
 
-    //    console.log(`Event ${event.title} is in selected date range: ${isInDateRange}`);
+        //    console.log(`Event ${event.title} is in selected date range: ${isInDateRange}`);
         return isInDateRange;
       });
 
-   //   console.log(`Found ${eventsOnSelectedDate.length} events for selected date ${date}`);
+      //   console.log(`Found ${eventsOnSelectedDate.length} events for selected date ${date}`);
 
       // Format the events for display in the timeline
       const formattedEvents = eventsOnSelectedDate.map((event: any) => {
-    //    console.log(`Processing event time: ${event.start_time}, ${event.end_time}`);
+        //    console.log(`Processing event time: ${event.start_time}, ${event.end_time}`);
         // Calculate duration based on start and end times
         let duration = 1; // Default duration is 1 hour
         let formattedStartTime = "00:00"; // Default to midnight (beginning of day)
@@ -436,7 +479,7 @@ const DetailedItinerary = () => {
               }
 
               formattedStartTime = `${hours}:${minutes.toString().padStart(2, '0')}`;
-         //     console.log(`Parsed start time: ${formattedStartTime}`);
+              //     console.log(`Parsed start time: ${formattedStartTime}`);
 
               // If there's an end time, calculate duration
               if (event.end_time) {
@@ -458,7 +501,7 @@ const DetailedItinerary = () => {
                   duration = (endHours - hours) + (endMinutes - minutes) / 60;
                   duration = Math.round(duration * 10) / 10; // Round to nearest tenth
 
-           //       console.log(`Calculated duration: ${duration}h`);
+                  //       console.log(`Calculated duration: ${duration}h`);
 
                   // Ensure minimum duration for display
                   duration = Math.max(duration, 0.5);
@@ -475,7 +518,7 @@ const DetailedItinerary = () => {
           }
         }
 
-   //     console.log(`Formatted event: ${event.title}, time: ${formattedStartTime}, duration: ${duration}h, multiday: ${isMultiDayEvent ? 'yes' : 'no'}`);
+        //     console.log(`Formatted event: ${event.title}, time: ${formattedStartTime}, duration: ${duration}h, multiday: ${isMultiDayEvent ? 'yes' : 'no'}`);
 
 
         return {
@@ -507,7 +550,7 @@ const DetailedItinerary = () => {
         return aTime - bTime;
       });
 
-//      console.log(`Setting ${formattedEvents.length} formatted events`);
+      //      console.log(`Setting ${formattedEvents.length} formatted events`);
       setItineraryItems(formattedEvents);
     } catch (error) {
       console.error("Error fetching itinerary items:", error);
@@ -558,7 +601,7 @@ const DetailedItinerary = () => {
           ))}
         </View>
       )}
-      
+
       <ScrollView style={styles.container}>
         <View style={styles.timelineContainer}>
           {/* Time markers */}
