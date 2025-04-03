@@ -44,24 +44,23 @@ const DetailedItinerary = () => {
         <View
           style={{
             flexDirection: "column",
-            flex: 0,
-            marginLeft: 110,
+            flex: 1,
+            alignItems: "center",
+            marginRight: 70,
           }}
         >
-          <Text style={{ color: Colors.coral, fontSize: 20, fontFamily: "quicksand-bold" }}>
+          <Text style={{ color: Colors.coral, fontSize: 20, fontFamily: "quicksand-bold", textAlign: "center" }}>
             {itineraryTitle}
           </Text>
 
           <Pressable onPress={() => setShowCalendar(!showCalendar)}>
-            <View style={{ flexDirection: "row", marginTop: 0, alignItems: "center", marginLeft: -30 }}>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
               <FontAwesome name="calendar" size={20} color={Colors.primary} />
-
               <Text style={{ color: Colors.primary, marginLeft: 4, fontSize: 14, fontFamily: "quicksand-semibold" }}>
                 {selectedDate}
               </Text>
             </View>
           </Pressable>
-
         </View>
       ),
       headerRight: () => (
