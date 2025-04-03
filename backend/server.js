@@ -1,6 +1,6 @@
 const express = require('express');
 const { readUsers, appendUser, updateUserDetails } = require('./helpers/usersHelpers');
-const { appendItinerary, readItineraries, updateItinerary, deleteItinerary,updateSharedWith } = require('./helpers/itineraryHelpers');
+const { appendItinerary, readItineraries, updateItinerary, deleteItinerary,updateSharedWith,unshareItinerary} = require('./helpers/itineraryHelpers');
 const { appendEvent, readEvents, getEvents, countEvents } = require('./helpers/eventsHelpers');
 const app = express();
 const cors = require('cors'); // Add this
@@ -12,6 +12,7 @@ const {
   clearRequest,
   getFriends,
   toggleFavorite,
+  appendFriendRequest
 } = require('./helpers/friendsHelper');
 
 const PORT = process.env.PORT || 3000;
@@ -636,4 +637,62 @@ app.post('/shareItinerary', (req, res) => {
     .catch((err) =>
       res.status(err.status || 500).json({ error: err.message || 'Internal server error' })
     );
+});
+
+/**
+ * DELETE endpoint for owners to unshare an itinerary with a friend.
+ * Expected body: { itinerary_id: string, friend_email: string }
+ */
+app.delete('/unshare', async (req, res) => {
+  const { itinerary_id, friend_email } = req.body;
+  if (!itinerary_id || !friend_email) {
+    return res.status(400).json({ error: "Missing itinerary_id or friend_email" });
+  }
+  try {
+    const result = await unshareItinerary(itinerary_id, friend_email);
+    res.status(200).json(result);
+  } catch (error) {
+    console.error("Error unsharing itinerary:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * DELETE endpoint for shared users (non-owners) to unadd themselves from an itinerary.
+ * Expected body: { itinerary_id: string, friend_email: string }
+ * (Here, friend_email should be the email of the current user.)
+ */
+app.delete('/itineraries/unadd', async (req, res) => {
+  const { itinerary_id, friend_email } = req.body;
+  if (!itinerary_id || !friend_email) {
+    return res.status(400).json({ error: "Missing itinerary_id or friend_email" });
+  }
+  try {
+    const result = await unshareItinerary(itinerary_id, friend_email);
+    res.status(200).json(result);
+  } catch (error) {
+    console.error("Error unadding from itinerary:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/sendFriendRequest', async (req, res) => {
+  const { from_email, to_email } = req.body;
+  console.log("request received")
+  if (!from_email || !to_email) {
+    return res.status(400).json({ error: "Missing from_email or to_email" });
+  }
+  
+  try {
+    // Generate a unique ID using current timestamp (or replace with your preferred method)
+    const newId = Date.now();
+    
+    // Optionally, you might check for duplicate requests here
+
+    await appendFriendRequest({ id: newId, from_email, to_email });
+    res.status(200).json({ message: "Friend request sent successfully" });
+  } catch (error) {
+    console.error("Error sending friend request:", error);
+    res.status(500).json({ error: "Error sending friend request" });
+  }
 });

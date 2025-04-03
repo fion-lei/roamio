@@ -20,9 +20,6 @@ import { useFonts } from "expo-font";
 import { Colors } from "@/constants/Colors";
 import { useUser } from "@/contexts/UserContext";
 
-
-
-
 type RootStackParamList = {
   FriendsScreen: undefined;
   Detail: { name: string; phone: string; avatar: any; email_friend:string;first_name:string ; owner_name:string};
@@ -55,11 +52,17 @@ export default function FriendsScreen() {
   >("default");
   const [showDropdown, setShowDropdown] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [unshareModalVisible, setUnshareModalVisible] = useState(false);
+  const [selectedItinerary, setSelectedItinerary] = useState<Itinerary | null>(null);
+
   const [searchType, setSearchType] = useState<"phone" | "email">("phone");
   const [countryCode, setCountryCode] = useState("+1");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [emailSearch, setEmailSearch] = useState("");
   const [showFriendRequestModal, setShowFriendRequestModal] = useState(false);
+
+  const [activeTripTab, setActiveTripTab] = useState<"my" | "shared">("my");
+
 
 
   const navigation = useNavigation<NavigationProp>();
@@ -176,45 +179,80 @@ export default function FriendsScreen() {
       return 0;
     });
 
-    
-
-  // Handle sending friend request
-  const handleAddFriend = async () => {
-    try {
-      let queryParam = "";
-      if (searchType === "phone") {
-        const fullPhone = `${countryCode} ${phoneNumber}`.trim();
-        queryParam = `phone=${encodeURIComponent(fullPhone)}`;
-      } else {
-        queryParam = `email=${encodeURIComponent(emailSearch)}`;
+    const handleUnadd = async (itineraryId: string) => {
+      try {
+        const response = await fetch(`${SERVER_IP}/itineraries/unadd`, {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ itinerary_id: itineraryId, friend_email: currentUserEmail }),
+        });
+        if (response.ok) {
+          await fetchTrips(); // refresh trips list
+          Alert.alert("Success", "You have been removed from this itinerary.");
+        } else {
+          Alert.alert("Error", "Failed to remove you from the itinerary.");
+        }
+      } catch (error) {
+        console.error("Error in unadd:", error);
+        Alert.alert("Error", "Something went wrong while processing your request.");
       }
-      // Assumes an endpoint to search users exists, e.g., GET /users?search=...
-      const res = await fetch(`${SERVER_IP}/users?${queryParam}`);
-      const users = await res.json();
-      const match = users[0]; // Take the first match
-      if (match) {
+    };
+
+    const handleUnshare = async (itineraryId: string, friendEmail: string) => {
+      try {
+        const response = await fetch(`${SERVER_IP}/unshare`, {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ itinerary_id: itineraryId, friend_email: friendEmail }),
+        });
+        if (response.ok) {
+          await fetchTrips(); // refresh trips list
+          Alert.alert("Success", "Friend removed from the itinerary.");
+        } else {
+          Alert.alert("Error", "Failed to unshare itinerary.");
+        }
+      } catch (error) {
+        console.error("Error unsharing itinerary:", error);
+        Alert.alert("Error", "Something went wrong.");
+      }
+    };
+    
+    const handleAddFriend = async () => {
+      try {
+        // We'll use the provided email directly since there's no /users endpoint.
+        if (searchType === "phone") {
+          Alert.alert("Not Supported", "Phone search is not supported. Please use email search.");
+          return;
+        }
+        
+        const friendEmail = emailSearch.trim();
+        if (!friendEmail) {
+          Alert.alert("Error", "Please enter a valid email address.");
+          return;
+        }
+        
+        // Send the friend request directly using the provided email
         const requestRes = await fetch(`${SERVER_IP}/sendFriendRequest`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             from_email: currentUserEmail,
-            to_email: match.email,
+            to_email: friendEmail,
           }),
         });
+        
         if (requestRes.ok) {
           Alert.alert("Success", "Friend request sent");
           setShowAddModal(false);
         } else {
           Alert.alert("Error", "Failed to send friend request.");
         }
-      } else {
-        Alert.alert("Friend not found", "Check the info and try again.");
+      } catch (error) {
+        console.error("Error sending friend request:", error);
+        Alert.alert("Error", "Something went wrong while sending the request.");
       }
-    } catch (error) {
-      console.error("Error sending friend request:", error);
-      Alert.alert("Error", "Something went wrong while sending the request.");
-    }
-  };
+    };
+    
 
 
   const handleAcceptFriendRequest = async (requestId: string) => {
@@ -338,7 +376,7 @@ export default function FriendsScreen() {
       <Modal visible={showAddModal} transparent animationType="slide">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Find a Friend</Text>
+            <Text style={styles.modalTitle}>Add a Friend</Text>
             {/* Toggle between phone/email */}
             <View style={styles.toggleContainer}>
               <TouchableOpacity
@@ -397,6 +435,52 @@ export default function FriendsScreen() {
           </View>
         </View>
       </Modal>
+
+      {unshareModalVisible && selectedItinerary && (
+  <Modal
+    visible={unshareModalVisible}
+    transparent
+    animationType="slide"
+    onRequestClose={() => setUnshareModalVisible(false)}
+  >
+    <View style={styles.modalOverlay}>
+      <View style={styles.modalContent}>
+        <Text style={styles.modalTitle}>Unshare Itinerary</Text>
+        <Text style={styles.modalSubtitle}>Select a friend to unshare with</Text>
+        {(() => {
+          // Parse shared_with again for the selected itinerary (or reuse from state if available)
+          let sharedWith: SharedFriend[] = [];
+          if (
+            selectedItinerary.shared_with &&
+            selectedItinerary.shared_with.trim() !== ""
+          ) {
+            try {
+              sharedWith = JSON.parse(selectedItinerary.shared_with) as SharedFriend[];
+            } catch (error) {
+              console.error("Error parsing shared_with:", error);
+            }
+          }
+          return sharedWith.map((friend) => (
+            <TouchableOpacity
+              key={friend.email}
+              style={styles.friendUnshareOption}
+              onPress={async () => {
+                await handleUnshare(selectedItinerary.itinerary_id, friend.email);
+                setUnshareModalVisible(false);
+              }}
+            >
+              <Text style={styles.requestUnshareText}>{friend.friend_name}</Text>
+            </TouchableOpacity>
+          ));
+        })()}
+        <TouchableOpacity onPress={() => setUnshareModalVisible(false)} style={styles.cancelButton}>
+          <Text style={styles.cancelButtonText}>Cancel</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  </Modal>
+)}
+
 
 
       {/* Friend Requests Modal */}
@@ -494,16 +578,69 @@ export default function FriendsScreen() {
         )}
       />
 
+      {/* Segmented Control for Trips */}
+    <View style={styles.segmentedControlContainer}>
+      <TouchableOpacity
+        style={[
+          styles.toggleButton,
+          activeTripTab === "my" && styles.segmentButtonActive,
+        ]}
+        onPress={() => setActiveTripTab("my")}
+      >
+        <Text
+          style={[
+            styles.segmentButtonText,
+            activeTripTab === "my" && styles.segmentButtonTextActive,
+          ]}
+        >
+          My Trips Shared
+        </Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={[
+          styles.toggleButton,
+          activeTripTab === "shared" && styles.segmentButtonActive,
+        ]}
+        onPress={() => setActiveTripTab("shared")}
+      >
+        <Text
+          style={[
+            styles.segmentButtonText,
+            activeTripTab === "shared" && styles.segmentButtonTextActive,
+          ]}
+        >
+          Shared With Me
+        </Text>
+      </TouchableOpacity>
+    </View>
 
-      {/* Trips Section (static for now) */}
+
       {/* Dynamic Trips With Friends Section */}
-    <Text style={styles.sectionTitle}>Trips With Friends</Text>
+   <Text style={styles.sectionTitle}></Text>
     <FlatList
       horizontal
-      data={trips.filter(trip => trip.shared_with && trip.shared_with.trim() !== "")}
+      // Filter trips based on the active tab:
+      data={trips.filter((trip) => {
+        // For "My Trips", only include trips where the current user is the owner.
+        if (activeTripTab === "my") {
+          return (
+            trip.user_email === currentUserEmail &&
+            trip.shared_with &&
+            trip.shared_with.trim() !== "" &&
+            trip.shared_with.trim() !== "[]"
+          );        }
+        // For "Shared With Me", include trips where the current user is not the owner
+        // and shared_with is not empty (also filtering out empty array strings).
+        return (
+          trip.user_email !== currentUserEmail &&
+          trip.shared_with &&
+          trip.shared_with.trim() !== "" &&
+          trip.shared_with.trim() !== "[]"
+        );
+      })}
       keyExtractor={(item) => item.itinerary_id.toString()}
       renderItem={({ item }) => {
-        // Parse the shared_with JSON field and cast it to SharedFriend[]
+        // Parse the shared_with JSON field
         let sharedWith: SharedFriend[] = [];
         if (item.shared_with && item.shared_with.trim() !== "") {
           try {
@@ -512,29 +649,55 @@ export default function FriendsScreen() {
             console.error("Error parsing shared_with:", error);
           }
         }
-        
-        // Check if the current user is the owner of the trip
+
+        // Check if current user is the owner
         const isOwner = item.user_email === currentUserEmail;
-        
-        // For non-owners, find the mapping for the current user to get owner_name
+
+        // For non-owners, get the friend mapping for current user
         const friendMapping = sharedWith.find(friend => friend.email === currentUserEmail);
-        
-        // Determine the display name:
+
+        // Determine display name
         const displayName = isOwner
           ? (sharedWith.length > 0
               ? sharedWith.map(friend => friend.friend_name).join(", ")
-              : "")
+              : "Not shared")
           : `Shared by: ${friendMapping?.owner_name || item.user_email}`;
-        
+
         return (
           <View style={styles.tripCard}>
             <Image source={require("../../assets/images/avatar1.png")} style={styles.tripImage} />
             <Text style={styles.friendTripName}>{item.trip_title}</Text>
             <Text style={styles.friendName}>{displayName}</Text>
-            {/* Unshare/Unadd buttons can be added here as needed */}
+            {isOwner ? (
+              // Owner: Unshare button to open modal for selective removal
+              <TouchableOpacity
+                style={styles.unshareButton}
+                onPress={() => {
+                  setSelectedItinerary(item);
+                  setUnshareModalVisible(true);
+                }}
+              >
+                <Feather name="trash-2" size={20} color="red" />
+              </TouchableOpacity>
+            ) : (
+              // Non-owner: Unadd button to remove self
+              <TouchableOpacity
+                style={styles.unaddButton}
+                onPress={() => handleUnadd(item.itinerary_id)}
+              >
+                <Feather name="x-circle" size={20} color="red" />
+              </TouchableOpacity>
+            )}
           </View>
         );
       }}
+      ListEmptyComponent={
+        <Text style={styles.emptyMessage}>
+          {activeTripTab === "my"
+            ? "You haven't shared any trips yet."
+            : "No trips have been shared with you."}
+        </Text>
+      }
       showsHorizontalScrollIndicator={false}
     />
 
@@ -582,6 +745,38 @@ const styles = StyleSheet.create({
     fontFamily: "quicksand-bold",
     marginBottom: 10,
   },
+  unshareButton: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    backgroundColor: "#fff",
+    padding: 4,
+    borderRadius: 20,
+    elevation: 2,
+  },
+  cancelButtonText: {
+    fontSize: 16,
+    color: "#888",
+    fontFamily: "quicksand-bold",
+  },
+  unaddButton: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    backgroundColor: "#fff",
+    padding: 4,
+    borderRadius: 20,
+    elevation: 2,
+  },friendOption: {
+    padding: 10,
+    width: "100%",
+    borderBottomWidth: 1,
+    borderColor: "#ccc",
+  },
+  friendOptionText: {
+    fontSize: 16,
+    fontFamily: "quicksand-regular",
+  },
   dropdownToggleMini: {
     flexDirection: "row",
     alignItems: "center",
@@ -609,12 +804,22 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     alignItems: "center",
   },
+  emptyMessage: {
+    color: "#FF4444", 
+    fontFamily: "quicksand-semibold",
+    fontSize: 16,
+    marginHorizontal: 10,
+    marginVertical: 20,
+  },  
   toggleButtonActive: {
     backgroundColor: "#ffcccc",
   },
   toggleText: {
     fontFamily: "quicksand-bold",
     fontSize: 14,
+  },
+  cancelButton: {
+    marginTop: 10,
   },
   phoneInputRow: {
     flexDirection: "row",
@@ -707,6 +912,71 @@ const styles = StyleSheet.create({
     padding: 10,
     width: "100%",
   },
+  requestUnshareItem: {
+    marginBottom: 15,
+    alignItems: "center",
+    justifyContent: "center", // Centers content vertically
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: Colors.coral,
+    borderRadius: 12,
+    paddingVertical: 20,
+    paddingHorizontal: 15,
+    width: "100%",
+  },
+  friendUnshareOption: {
+    width: "100%",
+    padding: 10,
+    marginVertical: 8,        // Adds space above and below each option
+    alignItems: "center",     // Centers children horizontally
+    borderWidth: 1,
+    borderColor: Colors.coral,
+    borderRadius: 10,
+  },
+  
+  requestUnshareText: {
+    textAlign: "center",
+    fontFamily: "quicksand-semibold",
+    fontSize: 16,
+    color: "#333",
+    padding: 10,
+  },
+  
+  modalSubtitle: {
+    fontFamily: "quicksand-regular",
+    fontSize: 16,
+    marginBottom: 10,
+    textAlign: "center",
+  },
+
+  segmentedControlContainer: {
+    flexDirection: "row",
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    overflow: "hidden",
+  },
+  segmentButton: {
+    flex: 1,
+    paddingVertical: 8,
+    alignItems: "center",
+    backgroundColor: "#f5f5f5",
+  },
+  segmentButtonActive: {
+    backgroundColor: Colors.palePink,
+  },
+  segmentButtonText: {
+    fontFamily: "quicksand-regular",
+    fontSize: 16,
+    color: Colors.dark.text,
+  },
+  segmentButtonTextActive: {
+    fontFamily: "quicksand-bold",
+    fontSize: 16,
+    color: "#000",
+  },
+  
 });
 
 

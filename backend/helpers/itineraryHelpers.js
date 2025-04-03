@@ -149,5 +149,37 @@ const updateSharedWith = async (itinerary_id, friend_email, access_type,friend_n
     throw error;
   }
 };
+async function unshareItinerary(itinerary_id, friend_email) {
+  console.log('unshareItinerary called with:', { itinerary_id, friend_email});
+  try {
+    // Read all itineraries
+    const itineraries = await readItineraries();
+    // Find the itinerary to update
+    const itinerary = itineraries.find(it => it.itinerary_id === itinerary_id);
+    if (!itinerary) {
+      throw new Error("Itinerary not found");
+    }
+    
+    // Parse the shared_with field
+    let sharedWith = [];
+    if (itinerary.shared_with && itinerary.shared_with.trim() !== "") {
+      try {
+        sharedWith = JSON.parse(itinerary.shared_with);
+      } catch (err) {
+        console.error("Error parsing shared_with JSON:", err);
+        sharedWith = [];
+      }
+    }
+    
+    // Remove the friend whose email matches friend_email
+    const updatedSharedWith = sharedWith.filter(friend => friend.email !== friend_email);
+    
+    // Update the itinerary record with the new shared list
+    await updateItinerary(itinerary_id, { shared_with: JSON.stringify(updatedSharedWith) });
+    return { message: "Itinerary updated successfully." };
+  } catch (error) {
+    throw error;
+  }
+}
 
-module.exports = { appendItinerary, readItineraries, updateItinerary, deleteItinerary, updateSharedWith };
+module.exports = { appendItinerary, readItineraries, updateItinerary, deleteItinerary, updateSharedWith,unshareItinerary };
