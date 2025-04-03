@@ -192,70 +192,111 @@ export default function Itinerary() {
 
   // Handle adding a new trip
   const handleAddTrip = async () => {
-    
-    if (!newTrip.title || !newTrip.fromDate || !newTrip.toDate || !newTrip.description) {
-      Alert.alert("Error", "Please fill in all fields.");
-      return;
-    }
-
-    if (newTrip.toDate < newTrip.fromDate) {
-      Alert.alert("Error", "Please select an end date that is on or after the start date.");
-      return;
-    }
-    
-    // Build payload to pass into backend
-    const payload = {
-      user_email: user.email,
-      trip_title: newTrip.title,
-      trip_description: newTrip.description,
-      start_date: formatDate(newTrip.fromDate),
-      end_date: formatDate(newTrip.toDate),
-    };
-
-    try {
-      const response = await fetch("http://10.0.0.197:3000/itineraries", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const result = await response.json();
-      
-      // Re-fetch itinerary list from backend after adding trip
-      if (response.ok) { 
-       
-        const updatedResponse = await fetch(
-          `http://10.0.0.197:3000/itineraries?email=${encodeURIComponent(user.email)}`
-        );
-        const updatedData = await updatedResponse.json();
-        
-        if (updatedResponse.ok) {
-          const formattedUpdatedItineraries = (updatedData.itineraries || []).map((trip: any) => ({
-            ...trip,
-            fromDate: parseDate(trip.start_date),
-            toDate: parseDate(trip.end_date),
-            title: trip.trip_title,
-            description: trip.trip_description,
-            id: trip.itinerary_id,
-          }));
-          setItineraryList(
-            formattedUpdatedItineraries.length > 0
-              ? formattedUpdatedItineraries
-              : defaultItineraryData
-          );
-        }
-        
-        setModalVisible(false);
-        setNewTrip({ title: "", fromDate: null, toDate: null, description: "" });
-      } else {
-        Alert.alert("Error", result.error || "Failed to add trip.");
+    if (
+      newTrip.title &&
+      newTrip.fromDate &&
+      newTrip.toDate &&
+      newTrip.description
+    ) {
+      if (!user.email) {
+        Alert.alert("Error", "User email not found. Please log in.");
+        return;
       }
-    } catch (error) {
-      console.error("Error adding trip:", error);
-      Alert.alert("Error", "Failed to add trip.");
+      // Build payload to pass into backend
+      const payload = {
+        user_email: user.email,
+        trip_title: newTrip.title,
+        trip_description: newTrip.description,
+        start_date: formatDate(newTrip.fromDate),
+        end_date: formatDate(newTrip.toDate),
+      };
+      try {
+        const response = await fetch("http://10.0.2.2:3000/itineraries", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const result = await response.json();
+        console.log("POST response:", result); // Log POST response
+        if (response.ok) {
+          // Re-fetch itinerary list from backend after adding trip
+          const updatedResponse = await fetch(
+            `http://10.0.2.2:3000/itineraries?email=${encodeURIComponent(user.email)}`
+          );
+          const updatedData = await updatedResponse.json();
+          console.log("GET response:", updatedData); // Log GET response
+          if (updatedResponse.ok) {
+            const formattedUpdatedItineraries = (updatedData.itineraries || []).map((trip: any) => ({
+              ...trip,
+              fromDate: parseDate(trip.start_date),
+              toDate: parseDate(trip.end_date),
+              title: trip.trip_title,
+              description: trip.trip_description,
+              id: trip.itinerary_id,
+            }));
+            setItineraryList(
+              formattedUpdatedItineraries.length > 0
+                ? formattedUpdatedItineraries
+                : defaultItineraryData
+            );
+          }
+          
+          setModalVisible(false);
+          setNewTrip({ title: "", fromDate: null, toDate: null, description: "" });
+        } else {
+          Alert.alert("Error", result.error || "Failed to add trip.");
+        }
+      } catch (error) {
+        console.error("Error adding trip:", error);
+        Alert.alert("Error", "Failed to add trip.");
+      }
+    } else {
+      Alert.alert("Error", "Please fill in all fields.");
     }
   };
   
   
+  const handleDeleteItinerary = async (id: string) => {
+    Alert.alert(
+      "Delete Itinerary",
+      "Are you sure you want to delete this itinerary? This action cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const response = await fetch("http://10.0.2.2:3000/itineraries/remove-user", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  itinerary_id: id,
+                  user_email: user.email,
+                }),
+              });
+  
+              const result = await response.json();
+  
+              if (response.ok) {
+                setItineraryList((prev) => prev.filter((trip) => trip.id !== id));
+                Alert.alert("Deleted", "Itinerary was successfully removed.");
+              } else {
+                Alert.alert("Error", result.error || "Failed to delete itinerary.");
+              }
+            } catch (err) {
+              console.error("Delete Error:", err);
+              Alert.alert("Error", "Something went wrong while deleting.");
+            }
+          },
+        },
+      ]
+    );
+  };
+ 
+
+
+
   return (
     <SafeAreaView style={styles.safeContainer}>
       <View style={styles.container}>
@@ -278,10 +319,15 @@ export default function Itinerary() {
                 <Text style={[styles.sectionTitle, styles.ongoingTitle]}>Ongoing Trips</Text>
                 {ongoingTrips.map((item) => (
                   <View key={item.id} style={[styles.box, styles.ongoingBox]}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                      <Entypo name="location-pin" size={18} color={Colors.primary} />
-                      <Text style={styles.title}>{item.title}</Text>
-                      {item.shared_with &&
+                      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                          <Entypo name="location-pin" size={18} color={Colors.primary} />
+                          <Text style={styles.title}>{item.title}</Text>
+                        </View>
+                        <Pressable onPress={() => handleDeleteItinerary(item.id)}>
+                          <AntDesign name="minuscircle" size={22} color="red" />
+                        </Pressable>
+                        {item.shared_with &&
                         item.shared_with.trim() !== "" &&
                         item.shared_with.trim() !== "[]" && (
                           <View style={styles.sharedBadge}>
@@ -317,16 +363,16 @@ export default function Itinerary() {
                 <Text style={[styles.sectionTitle, styles.upcomingTitle]}>Upcoming Trips</Text>
                 {upcomingTrips.map((item) => (
                   <View key={item.id} style={[styles.box, styles.upcomingBox]}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                      <Entypo name="location-pin" size={18} color={Colors.primary} />
-                      {item.shared_with &&
-                        item.shared_with.trim() !== "" &&
-                        item.shared_with.trim() !== "[]" && (
-                          <View style={styles.sharedBadge}>
-                            <Text style={styles.sharedBadgeText}>Shared</Text>
-                          </View>
-                        )}                   
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                        <Entypo name="location-pin" size={18} color={Colors.primary} />
+                        <Text style={styles.title}>{item.title}</Text>
+                      </View>
+                      <Pressable onPress={() => handleDeleteItinerary(item.id)}>
+                        <AntDesign name="minuscircle" size={22} color="red" />
+                      </Pressable>
                     </View>
+
                     <Text style={styles.date}>
                       {`${formatDate(item.fromDate)} - ${formatDate(item.toDate)}`}
                     </Text>
@@ -355,10 +401,15 @@ export default function Itinerary() {
                 <Text style={[styles.sectionTitle, styles.pastTitle]}>Past Trips</Text>
                 {pastTrips.map((item) => (
                   <View key={item.id} style={[styles.box, styles.pastBox]}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                      <Entypo name="location-pin" size={18} color={Colors.primary} />
-                      <Text style={styles.title}>{item.title}</Text>
-                    </View>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                          <Entypo name="location-pin" size={18} color={Colors.primary} />
+                          <Text style={styles.title}>{item.title}</Text>
+                        </View>
+                        <Pressable onPress={() => handleDeleteItinerary(item.id)}>
+                          <AntDesign name="minuscircle" size={22} color="red" />
+                        </Pressable>
+                      </View>
                     <Text style={styles.date}>
                       {`${formatDate(item.fromDate)} - ${formatDate(item.toDate)}`}
                     </Text>
