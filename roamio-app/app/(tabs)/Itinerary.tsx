@@ -268,15 +268,19 @@ export default function Itinerary() {
           style: "destructive",
           onPress: async () => {
             try {
-              const response = await fetch("http://10.0.2.2:3000/itineraries/remove-user", {
-                method: "POST",
+              // const response = await fetch("http://10.0.2.2:3000/itineraries/remove-user", {
+              //   method: "POST",
+              //   headers: { "Content-Type": "application/json" },
+              //   body: JSON.stringify({
+              //     itinerary_id: id,
+              //     user_email: user.email,
+              //   }),
+              // });
+              const response = await fetch(`http://10.0.2.2:3000/itineraries/${id}`, {
+                method: "DELETE",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  itinerary_id: id,
-                  user_email: user.email,
-                }),
               });
-  
+              
               const result = await response.json();
   
               if (response.ok) {
