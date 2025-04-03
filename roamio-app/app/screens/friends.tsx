@@ -803,7 +803,7 @@ const styles = StyleSheet.create({
     borderColor: "#ddd",
   },
   dropdownText: {
-    fontFamily: "Quicksand-Regular",
+    fontFamily: "quicksand-semibold",
     fontSize: 16,
     marginRight: 5,
   },
