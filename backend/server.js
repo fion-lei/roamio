@@ -241,7 +241,7 @@ app.get('/active-itineraries', async (req, res) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
-    // Filter itineraries to include only those belonging to the specified emailND that are either ongoing or upcoming 
+    // Filter itineraries to include only those belonging to the specified email that are either ongoing or upcoming 
     // (end date >= today)
     const filtered = itineraries.filter(it => {
       if (it.user_email !== email) return false;
@@ -333,25 +333,6 @@ app.post('/events', async (req, res) => {
       return res.status(404).json({ error: 'Itinerary not found.' });
     }
     
-    // Validates that event dates are set within itinerary dates 
-    if (start_date && itinerary.start_date && itinerary.end_date) {
-      
-      const eventStartDate = new Date(start_date);
-      const eventEndDate = end_date ? new Date(end_date) : eventStartDate;
-      const itineraryStartDate = new Date(itinerary.start_date);
-      const itineraryEndDate = new Date(itinerary.end_date);
-      
-      if (eventStartDate < itineraryStartDate || eventEndDate > itineraryEndDate) {
-        return res.status(400).json({
-          error: 'Event dates must be within itinerary date range.',
-          details: {
-            eventDates: { start: start_date, end: end_date || start_date },
-            itineraryDates: { start: itinerary.start_date, end: itinerary.end_date }
-          }
-        });
-      }
-    }
-
     // Process tags to ensure they're handled as an array
     let processedTags = [];
     if (tags) {
