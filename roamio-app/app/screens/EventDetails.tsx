@@ -6,6 +6,10 @@ import {
     StyleSheet,
     ScrollView,
     TouchableOpacity,
+    Modal,
+    Pressable,
+    TouchableWithoutFeedback,
+    Alert,
 } from 'react-native';
 import {
     FontAwesome,
@@ -15,6 +19,7 @@ import {
 } from '@expo/vector-icons';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { Colors } from '@/constants/Colors';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 
 interface RouteParams {
@@ -38,12 +43,19 @@ interface RouteParams {
 interface InfoItemProps {
     icon: React.ReactNode;
     text: string;
+    showEditButton?: boolean;
+    onEditPress?: () => void;
 }
 
-const InfoItem = ({ icon, text }: InfoItemProps) => (
+const InfoItem = ({ icon, text, showEditButton, onEditPress }: InfoItemProps) => (
     <View style={styles.infoItem}>
         {icon}
         <Text style={styles.infoText}>{text}</Text>
+        {showEditButton && (
+            <TouchableOpacity onPress={onEditPress} style={styles.editButton}>
+                <FontAwesome name="pencil" size={16} color={Colors.coral} />
+            </TouchableOpacity>
+        )}
     </View>
 );
 
@@ -80,6 +92,42 @@ const calculateEndTime = (startTime: string, durationHours: number) => {
     return `${endHours}:${endMinutes.toString().padStart(2, "0")}`;
 };
 
+// TimeSelector component
+interface TimeSelectorProps {
+    label: string;
+    time: Date | null;
+    showPicker: boolean;
+    onPress: () => void;
+    onTimeChange: (event: any, selectedDate?: Date) => void;
+    formatTime: (date: Date | null) => string;
+}
+
+const TimeSelector = ({ label, time, showPicker, onPress, onTimeChange, formatTime }: TimeSelectorProps) => (
+    <View style={styles.timeInputContainer}>
+        <Text style={styles.inputLabel}>{label}</Text>
+        <Pressable 
+            style={styles.selectFieldContainer}
+            onPress={onPress}
+        >
+            <Text style={styles.selectText}>
+                {formatTime(time)}
+            </Text>
+            <FontAwesome name="clock-o" size={14} style={styles.timeIcon} />
+        </Pressable>
+        
+        {showPicker && (
+            <View style={styles.pickerContainer}>
+                <DateTimePicker
+                    value={time || new Date()}
+                    mode="time"
+                    display="spinner"
+                    onChange={onTimeChange}
+                />
+            </View>
+        )}
+    </View>
+);
+
 const EventDetails = () => {
     const route = useRoute();
     const navigation = useNavigation();
@@ -103,6 +151,26 @@ const EventDetails = () => {
         date
     } = route.params as RouteParams; 
 
+    // for editing time of event
+    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [startTime, setStartTime] = useState<Date | null>(null);
+    const [endTime, setEndTime] = useState<Date | null>(null);
+    const [showStartTimePicker, setShowStartTimePicker] = useState(false);
+    const [showEndTimePicker, setShowEndTimePicker] = useState(false);
+
+    // initialize time values based on the current time and duration
+    useEffect(() => {
+        if (time) {
+            const [hours, minutes] = time.split(':').map(Number);
+            const startDate = new Date();
+            startDate.setHours(hours, minutes, 0, 0);
+            setStartTime(startDate);
+            
+            const endDate = new Date(startDate);
+            endDate.setTime(startDate.getTime() + duration * 60 * 60 * 1000);
+            setEndTime(endDate);
+        }
+    }, [time, duration]);
 
     useEffect(() => {
         navigation.setOptions({
@@ -112,6 +180,65 @@ const EventDetails = () => {
 
     const handleShare = () => {
         // do something when share button is pressed
+    };
+
+    // Format time function for the modal
+    const formatTime = (date: Date | null) => {
+        if (!date) return "--:-- AM";
+        return date.toLocaleTimeString("en-US", {
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true
+        });
+    };
+
+    // Update the handleEditTime function to show the modal
+    const handleEditTime = () => {
+        setIsModalVisible(true);
+    };
+
+    // Function to handle time changes in the picker
+    const handleTimeChange = (event: any, selectedDate?: Date, type?: string) => {
+        if (event.type === "dismissed") {
+            switch (type) {
+                case "startTime": 
+                    setShowStartTimePicker(false); 
+                    break;
+                case "endTime": 
+                    setShowEndTimePicker(false); 
+                    break;
+            }
+            return;
+        }
+        
+        if (selectedDate) {
+            switch (type) {
+                case "startTime": 
+                    setStartTime(selectedDate); 
+                    setShowStartTimePicker(false); 
+                    break;
+                case "endTime": 
+                    setEndTime(selectedDate); 
+                    setShowEndTimePicker(false); 
+                    break;
+            }
+        }
+    };
+
+    // Function to save the time changes
+    const handleSaveTime = () => {
+        if (!startTime || !endTime) {
+            Alert.alert("Error", "Please select both start and end times");
+            return;
+        }
+
+        if (endTime <= startTime) {
+            Alert.alert("Please try again", "End time must be after start time");
+            return;
+        }
+
+        // add logic here to save the time changes
+        setIsModalVisible(false);
     };
 
     // Format duration to include one decimal place if it's not a whole number
@@ -149,6 +276,8 @@ const EventDetails = () => {
                 <InfoItem
                     icon={<FontAwesome name="clock-o" size={20} color={Colors.coral} />}
                     text={`${formatTimeToAMPM(time)} - ${formatTimeToAMPM(calculateEndTime(time, duration))}`}
+                    showEditButton={true}
+                    onEditPress={handleEditTime}
                 />
                 <InfoItem
                     icon={<MaterialCommunityIcons name="timer-outline" size={20} color={Colors.coral} />}
@@ -189,6 +318,61 @@ const EventDetails = () => {
                     <Ionicons name="share-outline" size={24} color={Colors.coral} style={styles.shareIcon} />
                 </TouchableOpacity>
             </View>
+
+            {/* Time Editing Modal */}
+            <Modal
+                animationType="fade"
+                transparent={true}
+                visible={isModalVisible}
+                onRequestClose={() => setIsModalVisible(false)}
+            >
+                <TouchableWithoutFeedback onPress={() => setIsModalVisible(false)}>
+                    <View style={styles.modalOverlay}>
+                        <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
+                            <View style={styles.modalView}>
+                                <Text style={styles.modalTitle}>Edit Time</Text>
+                                
+                                {/* Time Selection Section */}
+                                <View style={styles.timeContainer}>
+                                    <TimeSelector 
+                                        label="Start Time"
+                                        time={startTime}
+                                        showPicker={showStartTimePicker}
+                                        onPress={() => setShowStartTimePicker(true)}
+                                        onTimeChange={(event, date) => handleTimeChange(event, date, "startTime")}
+                                        formatTime={formatTime}
+                                    />
+                                    
+                                    <TimeSelector 
+                                        label="End Time"
+                                        time={endTime}
+                                        showPicker={showEndTimePicker}
+                                        onPress={() => setShowEndTimePicker(true)}
+                                        onTimeChange={(event, date) => handleTimeChange(event, date, "endTime")}
+                                        formatTime={formatTime}
+                                    />
+                                </View>
+                                
+                                {/* Buttons section */}
+                                <View style={styles.buttonsContainer}>
+                                    <Pressable
+                                        style={[styles.modalButtons, styles.cancelButton]}
+                                        onPress={() => setIsModalVisible(false)}
+                                    >
+                                        <Text style={styles.modalButtonsText}>Cancel</Text>
+                                    </Pressable>
+                                    <Pressable
+                                        style={[styles.modalButtons, styles.saveButton]}
+                                        onPress={handleSaveTime}
+                                    >
+                                        <Text style={styles.modalButtonsText}>Save</Text>
+                                    </Pressable>
+                                </View>
+                            </View>
+                        </TouchableWithoutFeedback>
+                    </View>
+                </TouchableWithoutFeedback>
+            </Modal>
         </ScrollView>
     );
 };
@@ -224,6 +408,11 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontFamily: 'quicksand-semibold',
         color: Colors.primary,
+        flex: 1,
+    },
+    editButton: {
+        padding: 0,
+        marginRight: 170,
     },
     descriptionContainer: {
         marginTop: 20,
@@ -271,6 +460,98 @@ const styles = StyleSheet.create({
     },
     shareIcon: {
         marginHorizontal: 10,
+    },
+    modalOverlay: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "rgba(52, 52, 52, 0.8)",
+    },
+    modalView: {
+        width: "90%",
+        backgroundColor: Colors.white,
+        borderRadius: 20,
+        borderWidth: 3,      
+        borderColor: Colors.coral, 
+        padding: 20,
+        elevation: 5,
+    },
+    modalTitle: {
+        fontSize: 24,
+        fontFamily: "quicksand-bold",
+        textAlign: "center",
+        marginBottom: 20,
+        color: Colors.primary,
+    },
+    timeContainer: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        marginBottom: 15,
+    },
+    timeInputContainer: {
+        width: "48%",
+        position: "relative",
+    },
+    inputLabel: {
+        fontSize: 16,
+        fontFamily: "quicksand-semibold",
+        marginBottom: 5,
+        color: Colors.primary,
+    },
+    selectFieldContainer: {
+        borderWidth: 1,
+        borderColor: Colors.grey,
+        borderRadius: 10,
+        paddingHorizontal: 10,
+        paddingVertical: 12,
+        justifyContent: "center",
+        flexDirection: "row",
+    },
+    selectText: {
+        fontSize: 16,
+        fontFamily: "quicksand-medium",
+        flex: 1,
+        color: Colors.primary,
+    },
+    timeIcon: {
+        position: "absolute",
+        right: 10,
+        top: 12,
+        color: Colors.coral,
+    },
+    pickerContainer: {
+        position: "absolute",
+        backgroundColor: Colors.white,
+        borderWidth: 1,
+        borderColor: Colors.grey,
+        borderRadius: 10,
+        zIndex: 20,
+        top: "100%",
+        marginTop: 2,
+        width: "100%",
+    },
+    buttonsContainer: {
+        flexDirection: "row",
+        justifyContent: "space-around",
+        marginTop: 20,
+    },
+    modalButtons: {
+        borderRadius: 10,
+        padding: 10,
+        elevation: 2,
+        width: "48%",
+        alignItems: "center",
+    },
+    cancelButton: {
+        backgroundColor: Colors.grey,
+    },
+    saveButton: {
+        backgroundColor: Colors.coral,
+    },
+    modalButtonsText: {
+        color: Colors.white,
+        fontFamily: "quicksand-bold",
+        fontSize: 14,
     },
 });
 
