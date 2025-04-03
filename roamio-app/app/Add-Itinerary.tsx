@@ -77,7 +77,7 @@ export default function AddItinerary() {
       }
       
       const response = await fetch(
-        `http://10.0.2.2:3000/active-itineraries?email=${encodeURIComponent(user.email)}`,
+        `http://10.0.0.197:3000/active-itineraries?email=${encodeURIComponent(user.email)}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -207,7 +207,7 @@ export default function AddItinerary() {
         return;
       }
       
-      const response = await fetch(`http://10.0.2.2:3000/active-itineraries?email=${encodeURIComponent(user.email)}`);
+      const response = await fetch(`http://10.0.0.197:3000/active-itineraries?email=${encodeURIComponent(user.email)}`);
       const data = await response.json();
       
       if (!response.ok) {
@@ -248,7 +248,7 @@ export default function AddItinerary() {
       };
       
       // API call to add the event 
-      const eventResponse = await fetch("http://10.0.2.2:3000/events", {
+      const eventResponse = await fetch("http://10.0.0.197:3000/events", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -266,7 +266,7 @@ export default function AddItinerary() {
       
       // Verify the event was added by checking the count
       try {
-        const countResponse = await fetch(`http://10.0.2.2:3000/event-counts/${itineraryId}`);
+        const countResponse = await fetch(`http://10.0.0.197:3000/event-counts/${itineraryId}`);
         await countResponse.json();
       } catch (countError) {
         Alert.alert("Error", "Failed to verify addition of event.");
