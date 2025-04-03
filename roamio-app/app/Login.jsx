@@ -27,13 +27,23 @@ export default function Login() {
   const [modalVisible, setModalVisible] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   // Handle main login action
   const handleLogin = async () => {
+
     if (!email || !password) {
       Alert.alert("Error", "Please fill in both email and password.");
       return;
     }
+
+    // Email format validation using regex
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      Alert.alert("Error", "Enter a valid email address.");
+      return;
+    }
+
     try {
       //const response = await fetch("http://10.0.0.197:3000/login", {
       const response = await fetch("http://10.0.0.197:3000/login", {
@@ -62,6 +72,16 @@ export default function Login() {
       Alert.alert("Error", "Please fill in both email and new password.");
       return;
     }
+
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
+    if (!passwordRegex.test(newPassword)) {
+      Alert.alert(
+        "Error",
+        "Password must be at least 6 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character."
+      );
+      return;
+    }
+
     try {
       //const response = await fetch("http://10.0.0.197:3000/login", {
       const response = await fetch("http://10.0.0.197:3000/resetPassword", {
@@ -99,20 +119,32 @@ export default function Login() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
             <Text style={styles.modalTitle}>Reset Password</Text>
+            <View style={styles.modalInputContainer}>
             <TextInput
               placeholder="Email"
-              style={styles.modalInput}
+              style={styles.modalInputField}
               value={resetEmail}
               onChangeText={setResetEmail}
               keyboardType="email-address"
             />
-            <TextInput
-              placeholder="New Password"
-              style={styles.modalInput}
-              secureTextEntry
-              value={newPassword}
-              onChangeText={setNewPassword}
-            />
+            </View>
+            <View style={styles.modalInputContainer}>
+              <TextInput
+                placeholder="New Password"
+                style={styles.modalInputField}
+                secureTextEntry={!showPassword}
+                value={newPassword}
+                onChangeText={setNewPassword}
+              />
+              <Pressable onPress={() => setShowPassword(!showPassword)}>
+                <FontAwesome 
+                  name={showPassword ? "eye-slash" : "eye"} 
+                  size={20} 
+                  color={Colors.peachySalmon} 
+                  style={styles.icon}
+                />
+              </Pressable>
+            </View>
             <View style={styles.modalButtons}>
               <Pressable style={styles.modalButton} onPress={handleResetPassword}>
                 <Text style={styles.modalButtonText}>Reset Password</Text>
@@ -296,6 +328,18 @@ const styles = StyleSheet.create({
     fontFamily: "quicksand-semibold",
     color: Colors.black,
   },
+  modalInputContainer: {
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: Colors.peachySalmon,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    marginBottom: 15,
+    backgroundColor: Colors.white,
+  },
   modalButtons: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -303,7 +347,7 @@ const styles = StyleSheet.create({
   },
   modalButton: {
     flex: 1,
-    backgroundColor: Colors.palePink,
+    backgroundColor: Colors.coral,
     paddingVertical: 10,
     borderRadius: 10,
     alignItems: "center",
@@ -314,7 +358,13 @@ const styles = StyleSheet.create({
   },
   modalButtonText: {
     fontSize: 16,
-    color: Colors.coral,
+    color: Colors.white,
     fontFamily: "quicksand-bold",
+  },
+  modalInputField: {
+    flex: 1,
+    fontSize: 16,
+    fontFamily: "quicksand-semibold",
+    color: Colors.black,
   },
 });

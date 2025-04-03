@@ -22,14 +22,41 @@ export default function SignUp() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSignUp = async () => {
+    // General error check
     if (!email || !password || !confirmPassword) {
       Alert.alert("Error", "Please fill in all fields.");
       return;
     }
+
+    // Email format validation using regex
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      Alert.alert("Error", "Enter a valid email address.");
+      return;
+    }
+
+    // Password validation
     if (password !== confirmPassword) {
       Alert.alert("Error", "Passwords do not match.");
+      return;
+    }
+
+    // Password format validation using regex
+    // This regex requires:
+    // - Minimum eight characters
+    // - At least one uppercase letter
+    // - At least one lowercase letter
+    // - At least one number
+    // - At least one special character from @$!%*?&
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
+    if (!passwordRegex.test(password)) {
+      Alert.alert(
+        "Error",
+        "Password must be at least 6 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character."
+      );
       return;
     }
 
@@ -84,10 +111,17 @@ export default function SignUp() {
           <TextInput 
             placeholder="Password" 
             style={styles.input} 
-            secureTextEntry 
+            secureTextEntry={!showPassword}
             value={password}
             onChangeText={setPassword}
           />
+          <Pressable onPress={() => setShowPassword(!showPassword)}>
+            <FontAwesome 
+              name={showPassword ? "eye-slash" : "eye"} 
+              size={20} 
+              color={Colors.coral} 
+            />
+          </Pressable>
         </View>
         <View style={styles.inputContainer}>
           <TextInput 
