@@ -6,7 +6,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Trip from "../(tabs)/Trip";
 import { FontAwesome } from "@expo/vector-icons";
 import FriendsStackNavigator from "../navigation/FriendsStackNavigator"; 
-
+import Itinerary from "../(tabs)/Itinerary"
 
 const Tab = createBottomTabNavigator();
 
@@ -28,11 +28,19 @@ export default function TabNavigator() {
           ),
         }}
       />
+      {/* <Tab.Screen
+        name="Itinerary"
+        component={Itinerary}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <FontAwesome name="calendar" color={color} size={size} />
+          ),
+        }}
+      /> */}
       <Tab.Screen
-        name="Profile"
+        name="Friends"
         component={FriendsStackNavigator}
         options={{ headerShown: false }} // Hides the hot pink bar
-
       />
 
     </Tab.Navigator>

@@ -93,6 +93,7 @@ export default function RootLayout() {
             name="(tabs)"
             options={{
               headerTitle: "",
+              headerBackVisible: false,
               headerRight: () => (
                 <Pressable onPress={() => router.push("/Profile")}>
                   <FontAwesome

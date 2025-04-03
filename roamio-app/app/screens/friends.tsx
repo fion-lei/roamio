@@ -333,10 +333,10 @@ export default function FriendsScreen() {
       <View style={styles.searchBarContainer}>
         <Feather name="search" size={18} color="#888" />
         <TextInput
-          placeholder="   Search friends (first name last name)"
+          placeholder="Search friends (First Name Last Name)"
           value={searchText}
           onChangeText={setSearchText}
-          placeholderTextColor="#aaa"
+          placeholderTextColor="#aaaa"
           style={styles.searchInput}
         />
       </View>
@@ -733,8 +733,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#fff0f0",
     borderRadius: 25,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    padding: 10,
     marginBottom: 20,
     shadowColor: "#000",
     shadowOpacity: 0.05,
