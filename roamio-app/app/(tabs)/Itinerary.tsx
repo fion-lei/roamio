@@ -281,6 +281,13 @@ export default function Itinerary() {
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                       <Entypo name="location-pin" size={18} color={Colors.primary} />
                       <Text style={styles.title}>{item.title}</Text>
+                      {item.shared_with &&
+                        item.shared_with.trim() !== "" &&
+                        item.shared_with.trim() !== "[]" && (
+                          <View style={styles.sharedBadge}>
+                            <Text style={styles.sharedBadgeText}>Shared</Text>
+                          </View>
+                        )}                   
                     </View>
                     <Text style={styles.date}>
                       {`${formatDate(item.fromDate)} - ${formatDate(item.toDate)}`}
@@ -312,7 +319,13 @@ export default function Itinerary() {
                   <View key={item.id} style={[styles.box, styles.upcomingBox]}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                       <Entypo name="location-pin" size={18} color={Colors.primary} />
-                      <Text style={styles.title}>{item.title}</Text>
+                      {item.shared_with &&
+                        item.shared_with.trim() !== "" &&
+                        item.shared_with.trim() !== "[]" && (
+                          <View style={styles.sharedBadge}>
+                            <Text style={styles.sharedBadgeText}>Shared</Text>
+                          </View>
+                        )}                   
                     </View>
                     <Text style={styles.date}>
                       {`${formatDate(item.fromDate)} - ${formatDate(item.toDate)}`}
@@ -739,4 +752,17 @@ eventCountText: {
   fontFamily: "quicksand-bold",
   color: Colors.coral,
 },
+sharedBadge: {
+  backgroundColor: Colors.coral, // Use your coral color
+  paddingHorizontal: 8,
+  paddingVertical: 2,
+  borderRadius: 12,
+  marginLeft: 8, // Space between title and badge
+},
+sharedBadgeText: {
+  color: "#fff",
+  fontSize: 12,
+  fontFamily: "quicksand-bold", // Ensure this font is loaded
+},
+
 });

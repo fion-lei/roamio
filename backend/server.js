@@ -662,7 +662,7 @@ app.delete('/unshare', async (req, res) => {
  * Expected body: { itinerary_id: string, friend_email: string }
  * (Here, friend_email should be the email of the current user.)
  */
-app.delete('/itineraries/unadd', async (req, res) => {
+app.delete('/unadd', async (req, res) => {
   const { itinerary_id, friend_email } = req.body;
   if (!itinerary_id || !friend_email) {
     return res.status(400).json({ error: "Missing itinerary_id or friend_email" });
@@ -694,5 +694,26 @@ app.post('/sendFriendRequest', async (req, res) => {
   } catch (error) {
     console.error("Error sending friend request:", error);
     res.status(500).json({ error: "Error sending friend request" });
+  }
+});
+
+app.get('/findUserByPhone', async (req, res) => {
+  const { phone } = req.query;
+  if (!phone) {
+    return res.status(400).json({ error: "Missing phone number" });
+  }
+  try {
+    const users = await readUsers();
+    // Match the phone number exactly.
+    // You might want to trim spaces and/or standardize the format if necessary.
+    const user = users.find(u => u.phone_number && u.phone_number.trim() === phone.trim());
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    // Return the user's email (and any other info if needed)
+    res.status(200).json({ email: user.email });
+  } catch (error) {
+    console.error("Error finding user by phone:", error);
+    res.status(500).json({ error: "Error looking up phone number" });
   }
 });

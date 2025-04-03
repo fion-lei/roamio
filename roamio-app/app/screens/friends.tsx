@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useIsFocused } from '@react-navigation/native';
-
-
 import {
   TextInput,
   View,
@@ -181,7 +179,7 @@ export default function FriendsScreen() {
 
     const handleUnadd = async (itineraryId: string) => {
       try {
-        const response = await fetch(`${SERVER_IP}/itineraries/unadd`, {
+        const response = await fetch(`${SERVER_IP}/unadd`, {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ itinerary_id: itineraryId, friend_email: currentUserEmail }),
@@ -219,19 +217,42 @@ export default function FriendsScreen() {
     
     const handleAddFriend = async () => {
       try {
-        // We'll use the provided email directly since there's no /users endpoint.
+        let friendEmail = "";
+    
         if (searchType === "phone") {
-          Alert.alert("Not Supported", "Phone search is not supported. Please use email search.");
-          return;
+          // Build the full phone string
+          const fullPhone = `${phoneNumber}`.trim();
+          if (!fullPhone) {
+            Alert.alert("Error", "Please enter a valid phone number.");
+            return;
+          }
+    
+          // Look up the user by phone.
+          const lookupRes = await fetch(
+            `${SERVER_IP}/findUserByPhone?phone=${encodeURIComponent(fullPhone)}`
+          );
+    
+          if (!lookupRes.ok) {
+            Alert.alert("Error", "Failed to lookup phone number.");
+            return;
+          }
+          const lookupData = await lookupRes.json();
+    
+          // Assume the endpoint returns an object with an 'email' field.
+          if (!lookupData.email) {
+            Alert.alert("Error", "No user found for that phone number.");
+            return;
+          }
+          friendEmail = lookupData.email;
+        } else {
+          friendEmail = emailSearch.trim();
+          if (!friendEmail) {
+            Alert.alert("Error", "Please enter a valid email address.");
+            return;
+          }
         }
-        
-        const friendEmail = emailSearch.trim();
-        if (!friendEmail) {
-          Alert.alert("Error", "Please enter a valid email address.");
-          return;
-        }
-        
-        // Send the friend request directly using the provided email
+    
+        // Send the friend request using the resolved email.
         const requestRes = await fetch(`${SERVER_IP}/sendFriendRequest`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -240,7 +261,7 @@ export default function FriendsScreen() {
             to_email: friendEmail,
           }),
         });
-        
+    
         if (requestRes.ok) {
           Alert.alert("Success", "Friend request sent");
           setShowAddModal(false);
@@ -253,8 +274,7 @@ export default function FriendsScreen() {
       }
     };
     
-
-
+  
   const handleAcceptFriendRequest = async (requestId: string) => {
     try {
       const request = friendRequests.find((r) => r.id === requestId);
@@ -400,12 +420,7 @@ export default function FriendsScreen() {
             </View>
             {searchType === "phone" ? (
               <View style={styles.phoneInputRow}>
-                <TextInput
-                  style={[styles.modalInput, { width: 60, marginRight: 10 }]}
-                  value={countryCode}
-                  onChangeText={setCountryCode}
-                  keyboardType="phone-pad"
-                />
+
                 <TextInput
                   style={[styles.modalInput, { flex: 1, fontSize: 20 }]}
                   value={phoneNumber}
