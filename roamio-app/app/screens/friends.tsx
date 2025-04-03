@@ -497,51 +497,48 @@ export default function FriendsScreen() {
 
       {/* Trips Section (static for now) */}
       {/* Dynamic Trips With Friends Section */}
-<Text style={styles.sectionTitle}>Trips With Friends</Text>
-<FlatList
-  horizontal
-  data={trips}  // dynamic trips data from state
-  keyExtractor={(item) => item.itinerary_id.toString()}
-  renderItem={({ item }) => {
-    // Parse the shared_with JSON field and cast it to SharedFriend[]
-    // Parse the shared_with JSON field and cast it to SharedFriend[]
-let sharedWith: SharedFriend[] = [];
-if (item.shared_with && item.shared_with.trim() !== "") {
-  try {
-    sharedWith = JSON.parse(item.shared_with) as SharedFriend[];
-  } catch (error) {
-    console.error("Error parsing shared_with:", error);
-  }
-}
+    <Text style={styles.sectionTitle}>Trips With Friends</Text>
+    <FlatList
+      horizontal
+      data={trips.filter(trip => trip.shared_with && trip.shared_with.trim() !== "")}
+      keyExtractor={(item) => item.itinerary_id.toString()}
+      renderItem={({ item }) => {
+        // Parse the shared_with JSON field and cast it to SharedFriend[]
+        let sharedWith: SharedFriend[] = [];
+        if (item.shared_with && item.shared_with.trim() !== "") {
+          try {
+            sharedWith = JSON.parse(item.shared_with) as SharedFriend[];
+          } catch (error) {
+            console.error("Error parsing shared_with:", error);
+          }
+        }
+        
+        // Check if the current user is the owner of the trip
+        const isOwner = item.user_email === currentUserEmail;
+        
+        // For non-owners, find the mapping for the current user to get owner_name
+        const friendMapping = sharedWith.find(friend => friend.email === currentUserEmail);
+        
+        // Determine the display name:
+        const displayName = isOwner
+          ? (sharedWith.length > 0
+              ? sharedWith.map(friend => friend.friend_name).join(", ")
+              : "")
+          : `Shared by: ${friendMapping?.owner_name || item.user_email}`;
+        
+        return (
+          <View style={styles.tripCard}>
+            <Image source={require("../../assets/images/avatar1.png")} style={styles.tripImage} />
+            <Text style={styles.friendTripName}>{item.trip_title}</Text>
+            <Text style={styles.friendName}>{displayName}</Text>
+            {/* Unshare/Unadd buttons can be added here as needed */}
+          </View>
+        );
+      }}
+      showsHorizontalScrollIndicator={false}
+    />
 
-// Check if the current user is the owner of the trip
-const isOwner = item.user_email === currentUserEmail;
-
-// For non-owners, find the mapping for the current user
-const friendMapping = sharedWith.find(friend => friend.email === currentUserEmail);
-
-// Determine the display name:
-// - If owner: show the names of the friends (using friend.friend_name)
-// - If not: display the mapped owner_name from the friend mapping (if found) or fallback to item.user_email.
-const displayName = isOwner
-  ? (sharedWith.length > 0
-      ? sharedWith.map(friend => friend.friend_name).join(", ")
-      : "Not shared")
-  : `Shared by: ${friendMapping?.owner_name || item.user_email}`;
-
-
-    return (
-      <View style={styles.tripCard}>
-        {/* Optionally, you can use a dynamic image if provided in your data */}
-        <Image source={require("../../assets/images/avatar1.png")} style={styles.tripImage} />
-        <Text style={styles.friendTripName}>{item.trip_title}</Text>
-        <Text style={styles.friendName}>{displayName}</Text>
-      </View>
-    );
-  }}
-  showsHorizontalScrollIndicator={false}
-/>
-    </View>
+        </View>
   );
 }
 
