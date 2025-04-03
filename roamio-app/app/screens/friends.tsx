@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useIsFocused } from '@react-navigation/native';
 import {
   TextInput,
   View,
@@ -15,184 +16,316 @@ import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useFonts } from "expo-font";
 import { Colors } from "@/constants/Colors";
+import { useUser } from "@/contexts/UserContext";
 
-// Types
 type RootStackParamList = {
   FriendsScreen: undefined;
-  Detail: { name: string; phone: string; avatar: any };
+  Detail: { name: string; phone: string; avatar: any; email_friend:string;first_name:string ; owner_name:string};
 };
 type NavigationProp = NativeStackNavigationProp<
   RootStackParamList,
   "FriendsScreen"
 >;
 
-// Mock friend search data
-const mockUsers = [
-  {
-    name: "Jessica Pearson",
-    phone: "+1 403-555-1234",
-    email: "jessica@pearson.com",
-  },
-  { name: "Mike Ross", phone: "+1 587-333-9999", email: "mike@ross.com" },
-  {
-    name: "Harvey Specter",
-    phone: "+1 587-000-8888",
-    email: "harvey@zane.com",
-  },
-];
 
-// Default friends list
-const defaultFriends = [
-  {
-    id: "1",
-    name: "Courtney Smith",
-    phone: "+1 403-888-0000",
-    avatar: require("../../assets/images/avatar1.png"),
-    favorited: false,
-  },
-  {
-    id: "2",
-    name: "Gary Wilson",
-    phone: "+84 91 234 5678",
-    avatar: require("../../assets/images/avatar4.png"),
-    favorited: false,
-  },
-  {
-    id: "3",
-    name: "Brooklyn Simmons",
-    phone: "+66 96 876 5432",
-    avatar: require("../../assets/images/avatar3.png"),
-    favorited: true,
-  },
-];
+const SERVER_IP = "http://10.0.0.197:3000"; // Replace with your actual backend address
 
-// Trip data
-const trips = [
-  {
-    id: "1",
-    name: "Courtney",
-    price: "Stampede",
-    image: require("../../assets/images/avatar1.png"),
-  },
-  {
-    id: "2",
-    name: "Gary",
-    price: "Seniores-Pizza",
-    image: require("../../assets/images/avatar4.png"),
-  },
-  {
-    id: "3",
-    name: "Anna",
-    price: "Stampede",
-    image: require("../../assets/images/avatar3.png"),
-  },
-];
 
-// Mock friend request data
-const mockFriendRequests = [
-  {
-    id: "req1",
-    name: "John Zane",
-    phone: "+1 123-456-7890",
-    avatar: require("../../assets/images/avatar2.png"),
-  },
-  {
-    id: "req2",
-    name: "Louis Litt",
-    phone: "+1 987-654-3210",
-    avatar: require("../../assets/images/avatar3.png"),
-  },
-];
+export default function FriendsScreen() {
+  const { user } = useUser();
+  const isFocused = useIsFocused(); // 👈 TRACK FOCUS
 
-const FriendsScreen = () => {
+
   const [fontsLoaded] = useFonts({
     "quicksand-regular": require("../../assets/fonts/Quicksand-Regular.ttf"),
     "quicksand-bold": require("../../assets/fonts/Quicksand-Bold.ttf"),
   });
 
+
+  const [friendsList, setFriendsList] = useState<any[]>([]);
+  const [friendRequests, setFriendRequests] = useState<any[]>([]);
   const [searchText, setSearchText] = useState("");
   const [filterType, setFilterType] = useState<
     "default" | "alphabetical" | "reverse" | "favorites"
   >("default");
   const [showDropdown, setShowDropdown] = useState(false);
-
-  const [friendsList, setFriendsList] = useState(defaultFriends);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [showFriendRequestModal, setShowFriendRequestModal] = useState(false);
+  const [unshareModalVisible, setUnshareModalVisible] = useState(false);
+  const [selectedItinerary, setSelectedItinerary] = useState<Itinerary | null>(null);
+
   const [searchType, setSearchType] = useState<"phone" | "email">("phone");
   const [countryCode, setCountryCode] = useState("+1");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [emailSearch, setEmailSearch] = useState("");
-  const [friendRequests, setFriendRequests] = useState(mockFriendRequests);
+  const [showFriendRequestModal, setShowFriendRequestModal] = useState(false);
+
+  const [activeTripTab, setActiveTripTab] = useState<"my" | "shared">("my");
+
+
 
   const navigation = useNavigation<NavigationProp>();
+    // Trips State
+    const [trips, setTrips] = useState<Itinerary[]>([]);
 
-  if (!fontsLoaded) return null;
 
-  const filteredFriends = [...friendsList]
-    .filter((friend) => {
-      const matchesSearch = friend.name
-        .toLowerCase()
-        .includes(searchText.toLowerCase());
-      if (filterType === "favorites") {
-        return matchesSearch && friend.favorited;
+  // For prototyping, we define the current user email.
+  const currentUserEmail = user.email;
+
+  // Example fields you might have
+// Adjust to match your actual CSV or database fields
+    interface Itinerary {
+      itinerary_id: string;   // or number
+      user_email: string;
+      trip_title: string;
+      shared_with?: string;
+      first_name:String;  // optional if some rows have empty data
+    }
+
+    interface SharedFriend {
+      email: string;
+      access?: string; 
+      friend_name:string;// optional, if you have more properties add them here
+      owner_name:string;
+    }
+    
+
+
+
+  const fetchFriendsList = async () => {
+    try {
+      const res = await fetch(`${SERVER_IP}/friends?email=${encodeURIComponent(currentUserEmail)}`);
+      const data = await res.json();
+      console.log("DEBUG: /friends endpoint returned:", data);
+ 
+      const mappedFriends = data.map((friend: any, idx: number) => ({
+        id: friend.id ? friend.id.toString() : String(idx),
+        first_name:friend.first_name.trim(),
+        name: `${friend.first_name || ""} ${friend.last_name || ""}`.trim(),
+        phone: friend.phone_number || "",
+        avatar: require("../../assets/images/avatar1.png"),
+        email_friend: friend.email || "",
+        favorited: friend.favorite === true,
+      }));
+ 
+      setFriendsList(mappedFriends);
+    } catch (error) {
+      console.error("Error fetching friends list:", error);
+    }
+  };
+  // Fetch user profile, friends list, and friend requests from backend
+  //useEffect(() => {
+
+
+    //fetchFriendsList();
+
+
+    const fetchFriendRequests = async () => {
+      try {
+        const res = await fetch(
+          `${SERVER_IP}/friendRequests?email=${encodeURIComponent(currentUserEmail)}`
+        );
+        const requests = await res.json();
+        const mappedRequests = await Promise.all(
+          requests.map(async (req: any) => {
+            const res = await fetch(
+              `${SERVER_IP}/profile?email=${encodeURIComponent(req.from_email)}`
+            );
+            const senderProfile = await res.json();
+            return {
+              id: req.id,
+              name: `${senderProfile.first_name || ""} ${senderProfile.last_name || ""}`.trim(),
+              phone: senderProfile.phone_number || "",
+              avatar: require("../../assets/images/avatar1.png"),
+              email: req.from_email,
+            };
+          })
+        );
+        setFriendRequests(mappedRequests);
+      } catch (error) {
+        console.error("Error fetching friend requests:", error);
       }
-      return matchesSearch;
-    })
+    };
+ 
+    useEffect(() => {
+      if (isFocused) {
+        fetchFriendsList();
+        fetchFriendRequests();
+        fetchTrips();
+      }
+    }, [isFocused, currentUserEmail]);
+ 
+    const fetchTrips = async () => {
+      try {
+        const response = await fetch(`${SERVER_IP}/itineraries?email=${currentUserEmail}`);
+        const data = await response.json();
+        setTrips(data.itineraries);
+      } catch (error) {
+        console.error("Error fetching itineraries:", error);
+      }
+    };
+
+  const filteredFriends = friendsList
+    .filter((friend) =>
+      friend.name.toLowerCase().includes(searchText.toLowerCase())
+    )
     .sort((a, b) => {
       if (filterType === "alphabetical") return a.name.localeCompare(b.name);
       if (filterType === "reverse") return b.name.localeCompare(a.name);
+      if (filterType === "favorites") {
+        return a.favorited === b.favorited ? 0 : a.favorited ? -1 : 1;
+      }
       return 0;
     });
 
-  const handleAddFriend = () => {
-    let match = null;
+    const handleUnadd = async (itineraryId: string) => {
+      try {
+        const response = await fetch(`${SERVER_IP}/unadd`, {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ itinerary_id: itineraryId, friend_email: currentUserEmail }),
+        });
+        if (response.ok) {
+          await fetchTrips(); // refresh trips list
+          Alert.alert("Success", "You have been removed from this itinerary.");
+        } else {
+          Alert.alert("Error", "Failed to remove you from the itinerary.");
+        }
+      } catch (error) {
+        console.error("Error in unadd:", error);
+        Alert.alert("Error", "Something went wrong while processing your request.");
+      }
+    };
 
-    if (searchType === "phone") {
-      const fullPhone = `${countryCode} ${phoneNumber}`.trim();
-      match = mockUsers.find((user) => user.phone === fullPhone);
-    } else {
-      match = mockUsers.find(
-        (user) => user.email?.toLowerCase() === emailSearch.toLowerCase()
-      );
+    const handleUnshare = async (itineraryId: string, friendEmail: string) => {
+      try {
+        const response = await fetch(`${SERVER_IP}/unshare`, {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ itinerary_id: itineraryId, friend_email: friendEmail }),
+        });
+        if (response.ok) {
+          await fetchTrips(); // refresh trips list
+          Alert.alert("Success", "Friend removed from the itinerary.");
+        } else {
+          Alert.alert("Error", "Failed to unshare itinerary.");
+        }
+      } catch (error) {
+        console.error("Error unsharing itinerary:", error);
+        Alert.alert("Error", "Something went wrong.");
+      }
+    };
+    
+    const handleAddFriend = async () => {
+      try {
+        let friendEmail = "";
+    
+        if (searchType === "phone") {
+          // Build the full phone string
+          const fullPhone = `${phoneNumber}`.trim();
+          if (!fullPhone) {
+            Alert.alert("Error", "Please enter a valid phone number.");
+            return;
+          }
+    
+          // Look up the user by phone.
+          const lookupRes = await fetch(
+            `${SERVER_IP}/findUserByPhone?phone=${encodeURIComponent(fullPhone)}`
+          );
+    
+          if (!lookupRes.ok) {
+            Alert.alert("Error", "Failed to lookup phone number.");
+            return;
+          }
+          const lookupData = await lookupRes.json();
+    
+          // Assume the endpoint returns an object with an 'email' field.
+          if (!lookupData.email) {
+            Alert.alert("Error", "No user found for that phone number.");
+            return;
+          }
+          friendEmail = lookupData.email;
+        } else {
+          friendEmail = emailSearch.trim();
+          if (!friendEmail) {
+            Alert.alert("Error", "Please enter a valid email address.");
+            return;
+          }
+        }
+    
+        // Send the friend request using the resolved email.
+        const requestRes = await fetch(`${SERVER_IP}/sendFriendRequest`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            from_email: currentUserEmail,
+            to_email: friendEmail,
+          }),
+        });
+    
+        if (requestRes.ok) {
+          Alert.alert("Success", "Friend request sent");
+          setShowAddModal(false);
+        } else {
+          Alert.alert("Error", "Failed to send friend request.");
+        }
+      } catch (error) {
+        console.error("Error sending friend request:", error);
+        Alert.alert("Error", "Something went wrong while sending the request.");
+      }
+    };
+    
+  
+  const handleAcceptFriendRequest = async (requestId: string) => {
+    try {
+      const request = friendRequests.find((r) => r.id === requestId);
+      if (!request) {
+        console.error("No matching request found for ID:", requestId);
+        return;
+      }
+ 
+      const reqRes = await fetch(`${SERVER_IP}/acceptFriendRequest`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: requestId,
+          from_email: request.email,
+          to_email: currentUserEmail,
+        }),
+      });
+ 
+      if (reqRes.ok) {
+        setFriendRequests((prev) => prev.filter((r) => r.id !== requestId));
+        await fetchFriendsList();
+      } else {
+        console.error("Failed to accept request");
+      }
+    } catch (error) {
+      console.error("Error accepting friend request:", error);
     }
+  };
+ 
+ 
 
-    if (match) {
-      const newFriend = {
-        id: Date.now().toString(),
-        name: match.name,
-        phone: match.phone,
-        avatar: require("../../assets/images/avatar1.png"),
-        favorited: false,
-      };
-      setFriendsList([newFriend, ...friendsList]);
-      setCountryCode("+1");
-      setPhoneNumber("");
-      setEmailSearch("");
-      setShowAddModal(false);
-    } else {
-      Alert.alert("Friend not found", "Check the info and try again.");
+
+  // Handle declining a friend request
+  const handleDeclineFriendRequest = async (requestId: string) => {
+    try {
+      const res = await fetch(`${SERVER_IP}/declineFriendRequest`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: requestId }),
+      });
+      if (res.ok) {
+        setFriendRequests((prev) => prev.filter((r) => r.id !== requestId));
+      }
+    } catch (error) {
+      console.error("Error declining friend request:", error);
     }
   };
 
-  const handleAcceptFriendRequest = (requestId: string) => {
-    const request = friendRequests.find((r) => r.id === requestId);
-    if (request) {
-      const newFriend = {
-        id: Date.now().toString(),
-        name: request.name,
-        phone: request.phone,
-        avatar: request.avatar,
-        favorited: false,
-      };
-      setFriendsList([newFriend, ...friendsList]);
-      setFriendRequests(friendRequests.filter((r) => r.id !== requestId));
-    }
-  };
 
-  const handleDeclineFriendRequest = (requestId: string) => {
-    setFriendRequests(friendRequests.filter((r) => r.id !== requestId));
-  };
+  if (!fontsLoaded) return null;
+
 
   return (
     <View style={styles.container}>
@@ -200,13 +333,14 @@ const FriendsScreen = () => {
       <View style={styles.searchBarContainer}>
         <Feather name="search" size={18} color="#888" />
         <TextInput
-          placeholder="Search friends..."
+          placeholder="   Search friends (first name last name)"
           value={searchText}
           onChangeText={setSearchText}
           placeholderTextColor="#aaa"
           style={styles.searchInput}
         />
       </View>
+
 
       {/* Header Row */}
       <View style={styles.headerRow}>
@@ -229,6 +363,7 @@ const FriendsScreen = () => {
           </TouchableOpacity>
         </View>
       </View>
+
 
       {/* Filter Dropdown Modal */}
       <Modal visible={showDropdown} transparent animationType="fade">
@@ -256,12 +391,12 @@ const FriendsScreen = () => {
         </TouchableOpacity>
       </Modal>
 
+
       {/* Add Friend Modal */}
       <Modal visible={showAddModal} transparent animationType="slide">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Find a Friend</Text>
-
+            <Text style={styles.modalTitle}>Add a Friend</Text>
             {/* Toggle between phone/email */}
             <View style={styles.toggleContainer}>
               <TouchableOpacity
@@ -283,15 +418,9 @@ const FriendsScreen = () => {
                 <Text style={styles.toggleText}>Email</Text>
               </TouchableOpacity>
             </View>
-
             {searchType === "phone" ? (
               <View style={styles.phoneInputRow}>
-                <TextInput
-                  style={[styles.modalInput, { width: 60, marginRight: 10 }]}
-                  value={countryCode}
-                  onChangeText={setCountryCode}
-                  keyboardType="phone-pad"
-                />
+
                 <TextInput
                   style={[styles.modalInput, { flex: 1, fontSize: 20 }]}
                   value={phoneNumber}
@@ -312,34 +441,70 @@ const FriendsScreen = () => {
                 keyboardType="email-address"
               />
             )}
-
-            <TouchableOpacity
-              style={styles.addButton}
-              onPress={handleAddFriend}
-            >
-              <Text style={styles.addButtonText}>Add Friend</Text>
+            <TouchableOpacity style={styles.addButton} onPress={handleAddFriend}>
+              <Text style={styles.addButtonText}>Send Friend Request</Text>
             </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => setShowAddModal(false)}
-              style={{ marginTop: 10 }}
-            >
+            <TouchableOpacity onPress={() => setShowAddModal(false)} style={{ marginTop: 10 }}>
               <Text style={{ color: "#888" }}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </View>
       </Modal>
 
+      {unshareModalVisible && selectedItinerary && (
+  <Modal
+    visible={unshareModalVisible}
+    transparent
+    animationType="slide"
+    onRequestClose={() => setUnshareModalVisible(false)}
+  >
+    <View style={styles.modalOverlay}>
+      <View style={styles.modalContent}>
+        <Text style={styles.modalTitle}>Unshare Itinerary</Text>
+        <Text style={styles.modalSubtitle}>Select a friend to unshare with</Text>
+        {(() => {
+          // Parse shared_with again for the selected itinerary (or reuse from state if available)
+          let sharedWith: SharedFriend[] = [];
+          if (
+            selectedItinerary.shared_with &&
+            selectedItinerary.shared_with.trim() !== ""
+          ) {
+            try {
+              sharedWith = JSON.parse(selectedItinerary.shared_with) as SharedFriend[];
+            } catch (error) {
+              console.error("Error parsing shared_with:", error);
+            }
+          }
+          return sharedWith.map((friend) => (
+            <TouchableOpacity
+              key={friend.email}
+              style={styles.friendUnshareOption}
+              onPress={async () => {
+                await handleUnshare(selectedItinerary.itinerary_id, friend.email);
+                setUnshareModalVisible(false);
+              }}
+            >
+              <Text style={styles.requestUnshareText}>{friend.friend_name}</Text>
+            </TouchableOpacity>
+          ));
+        })()}
+        <TouchableOpacity onPress={() => setUnshareModalVisible(false)} style={styles.cancelButton}>
+          <Text style={styles.cancelButtonText}>Cancel</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  </Modal>
+)}
+
+
+
       {/* Friend Requests Modal */}
       <Modal visible={showFriendRequestModal} transparent animationType="slide">
         <View style={styles.modalOverlay}>
-          {/* Increased modal size by adjusting width */}
           <View style={[styles.modalContent, { width: 340 }]}>
             <Text style={styles.modalTitle}>Friend Requests</Text>
             {friendRequests.length === 0 ? (
-              <Text
-                style={{ fontFamily: "quicksand-regular", marginBottom: 10 }}
-              >
+              <Text style={{ fontFamily: "quicksand-regular", marginBottom: 10 }}>
                 No friend requests at the moment.
               </Text>
             ) : (
@@ -354,9 +519,7 @@ const FriendsScreen = () => {
                       marginBottom: 5,
                     }}
                   />
-                  <Text
-                    style={{ fontFamily: "quicksand-bold", marginBottom: 5 }}
-                  >
+                  <Text style={{ fontFamily: "quicksand-bold", marginBottom: 5 }}>
                     {request.name}
                   </Text>
                   <View style={{ flexDirection: "row", gap: 10 }}>
@@ -368,9 +531,7 @@ const FriendsScreen = () => {
                       }}
                       onPress={() => handleAcceptFriendRequest(request.id)}
                     >
-                      <Text
-                        style={{ color: "#fff", fontFamily: "quicksand-bold" }}
-                      >
+                      <Text style={{ color: "#fff", fontFamily: "quicksand-bold" }}>
                         Accept
                       </Text>
                     </TouchableOpacity>
@@ -382,9 +543,7 @@ const FriendsScreen = () => {
                       }}
                       onPress={() => handleDeclineFriendRequest(request.id)}
                     >
-                      <Text
-                        style={{ color: "#333", fontFamily: "quicksand-bold" }}
-                      >
+                      <Text style={{ color: "#333", fontFamily: "quicksand-bold" }}>
                         Decline
                       </Text>
                     </TouchableOpacity>
@@ -392,17 +551,13 @@ const FriendsScreen = () => {
                 </View>
               ))
             )}
-            <TouchableOpacity
-              onPress={() => setShowFriendRequestModal(false)}
-              style={{ marginTop: 10 }}
-            >
-              <Text style={{ color: "#888", fontFamily: "quicksand-regular" }}>
-                Close
-              </Text>
+            <TouchableOpacity onPress={() => setShowFriendRequestModal(false)} style={{ marginTop: 10 }}>
+              <Text style={{ color: "#888", fontFamily: "quicksand-regular" }}>Close</Text>
             </TouchableOpacity>
           </View>
         </View>
       </Modal>
+
 
       {/* Friends List */}
       <FlatList
@@ -415,7 +570,7 @@ const FriendsScreen = () => {
               <Text style={styles.friendName}>
                 {item.name}{" "}
                 {item.favorited && (
-                  <Feather name="star" size={16} color="#BCCDB1" />
+                  <Feather name="star" size={16} color="#FFD700" />
                 )}
               </Text>
               <Text style={styles.friendPhone}>{item.phone}</Text>
@@ -426,6 +581,9 @@ const FriendsScreen = () => {
                   name: item.name,
                   phone: item.phone,
                   avatar: item.avatar,
+                  email_friend: item.email_friend,
+                  first_name: item.first_name,
+                  owner_name: user.first_name //to do fix this logic here, maybe if shared_with empty then this?
                 })
               }
             >
@@ -435,26 +593,134 @@ const FriendsScreen = () => {
         )}
       />
 
-      {/* Trips Section */}
-      <Text style={styles.sectionTitle}>Trips With Friends</Text>
-      <FlatList
-        horizontal
-        data={trips}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.tripCard}>
-            <Image source={item.image} style={styles.tripImage} />
-            <Text style={styles.friendName}>{item.name}</Text>
-            <Text style={styles.friendTripName}>{item.price}</Text>
-          </View>
-        )}
-        showsHorizontalScrollIndicator={true}
-      />
+      {/* Segmented Control for Trips */}
+    <View style={styles.segmentedControlContainer}>
+      <TouchableOpacity
+        style={[
+          styles.toggleButton,
+          activeTripTab === "my" && styles.segmentButtonActive,
+        ]}
+        onPress={() => setActiveTripTab("my")}
+      >
+        <Text
+          style={[
+            styles.segmentButtonText,
+            activeTripTab === "my" && styles.segmentButtonTextActive,
+          ]}
+        >
+          My Trips Shared
+        </Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={[
+          styles.toggleButton,
+          activeTripTab === "shared" && styles.segmentButtonActive,
+        ]}
+        onPress={() => setActiveTripTab("shared")}
+      >
+        <Text
+          style={[
+            styles.segmentButtonText,
+            activeTripTab === "shared" && styles.segmentButtonTextActive,
+          ]}
+        >
+          Shared With Me
+        </Text>
+      </TouchableOpacity>
     </View>
-  );
-};
 
-// Styles
+
+      {/* Dynamic Trips With Friends Section */}
+   <Text style={styles.sectionTitle}></Text>
+    <FlatList
+      horizontal
+      // Filter trips based on the active tab:
+      data={trips.filter((trip) => {
+        // For "My Trips", only include trips where the current user is the owner.
+        if (activeTripTab === "my") {
+          return (
+            trip.user_email === currentUserEmail &&
+            trip.shared_with &&
+            trip.shared_with.trim() !== "" &&
+            trip.shared_with.trim() !== "[]"
+          );        }
+        // For "Shared With Me", include trips where the current user is not the owner
+        // and shared_with is not empty (also filtering out empty array strings).
+        return (
+          trip.user_email !== currentUserEmail &&
+          trip.shared_with &&
+          trip.shared_with.trim() !== "" &&
+          trip.shared_with.trim() !== "[]"
+        );
+      })}
+      keyExtractor={(item) => item.itinerary_id.toString()}
+      renderItem={({ item }) => {
+        // Parse the shared_with JSON field
+        let sharedWith: SharedFriend[] = [];
+        if (item.shared_with && item.shared_with.trim() !== "") {
+          try {
+            sharedWith = JSON.parse(item.shared_with) as SharedFriend[];
+          } catch (error) {
+            console.error("Error parsing shared_with:", error);
+          }
+        }
+
+        // Check if current user is the owner
+        const isOwner = item.user_email === currentUserEmail;
+
+        // For non-owners, get the friend mapping for current user
+        const friendMapping = sharedWith.find(friend => friend.email === currentUserEmail);
+
+        // Determine display name
+        const displayName = isOwner
+          ? (sharedWith.length > 0
+              ? sharedWith.map(friend => friend.friend_name).join(", ")
+              : "Not shared")
+          : `Shared by: ${friendMapping?.owner_name || item.user_email}`;
+
+        return (
+          <View style={styles.tripCard}>
+            <Image source={require("../../assets/images/avatar1.png")} style={styles.tripImage} />
+            <Text style={styles.friendTripName}>{item.trip_title}</Text>
+            <Text style={styles.friendName}>{displayName}</Text>
+            {isOwner ? (
+              // Owner: Unshare button to open modal for selective removal
+              <TouchableOpacity
+                style={styles.unshareButton}
+                onPress={() => {
+                  setSelectedItinerary(item);
+                  setUnshareModalVisible(true);
+                }}
+              >
+                <Feather name="trash-2" size={20} color="red" />
+              </TouchableOpacity>
+            ) : (
+              // Non-owner: Unadd button to remove self
+              <TouchableOpacity
+                style={styles.unaddButton}
+                onPress={() => handleUnadd(item.itinerary_id)}
+              >
+                <Feather name="x-circle" size={20} color="red" />
+              </TouchableOpacity>
+            )}
+          </View>
+        );
+      }}
+      ListEmptyComponent={
+        <Text style={styles.emptyMessage}>
+          {activeTripTab === "my"
+            ? "You haven't shared any trips yet."
+            : "No trips have been shared with you."}
+        </Text>
+      }
+      showsHorizontalScrollIndicator={false}
+    />
+
+        </View>
+  );
+}
+
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -494,6 +760,38 @@ const styles = StyleSheet.create({
     fontFamily: "quicksand-bold",
     marginBottom: 10,
   },
+  unshareButton: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    backgroundColor: "#fff",
+    padding: 4,
+    borderRadius: 20,
+    elevation: 2,
+  },
+  cancelButtonText: {
+    fontSize: 16,
+    color: "#888",
+    fontFamily: "quicksand-bold",
+  },
+  unaddButton: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    backgroundColor: "#fff",
+    padding: 4,
+    borderRadius: 20,
+    elevation: 2,
+  },friendOption: {
+    padding: 10,
+    width: "100%",
+    borderBottomWidth: 1,
+    borderColor: "#ccc",
+  },
+  friendOptionText: {
+    fontSize: 16,
+    fontFamily: "quicksand-regular",
+  },
   dropdownToggleMini: {
     flexDirection: "row",
     alignItems: "center",
@@ -521,12 +819,22 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     alignItems: "center",
   },
+  emptyMessage: {
+    color: "#FF4444", 
+    fontFamily: "quicksand-semibold",
+    fontSize: 16,
+    marginHorizontal: 10,
+    marginVertical: 20,
+  },  
   toggleButtonActive: {
     backgroundColor: "#ffcccc",
   },
   toggleText: {
     fontFamily: "quicksand-bold",
     fontSize: 14,
+  },
+  cancelButton: {
+    marginTop: 10,
   },
   phoneInputRow: {
     flexDirection: "row",
@@ -609,9 +917,7 @@ const styles = StyleSheet.create({
     borderColor: Colors.coral,
   },
   tripImage: { width: 50, height: 50, borderRadius: 25, marginBottom: 6 },
-  friendName: { fontSize: 16, fontFamily: "quicksand-bold" },
   friendTripName: { color: Colors.grey, fontFamily: "quicksand-semibold" },
-  // New style for friend request items
   requestItem: {
     marginBottom: 10,
     alignItems: "center",
@@ -621,6 +927,72 @@ const styles = StyleSheet.create({
     padding: 10,
     width: "100%",
   },
+  requestUnshareItem: {
+    marginBottom: 15,
+    alignItems: "center",
+    justifyContent: "center", // Centers content vertically
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: Colors.coral,
+    borderRadius: 12,
+    paddingVertical: 20,
+    paddingHorizontal: 15,
+    width: "100%",
+  },
+  friendUnshareOption: {
+    width: "100%",
+    padding: 10,
+    marginVertical: 8,        // Adds space above and below each option
+    alignItems: "center",     // Centers children horizontally
+    borderWidth: 1,
+    borderColor: Colors.coral,
+    borderRadius: 10,
+  },
+  
+  requestUnshareText: {
+    textAlign: "center",
+    fontFamily: "quicksand-semibold",
+    fontSize: 16,
+    color: "#333",
+    padding: 10,
+  },
+  
+  modalSubtitle: {
+    fontFamily: "quicksand-regular",
+    fontSize: 16,
+    marginBottom: 10,
+    textAlign: "center",
+  },
+
+  segmentedControlContainer: {
+    flexDirection: "row",
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    overflow: "hidden",
+  },
+  segmentButton: {
+    flex: 1,
+    paddingVertical: 8,
+    alignItems: "center",
+    backgroundColor: "#f5f5f5",
+  },
+  segmentButtonActive: {
+    backgroundColor: Colors.palePink,
+  },
+  segmentButtonText: {
+    fontFamily: "quicksand-regular",
+    fontSize: 16,
+    color: Colors.dark.text,
+  },
+  segmentButtonTextActive: {
+    fontFamily: "quicksand-bold",
+    fontSize: 16,
+    color: "#000",
+  },
+  
 });
 
-export default FriendsScreen;
+
+//export default FriendsScreen;

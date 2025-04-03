@@ -37,7 +37,27 @@ export default function SignUpDetails() {
   const handleContinue = async () => {
     // Validate required fields
     if (!firstName || !lastName) {
-      Alert.alert("Error", "Please fill in all required fields (First Name and Last Name).");
+      Alert.alert("Error", "Please fill in all required fields.");
+      return;
+    }
+
+    // Validate that names don't contain numbers (allows letters and spaces)
+    const nameRegex = /^[A-Za-z\s]+$/;
+    if (!nameRegex.test(firstName) || !nameRegex.test(lastName)) {
+      Alert.alert("Error", "Names can only contain letters and spaces.");
+      return;
+    }
+
+    // Validate phone number field is not empty
+    if (!phoneNumber) {
+      Alert.alert("Error", "Please enter a phone number.");
+      return;
+    }
+
+    // This regex matches the format XXX-XXX-XXXX, where X is a digit
+    const phoneRegex = /^\d{3}-\d{3}-\d{4}$/;
+    if (!phoneRegex.test(phoneNumber)) {
+      Alert.alert("Error", "Enter a valid phone number in the format XXX-XXX-XXXX.");
       return;
     }
 
@@ -51,7 +71,7 @@ export default function SignUpDetails() {
     };
 
     try {
-      const response = await fetch("http://10.0.2.2:3000/updateUserDetails", {
+      const response = await fetch("http://10.0.0.197:3000/updateUserDetails", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(userDetails),
@@ -105,7 +125,7 @@ export default function SignUpDetails() {
         {/* Phone Number */}
         <View style={styles.inputContainer}>
           <TextInput
-            placeholder="Phone Number"
+            placeholder="Phone Number (XXX-XXX-XXXX)"
             style={styles.input}
             keyboardType="phone-pad"
             value={phoneNumber}
