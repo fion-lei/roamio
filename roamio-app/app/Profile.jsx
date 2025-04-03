@@ -26,7 +26,7 @@ export default function Profile() {
     const fetchProfileData = async () => {
       try {
         const response = await fetch(
-          `http://10.0.0.197:3000/profile?email=${encodeURIComponent(user.email)}`
+          `http://10.0.2.2:3000/profile?email=${encodeURIComponent(user.email)}`
         );
         const data = await response.json();
         if (response.ok) {

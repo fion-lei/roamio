@@ -184,7 +184,7 @@ app.get('/profile', async (req, res) => {
 // ----------------------
 // Create trip Endpoint
 // ----------------------
-/*app.post('/itineraries', async (req, res) => {
+app.post('/itineraries', async (req, res) => {
   const { user_email, trip_title, trip_description, start_date, end_date, destinations } = req.body;
   if (!user_email || !trip_title) {
     return res.status(400).json({ error: 'Missing required fields.' });
@@ -207,8 +207,11 @@ app.get('/profile', async (req, res) => {
     console.error("Error creating itinerary:", error);
     res.status(500).json({ error: 'Error creating itinerary.' });
   }
-});*/
+});
 
+// ----------------------
+// Get trip Endpoint
+// ----------------------
 app.get('/itineraries', async (req, res) => {
   const { email } = req.query;
   if (!email) {
@@ -237,27 +240,6 @@ app.get('/itineraries', async (req, res) => {
       return isOwner || isShared;
     });
 
-    return res.status(200).json({ itineraries: filtered });
-  } catch (error) {
-    console.error("Error fetching itineraries:", error);
-    return res.status(500).json({ error: "Error fetching itineraries" });
-  }
-});
-
-
-
-// ----------------------
-// Get trip Endpoint
-// ----------------------
-app.get('/itineraries', async (req, res) => {
-  const { email } = req.query;
-  if (!email) {
-    return res.status(400).json({ error: "Email parameter is required" });
-  }
-  try {
-    const itineraries = await readItineraries();
-    // Filter itineraries to include only those belonging to the specified email
-    const filtered = itineraries.filter(it => it.user_email === email);
     return res.status(200).json({ itineraries: filtered });
   } catch (error) {
     console.error("Error fetching itineraries:", error);

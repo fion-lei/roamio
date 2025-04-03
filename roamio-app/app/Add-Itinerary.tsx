@@ -77,7 +77,7 @@ export default function AddItinerary() {
       }
       
       const response = await fetch(
-        `http://10.0.0.197:3000/active-itineraries?email=${encodeURIComponent(user.email)}`,
+        `http://10.0.2.2:3000/active-itineraries?email=${encodeURIComponent(user.email)}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -248,7 +248,7 @@ export default function AddItinerary() {
       };
       
       // API call to add the event 
-      const eventResponse = await fetch("http://10.0.0.197:3000/events", {
+      const eventResponse = await fetch("http://10.0.2.2:3000/events", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

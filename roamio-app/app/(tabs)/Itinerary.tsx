@@ -91,7 +91,8 @@ export default function Itinerary() {
         return;
       }
       const response = await fetch(
-        `http://10.0.0.197:3000/itineraries?email=${encodeURIComponent(user.email)}`
+        // `http://10.0.2.2:3000/itineraries?email=${encodeURIComponent(user.email)}`
+        `http://10.0.2.2:3000/itineraries?email=${encodeURIComponent(user.email)}`
       );
       const data = await response.json();
       if (response.ok) {
@@ -140,7 +141,7 @@ export default function Itinerary() {
   // Fetch event counts for all itineraries
   const fetchEventCounts = async () => {
     try {
-      const response = await fetch('http://10.0.0.197:3000/event-counts');
+      const response = await fetch('http://10.0.2.2:3000/event-counts');
       if (response.ok) {
         const data = await response.json();
         setEventCounts(data.counts || {});
