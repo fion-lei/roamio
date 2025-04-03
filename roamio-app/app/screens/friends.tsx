@@ -63,10 +63,28 @@ export default function FriendsScreen() {
 
 
   const navigation = useNavigation<NavigationProp>();
+    // Trips State
+    const [trips, setTrips] = useState<Itinerary[]>([]);
 
 
   // For prototyping, we define the current user email.
   const currentUserEmail = user.email;
+
+  // Example fields you might have
+// Adjust to match your actual CSV or database fields
+    interface Itinerary {
+      itinerary_id: string;   // or number
+      user_email: string;
+      trip_title: string;
+      shared_with?: string;  // optional if some rows have empty data
+    }
+
+    interface SharedFriend {
+      email: string;
+      access?: string; // optional, if you have more properties add them here
+    }
+    
+
 
 
   const fetchFriendsList = async () => {
@@ -127,10 +145,19 @@ export default function FriendsScreen() {
       if (isFocused) {
         fetchFriendsList();
         fetchFriendRequests();
+        fetchTrips();
       }
     }, [isFocused, currentUserEmail]);
  
-
+    const fetchTrips = async () => {
+      try {
+        const response = await fetch(`${SERVER_IP}/itineraries?email=${currentUserEmail}`);
+        const data = await response.json();
+        setTrips(data.itineraries);
+      } catch (error) {
+        console.error("Error fetching itineraries:", error);
+      }
+    };
 
   const filteredFriends = friendsList
     .filter((friend) =>
@@ -145,6 +172,7 @@ export default function FriendsScreen() {
       return 0;
     });
 
+    
 
   // Handle sending friend request
   const handleAddFriend = async () => {
@@ -462,39 +490,49 @@ export default function FriendsScreen() {
 
 
       {/* Trips Section (static for now) */}
-      <Text style={styles.sectionTitle}>Trips With Friends</Text>
-      <FlatList
-        horizontal
-        data={[
-          {
-            id: "1",
-            name: "Courtney",
-            price: "Stampede",
-            image: require("../../assets/images/avatar1.png"),
-          },
-          {
-            id: "2",
-            name: "Gary",
-            price: "Seniores-Pizza",
-            image: require("../../assets/images/avatar4.png"),
-          },
-          {
-            id: "3",
-            name: "Anna",
-            price: "Stampede",
-            image: require("../../assets/images/avatar3.png"),
-          },
-        ]}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.tripCard}>
-            <Image source={item.image} style={styles.tripImage} />
-            <Text style={styles.friendName}>{item.name}</Text>
-            <Text style={styles.friendTripName}>{item.price}</Text>
-          </View>
-        )}
-        showsHorizontalScrollIndicator={true}
-      />
+      {/* Dynamic Trips With Friends Section */}
+<Text style={styles.sectionTitle}>Trips With Friends</Text>
+<FlatList
+  horizontal
+  data={trips}  // dynamic trips data from state
+  keyExtractor={(item) => item.itinerary_id.toString()}
+  renderItem={({ item }) => {
+    // Parse the shared_with JSON field and cast it to SharedFriend[]
+    let sharedWith: SharedFriend[] = [];
+    if (item.shared_with && item.shared_with.trim() !== "") {
+      try {
+        sharedWith = JSON.parse(item.shared_with) as SharedFriend[];
+      } catch (error) {
+        console.error("Error parsing shared_with:", error);
+      }
+    }
+
+    // Check if the current user is the owner of the trip
+    const isOwner = item.user_email === currentUserEmail;
+
+    // Determine what name(s) to display:
+    // - If owner: show the names (or emails) of the friends with whom the trip is shared.
+    // - If not: display the owner's email as "Shared by: ..."
+    const displayName = isOwner
+      ? (sharedWith.length > 0
+          ? sharedWith.map((friend) => friend.email).join(", ")
+          : "Not shared")
+      : `Shared by: ${item.user_email}`;
+
+    return (
+      <View style={styles.tripCard}>
+        {/* Optionally, you can use a dynamic image if provided in your data */}
+        <Image source={require("../../assets/images/avatar1.png")} style={styles.tripImage} />
+        <Text style={styles.friendTripName}>{item.trip_title}</Text>
+        <Text style={styles.friendName}>{displayName}</Text>
+      </View>
+    );
+  }}
+  showsHorizontalScrollIndicator={false}
+/>
+
+      
+      
     </View>
   );
 }

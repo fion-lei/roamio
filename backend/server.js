@@ -1,6 +1,6 @@
 const express = require('express');
 const { readUsers, appendUser, updateUserDetails } = require('./helpers/usersHelpers');
-const { appendItinerary, readItineraries, updateItinerary, deleteItinerary } = require('./helpers/itineraryHelpers');
+const { appendItinerary, readItineraries, updateItinerary, deleteItinerary,updateSharedWith } = require('./helpers/itineraryHelpers');
 const { appendEvent, readEvents, getEvents, countEvents } = require('./helpers/eventsHelpers');
 const app = express();
 const cors = require('cors'); // Add this
@@ -183,7 +183,7 @@ app.get('/profile', async (req, res) => {
 // ----------------------
 // Create trip Endpoint
 // ----------------------
-app.post('/itineraries', async (req, res) => {
+/*app.post('/itineraries', async (req, res) => {
   const { user_email, trip_title, trip_description, start_date, end_date, destinations } = req.body;
   if (!user_email || !trip_title) {
     return res.status(400).json({ error: 'Missing required fields.' });
@@ -206,7 +206,43 @@ app.post('/itineraries', async (req, res) => {
     console.error("Error creating itinerary:", error);
     res.status(500).json({ error: 'Error creating itinerary.' });
   }
+});*/
+
+app.get('/itineraries', async (req, res) => {
+  const { email } = req.query;
+  if (!email) {
+    return res.status(400).json({ error: "Email parameter is required" });
+  }
+  try {
+    const itineraries = await readItineraries();
+    console.log('Fetched itineraries:', itineraries);
+
+    const filtered = itineraries.filter(itinerary => {
+      // Default: no shared_with info
+      let sharedEmails = [];
+      if (itinerary.shared_with && itinerary.shared_with.trim() !== '') {
+        try {
+          // Parse shared_with JSON string to an array of objects
+          const sharedArray = JSON.parse(itinerary.shared_with);
+          sharedEmails = sharedArray.map(item => item.email);
+        } catch (error) {
+          console.error("Error parsing shared_with field:", error);
+        }
+      }
+      // Check if the email is the owner or in the shared_with list
+      const isOwner = itinerary.user_email === email;
+      const isShared = sharedEmails.includes(email);
+      console.log(`Itinerary ${itinerary.itinerary_id}: isOwner=${isOwner}, isShared=${isShared}`);
+      return isOwner || isShared;
+    });
+
+    return res.status(200).json({ itineraries: filtered });
+  } catch (error) {
+    console.error("Error fetching itineraries:", error);
+    return res.status(500).json({ error: "Error fetching itineraries" });
+  }
 });
+
 
 
 // ----------------------
@@ -585,4 +621,19 @@ app.post('/Favorite', async (req, res) => {
     console.error("Error toggling favorite:", error);
     return res.status(500).json({ error: "Failed to update favorite status." });
   }
+});
+
+app.post('/shareItinerary', (req, res) => {
+  const { itinerary_id, friend_email, access_type } = req.body;
+
+  // Validate required fields
+  if (!itinerary_id || !friend_email || !access_type) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+
+  updateSharedWith(itinerary_id, friend_email, access_type)
+    .then((result) => res.status(200).json(result))
+    .catch((err) =>
+      res.status(err.status || 500).json({ error: err.message || 'Internal server error' })
+    );
 });

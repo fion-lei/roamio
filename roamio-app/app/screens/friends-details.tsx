@@ -56,7 +56,7 @@ const DetailScreen = () => {
   const [itineraries, setItineraries] = useState<any[]>([]);
 
 
-  const SERVER_IP = 'http://10.0.2.2:3000';
+  const SERVER_IP = 'http://10.0.0.197:3000';
   const currentUserEmail = user.email;
 
 
