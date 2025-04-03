@@ -212,6 +212,47 @@ export default function Itinerary() {
   };
   
   
+  const handleDeleteItinerary = async (id: string) => {
+    Alert.alert(
+      "Delete Itinerary",
+      "Are you sure you want to delete this itinerary? This action cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const response = await fetch("http://10.0.2.2:3000/itineraries/remove-user", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  itinerary_id: id,
+                  user_email: user.email,
+                }),
+              });
+  
+              const result = await response.json();
+  
+              if (response.ok) {
+                setItineraryList((prev) => prev.filter((trip) => trip.id !== id));
+                Alert.alert("Deleted", "Itinerary was successfully removed.");
+              } else {
+                Alert.alert("Error", result.error || "Failed to delete itinerary.");
+              }
+            } catch (err) {
+              console.error("Delete Error:", err);
+              Alert.alert("Error", "Something went wrong while deleting.");
+            }
+          },
+        },
+      ]
+    );
+  };
+ 
+
+
+
   return (
     <SafeAreaView style={styles.safeContainer}>
       <View style={styles.container}>
@@ -234,10 +275,15 @@ export default function Itinerary() {
                 <Text style={[styles.sectionTitle, styles.ongoingTitle]}>Ongoing Trips</Text>
                 {ongoingTrips.map((item) => (
                   <View key={item.id} style={[styles.box, styles.ongoingBox]}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                      <Entypo name="location-pin" size={18} color={Colors.primary} />
-                      <Text style={styles.title}>{item.title}</Text>
-                    </View>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                          <Entypo name="location-pin" size={18} color={Colors.primary} />
+                          <Text style={styles.title}>{item.title}</Text>
+                        </View>
+                        <Pressable onPress={() => handleDeleteItinerary(item.id)}>
+                          <AntDesign name="minuscircle" size={22} color="red" />
+                        </Pressable>
+                      </View>
                     <Text style={styles.date}>
                       {`${formatDate(item.fromDate)} - ${formatDate(item.toDate)}`}
                     </Text>
@@ -256,10 +302,16 @@ export default function Itinerary() {
                 <Text style={[styles.sectionTitle, styles.upcomingTitle]}>Upcoming Trips</Text>
                 {upcomingTrips.map((item) => (
                   <View key={item.id} style={[styles.box, styles.upcomingBox]}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                      <Entypo name="location-pin" size={18} color={Colors.primary} />
-                      <Text style={styles.title}>{item.title}</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                        <Entypo name="location-pin" size={18} color={Colors.primary} />
+                        <Text style={styles.title}>{item.title}</Text>
+                      </View>
+                      <Pressable onPress={() => handleDeleteItinerary(item.id)}>
+                        <AntDesign name="minuscircle" size={22} color="red" />
+                      </Pressable>
                     </View>
+
                     <Text style={styles.date}>
                       {`${formatDate(item.fromDate)} - ${formatDate(item.toDate)}`}
                     </Text>
@@ -278,10 +330,15 @@ export default function Itinerary() {
                 <Text style={[styles.sectionTitle, styles.pastTitle]}>Past Trips</Text>
                 {pastTrips.map((item) => (
                   <View key={item.id} style={[styles.box, styles.pastBox]}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                      <Entypo name="location-pin" size={18} color={Colors.primary} />
-                      <Text style={styles.title}>{item.title}</Text>
-                    </View>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                          <Entypo name="location-pin" size={18} color={Colors.primary} />
+                          <Text style={styles.title}>{item.title}</Text>
+                        </View>
+                        <Pressable onPress={() => handleDeleteItinerary(item.id)}>
+                          <AntDesign name="minuscircle" size={22} color="red" />
+                        </Pressable>
+                      </View>
                     <Text style={styles.date}>
                       {`${formatDate(item.fromDate)} - ${formatDate(item.toDate)}`}
                     </Text>
