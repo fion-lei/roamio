@@ -1,8 +1,8 @@
 itinerary_id,user_email,trip_title,trip_description,start_date,end_date,destinations,shared_with
 1743134803905,test@gmail.com,Calgary,Calgary offers adventure in every season from Stampede thrills to skyline views.,03/24/2025,03/25/2025,,
-1743135001806,test@gmail.com,Banff,Banff is a mountain paradise surrounded by turquoise lakes and towering peaks.,03/29/2025,04/27/2025,,"[{""email"":""test1@gmail.com"",""access"":""trip-mate""}]"
+1743135001806,test@gmail.com,Banff,Banff is a mountain paradise surrounded by turquoise lakes and towering peaks.,03/29/2025,04/27/2025,,
 1743137949095,test@gmail.com,Canmore,Enjoy breathtaking views at Grassi Lakes and explore Quarry Lake. Discover local art galleries and scenic biking trails around the town.,03/27/2025,03/29/2025,,
-1743152622051,test@gmail.com,AnotherCalgaryTrip,Another Trip to Calgary to discover more hidden gems.,03/28/2025,03/28/2025,,"[{""email"":""wendy1@gmail.com"",""access"":""viewer""},{""email"":""test1@gmail.com"",""access"":""trip-mate""}]"
+1743152622051,test@gmail.com,AnotherCalgaryTrip,Another Trip to Calgary to discover more hidden gems.,03/28/2025,03/28/2025,,
 1743152953343,test@gmail.com,Another Banff,Exploring hidden gems.,03/29/2025,03/29/2025,,
 1743306246053,wendy@gmail.com,Calgary trip,fun,03/29/2025,03/31/2025,,
 1743324492184,test@gmail.com,I love calgary,yay,03/30/2025,03/30/2025,,

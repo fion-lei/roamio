@@ -624,14 +624,14 @@ app.post('/Favorite', async (req, res) => {
 });
 
 app.post('/shareItinerary', (req, res) => {
-  const { itinerary_id, friend_email, access_type } = req.body;
+  const { itinerary_id, friend_email, access_type,friend_name,owner_name } = req.body;
 
   // Validate required fields
   if (!itinerary_id || !friend_email || !access_type) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
-  updateSharedWith(itinerary_id, friend_email, access_type)
+  updateSharedWith(itinerary_id, friend_email, access_type,friend_name,owner_name)
     .then((result) => res.status(200).json(result))
     .catch((err) =>
       res.status(err.status || 500).json({ error: err.message || 'Internal server error' })

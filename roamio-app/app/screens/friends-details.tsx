@@ -25,6 +25,7 @@ import { Colors } from '@/constants/Colors';
 interface RouteParams {
   name: string;
   phone: string;
+  first_name:string;
   email_friend: string;
   avatar: any;
 }
@@ -46,7 +47,7 @@ const InfoItem = ({ icon, text }: InfoItemProps) => (
 
 const DetailScreen = () => {
   const route = useRoute();
-  const { name, phone, avatar, email_friend } = route.params as RouteParams;
+  const { name, phone, avatar, email_friend,first_name } = route.params as RouteParams;
   const { user } = useUser();
   const navigation = useNavigation();
   const [sent, setSent] = useState(false);
@@ -157,6 +158,8 @@ useEffect(() => {
           itinerary_id: selectedItinerary.itinerary_id, 
           friend_email: email_friend,
           access_type: accessType,
+          friend_name: first_name,
+          owner_name:user.first_name,
         }),
       });
   

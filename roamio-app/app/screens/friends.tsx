@@ -25,7 +25,7 @@ import { useUser } from "@/contexts/UserContext";
 
 type RootStackParamList = {
   FriendsScreen: undefined;
-  Detail: { name: string; phone: string; avatar: any; email_friend:string };
+  Detail: { name: string; phone: string; avatar: any; email_friend:string;first_name:string ; owner_name:string};
 };
 type NavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -76,12 +76,15 @@ export default function FriendsScreen() {
       itinerary_id: string;   // or number
       user_email: string;
       trip_title: string;
-      shared_with?: string;  // optional if some rows have empty data
+      shared_with?: string;
+      first_name:String;  // optional if some rows have empty data
     }
 
     interface SharedFriend {
       email: string;
-      access?: string; // optional, if you have more properties add them here
+      access?: string; 
+      friend_name:string;// optional, if you have more properties add them here
+      owner_name:string;
     }
     
 
@@ -95,6 +98,7 @@ export default function FriendsScreen() {
  
       const mappedFriends = data.map((friend: any, idx: number) => ({
         id: friend.id ? friend.id.toString() : String(idx),
+        first_name:friend.first_name.trim(),
         name: `${friend.first_name || ""} ${friend.last_name || ""}`.trim(),
         phone: friend.phone_number || "",
         avatar: require("../../assets/images/avatar1.png"),
@@ -478,7 +482,9 @@ export default function FriendsScreen() {
                   name: item.name,
                   phone: item.phone,
                   avatar: item.avatar,
-                  email_friend: item.email_friend
+                  email_friend: item.email_friend,
+                  first_name: item.first_name,
+                  owner_name: user.first_name //to do fix this logic here, maybe if shared_with empty then this?
                 })
               }
             >
@@ -498,26 +504,31 @@ export default function FriendsScreen() {
   keyExtractor={(item) => item.itinerary_id.toString()}
   renderItem={({ item }) => {
     // Parse the shared_with JSON field and cast it to SharedFriend[]
-    let sharedWith: SharedFriend[] = [];
-    if (item.shared_with && item.shared_with.trim() !== "") {
-      try {
-        sharedWith = JSON.parse(item.shared_with) as SharedFriend[];
-      } catch (error) {
-        console.error("Error parsing shared_with:", error);
-      }
-    }
+    // Parse the shared_with JSON field and cast it to SharedFriend[]
+let sharedWith: SharedFriend[] = [];
+if (item.shared_with && item.shared_with.trim() !== "") {
+  try {
+    sharedWith = JSON.parse(item.shared_with) as SharedFriend[];
+  } catch (error) {
+    console.error("Error parsing shared_with:", error);
+  }
+}
 
-    // Check if the current user is the owner of the trip
-    const isOwner = item.user_email === currentUserEmail;
+// Check if the current user is the owner of the trip
+const isOwner = item.user_email === currentUserEmail;
 
-    // Determine what name(s) to display:
-    // - If owner: show the names (or emails) of the friends with whom the trip is shared.
-    // - If not: display the owner's email as "Shared by: ..."
-    const displayName = isOwner
-      ? (sharedWith.length > 0
-          ? sharedWith.map((friend) => friend.email).join(", ")
-          : "Not shared")
-      : `Shared by: ${item.user_email}`;
+// For non-owners, find the mapping for the current user
+const friendMapping = sharedWith.find(friend => friend.email === currentUserEmail);
+
+// Determine the display name:
+// - If owner: show the names of the friends (using friend.friend_name)
+// - If not: display the mapped owner_name from the friend mapping (if found) or fallback to item.user_email.
+const displayName = isOwner
+  ? (sharedWith.length > 0
+      ? sharedWith.map(friend => friend.friend_name).join(", ")
+      : "Not shared")
+  : `Shared by: ${friendMapping?.owner_name || item.user_email}`;
+
 
     return (
       <View style={styles.tripCard}>
@@ -530,9 +541,6 @@ export default function FriendsScreen() {
   }}
   showsHorizontalScrollIndicator={false}
 />
-
-      
-      
     </View>
   );
 }

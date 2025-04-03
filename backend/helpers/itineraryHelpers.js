@@ -101,8 +101,8 @@ const deleteItinerary = (itinerary_id) => {
   });
 };
 
-const updateSharedWith = async (itinerary_id, friend_email, access_type) => {
-  console.log('updateSharedWith called with:', { itinerary_id, friend_email, access_type });
+const updateSharedWith = async (itinerary_id, friend_email, access_type,friend_name,owner_name) => {
+  console.log('updateSharedWith called with:', { itinerary_id, friend_email, access_type,owner_name });
   try {
     // Read all itineraries using your existing helper.
     const itineraries = await readItineraries();
@@ -137,7 +137,7 @@ const updateSharedWith = async (itinerary_id, friend_email, access_type) => {
     }
 
     // Add the new friend.
-    sharedWith.push({ email: friend_email, access: access_type });
+    sharedWith.push({ email: friend_email, access: access_type,friend_name:friend_name,owner_name:owner_name});
     console.log('Updated shared_with array:', sharedWith);
 
     // Use JSON.stringify to create the JSON string, and then rely on updateItinerary to escape it
