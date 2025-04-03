@@ -25,6 +25,7 @@ import { Colors } from '@/constants/Colors';
 interface RouteParams {
   name: string;
   phone: string;
+  first_name:string;
   email_friend: string;
   avatar: any;
 }
@@ -46,7 +47,7 @@ const InfoItem = ({ icon, text }: InfoItemProps) => (
 
 const DetailScreen = () => {
   const route = useRoute();
-  const { name, phone, avatar, email_friend } = route.params as RouteParams;
+  const { name, phone, avatar, email_friend,first_name } = route.params as RouteParams;
   const { user } = useUser();
   const navigation = useNavigation();
   const [sent, setSent] = useState(false);
@@ -54,9 +55,10 @@ const DetailScreen = () => {
   const [selectedItinerary, setSelectedItinerary] = useState<any | null>(null);
   const [accessType, setAccessType] = useState<'trip-mate' | 'viewer'>('viewer');
   const [itineraries, setItineraries] = useState<any[]>([]);
+  const [trips, setTrips] = useState<Itinerary[]>([]);
 
 
-  const SERVER_IP = 'http://10.0.2.2:3000';
+  const SERVER_IP = 'http://10.0.0.197:3000';
   const currentUserEmail = user.email;
 
 
@@ -86,20 +88,49 @@ const handleToggleFavorite = async () => {
   }
 };
 
-  useEffect(() => {
-    const fetchItineraries = async () => {
-      try {
-        const res = await fetch(`${SERVER_IP}/itineraries?email=${encodeURIComponent(currentUserEmail)}`);
-        const data = await res.json();
-        setItineraries(data.itineraries);
-      } catch (err) {
-        console.error("Error fetching itineraries:", err);
-      }
-    };
+interface Itinerary {
+  itinerary_id: string;
+  user_email: string;
+  trip_title: string;
+  trip_description: string;
+  start_date: string; // Expected to be in a parsable date format (e.g., "MM/DD/YYYY")
+  end_date: string;   // Expected to be in a parsable date format (e.g., "MM/DD/YYYY")
+  shared_with?: string;   // This should be a JSON string representing an array of shared friend objects
+}
+
+useEffect(() => {
+  const fetchItineraries = async () => {
+    try {
+      const res = await fetch(
+        `${SERVER_IP}/itineraries?email=${encodeURIComponent(currentUserEmail)}`
+      );
+      const data = await res.json();
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      // Map data to your Itinerary interface and filter out past trips.
+      const formattedItineraries = (data.itineraries || []).map((trip: any) => ({
+        ...trip,
+        // We leave dates as strings for now, but you could also convert them.
+      }));
+
+      const filteredItineraries = formattedItineraries.filter((trip: Itinerary) => {
+        const endDate = new Date(trip.end_date);
+        return endDate >= today;
+      });
+
+      setItineraries(filteredItineraries);
+    } catch (err) {
+      console.error("Error fetching itineraries:", err);
+    }
+  };
+
+  fetchItineraries();
+}, [currentUserEmail]);
 
 
-    fetchItineraries();
-  }, []);
+
 
   // Add this just below your existing useEffect(() => { fetchItineraries(); })
 useEffect(() => {
@@ -157,6 +188,8 @@ useEffect(() => {
           itinerary_id: selectedItinerary.itinerary_id, 
           friend_email: email_friend,
           access_type: accessType,
+          friend_name: first_name,
+          owner_name:user.first_name,
         }),
       });
   

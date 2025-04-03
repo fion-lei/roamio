@@ -71,7 +71,7 @@ export default function SignUpDetails() {
     };
 
     try {
-      const response = await fetch("http://10.0.2.2:3000/updateUserDetails", {
+      const response = await fetch("http://10.0.0.197:3000/updateUserDetails", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(userDetails),

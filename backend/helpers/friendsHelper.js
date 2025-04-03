@@ -6,6 +6,12 @@ const csv = require('csv-parser');
 const REQUESTS_CSV = path.join(__dirname, '..', 'data', 'friend_requests.csv');
 const REQUEST_HEADER = 'id,from_email,to_email';
 
+
+// Ensure the CSV file exists with the proper header
+if (!fs.existsSync(REQUESTS_CSV)) {
+  fs.writeFileSync(REQUESTS_CSV, FRIEND_REQUESTS_HEADER + "\n");
+}
+
 // Ensure CSV exists
 if (!fs.existsSync(REQUESTS_CSV)) {
   console.log("[INIT] friend_requests.csv not found. Creating new file.");
@@ -13,6 +19,22 @@ if (!fs.existsSync(REQUESTS_CSV)) {
 } else {
   console.log("[INIT] friend_requests.csv found.");
 }
+
+const appendFriendRequest = ({ id, from_email, to_email }) => {
+  return new Promise((resolve, reject) => {
+    fs.stat(REQUESTS_CSV, (err, stats) => {
+      if (err) return reject(err);
+      // If file has data, prepend a newline; otherwise, don't.
+      const newLine = stats.size > 0
+        ? `\n${id},${from_email},${to_email}`
+        : `${id},${from_email},${to_email}`;
+      fs.appendFile(REQUESTS_CSV, newLine, (err) => {
+        if (err) return reject(err);
+        resolve();
+      });
+    });
+  });
+};
 
 // Add a friend (as an object with metadata)
 const addFriend = async (user_email, friend_email) => {
@@ -117,4 +139,5 @@ module.exports = {
   areFriends,
   toggleFavorite,
   clearRequest,
+  appendFriendRequest,
 };

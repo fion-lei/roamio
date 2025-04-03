@@ -8,7 +8,7 @@ import { useUser } from "@/contexts/UserContext";
 
 // Gets the appropriate image filename based on activity
 const getImageForActivity = (title: string): string => {
-  // Map activity titles to specific images - will add to later as more activities are included 
+  // Map activity titles to specific images
   const activityImageMap: Record<string, string> = {
     "Elgin Hill": "camp.png",
     "OEB Breakfast Co.": "food.png",
@@ -50,11 +50,6 @@ export default function AddItinerary() {
   const [selectedItinerary, setSelectedItinerary] = useState("--Itinerary Name--");
   const [showItineraryDropdown, setShowItineraryDropdown] = useState(false);
   const [itineraryOptions, setItineraryOptions] = useState<string[]>([]);
-  const [selectedItineraryData, setSelectedItineraryData] = useState<any>(null);
-  const [selectedItineraryDates, setSelectedItineraryDates] = useState<{start: Date | null, end: Date | null}>({
-    start: null,
-    end: null
-  });
 
   // Date/time states 
   const [startDate, setStartDate] = useState<Date | null>(null);
@@ -82,7 +77,7 @@ export default function AddItinerary() {
       }
       
       const response = await fetch(
-        `http://10.0.2.2:3000/active-itineraries?email=${encodeURIComponent(user.email)}`,
+        `http://10.0.0.197:3000/active-itineraries?email=${encodeURIComponent(user.email)}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -126,13 +121,6 @@ export default function AddItinerary() {
     }) + " " + "(MST)";
   };
 
-  // Parse date string to date object 
-  const parseDate = (dateStr: string) => {
-    const [month, day, year] = dateStr.split("/");
-    return new Date(Number(year), Number(month) - 1, Number(day));
-  };
-  
-
   // Reset all selections to default
   const resetSelections = () => {
     setSelectedItinerary("--Itinerary Name--");
@@ -145,8 +133,6 @@ export default function AddItinerary() {
     setEndDate(null);
     setStartTime(null);
     setEndTime(null);
-    setSelectedItineraryData(null);
-    setSelectedItineraryDates({ start: null, end: null });
   };
 
   // Handles date/time changes, if picker is cancelled then no updates 
@@ -220,14 +206,24 @@ export default function AddItinerary() {
         Alert.alert("Error", "User email not found. Please log in.");
         return;
       }
-
-      if (!selectedItineraryData) {
+      
+      const response = await fetch(`http://10.0.2.2:3000/active-itineraries?email=${encodeURIComponent(user.email)}`);
+      const data = await response.json();
+      
+      if (!response.ok) {
+        Alert.alert("Error", data.error || "Failed to get active itineraries");
+        return;
+      }
+      
+      const selectedItineraryObj = data.itineraries.find((it: any) => it.trip_title === selectedItinerary);
+      
+      if (!selectedItineraryObj) {
         Alert.alert("Error", "Failed to find the selected itinerary");
         return;
       }
       
       // Convert itinerary_id to string to ensure consistent type
-      const itineraryId = String(selectedItineraryData.itinerary_id);
+      const itineraryId = String(selectedItineraryObj.itinerary_id);
 
       // Add validation check for events not overlapping with existing events in select itinerary? 
 
@@ -252,7 +248,7 @@ export default function AddItinerary() {
       };
       
       // API call to add the event 
-      const eventResponse = await fetch("http://10.0.2.2:3000/events", {
+      const eventResponse = await fetch("http://10.0.0.197:3000/events", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -266,6 +262,14 @@ export default function AddItinerary() {
       if (!eventResponse.ok) {
         Alert.alert("Error", eventResult.error || "Failed to add event to itinerary");
         return;
+      }
+      
+      // Verify the event was added by checking the count
+      try {
+        const countResponse = await fetch(`http://10.0.2.2:3000/event-counts/${itineraryId}`);
+        await countResponse.json();
+      } catch (countError) {
+        Alert.alert("Error", "Failed to verify addition of event.");
       }
       
       Alert.alert(
@@ -371,26 +375,9 @@ export default function AddItinerary() {
                       <Pressable 
                         key={index} 
                         style={styles.dropdownOption} 
-                        onPress={async () => {
+                        onPress={() => {
                           setSelectedItinerary(option);
                           setShowItineraryDropdown(false);
-                          
-                          try {
-                            const response = await fetch(`http://10.0.2.2:3000/active-itineraries?email=${encodeURIComponent(user.email)}`);
-                            const data = await response.json();
-                            const selectedItineraryObj = data.itineraries.find((id: any) => id.trip_title === option);
-                            
-                            // Obtain selected itinerary data including start and end dates for datepicker
-                            if (selectedItineraryObj) {
-                              setSelectedItineraryData(selectedItineraryObj);
-                              setSelectedItineraryDates({
-                                start: parseDate(selectedItineraryObj.start_date),
-                                end: parseDate(selectedItineraryObj.end_date)
-                              });
-                            }
-                          } catch (error) {
-                            console.error("Error fetching selected itinerary details:", error);
-                          }
                         }}
                       >
                         <Text style={styles.dropdownOptionText}>{option}</Text>
@@ -418,13 +405,12 @@ export default function AddItinerary() {
                 {showStartDatePicker && (
                   <View style={styles.pickerContainer}>
                     <DateTimePicker 
-                      value={startDate || selectedItineraryDates.start || new Date()}
+                      value={startDate || new Date()}
                       mode="date"
                       display="spinner"
                       onChange={(event, date) => handleDateChange(event, date, "startDate")}
-                      // Restrict start date of datepicker to be within range of selected itinerary dates  
-                      minimumDate={selectedItineraryDates.start || new Date()}
-                      maximumDate={selectedItineraryDates.end || undefined}
+                      // Minimum date for start date selection set to today's date 
+                      minimumDate={new Date()}
                     />
                   </View>
                 )}
@@ -445,13 +431,12 @@ export default function AddItinerary() {
                 {showEndDatePicker && (
                   <View style={styles.pickerContainer}>
                     <DateTimePicker
-                      value={endDate || selectedItineraryDates.start || new Date()}
+                      value={endDate || new Date()}
                       mode="date"
                       display="spinner"
                       onChange={(event, date) => handleDateChange(event, date, "endDate")}
-                      // Restrict end date of datepicker to start at selected itinerary's start date and stay within range
-                      minimumDate={startDate || selectedItineraryDates.start || new Date()}
-                      maximumDate={selectedItineraryDates.end || undefined}
+                       // Minimum date for end date selection should start only from start date's minimum date set 
+                      minimumDate={startDate || new Date()}
                     />
                   </View>
                 )}

@@ -1,6 +1,6 @@
 const express = require('express');
 const { readUsers, appendUser, updateUserDetails } = require('./helpers/usersHelpers');
-const { appendItinerary, readItineraries, updateItinerary, deleteItinerary } = require('./helpers/itineraryHelpers');
+const { appendItinerary, readItineraries, updateItinerary, deleteItinerary,updateSharedWith,unshareItinerary} = require('./helpers/itineraryHelpers');
 const { appendEvent, readEvents, getEvents, countEvents } = require('./helpers/eventsHelpers');
 const app = express();
 const cors = require('cors'); // Add this
@@ -12,6 +12,7 @@ const {
   clearRequest,
   getFriends,
   toggleFavorite,
+  appendFriendRequest
 } = require('./helpers/friendsHelper');
 
 const PORT = process.env.PORT || 3000;
@@ -183,7 +184,7 @@ app.get('/profile', async (req, res) => {
 // ----------------------
 // Create trip Endpoint
 // ----------------------
-app.post('/itineraries', async (req, res) => {
+/*app.post('/itineraries', async (req, res) => {
   const { user_email, trip_title, trip_description, start_date, end_date, destinations } = req.body;
   if (!user_email || !trip_title) {
     return res.status(400).json({ error: 'Missing required fields.' });
@@ -206,7 +207,43 @@ app.post('/itineraries', async (req, res) => {
     console.error("Error creating itinerary:", error);
     res.status(500).json({ error: 'Error creating itinerary.' });
   }
+});*/
+
+app.get('/itineraries', async (req, res) => {
+  const { email } = req.query;
+  if (!email) {
+    return res.status(400).json({ error: "Email parameter is required" });
+  }
+  try {
+    const itineraries = await readItineraries();
+    console.log('Fetched itineraries:', itineraries);
+
+    const filtered = itineraries.filter(itinerary => {
+      // Default: no shared_with info
+      let sharedEmails = [];
+      if (itinerary.shared_with && itinerary.shared_with.trim() !== '') {
+        try {
+          // Parse shared_with JSON string to an array of objects
+          const sharedArray = JSON.parse(itinerary.shared_with);
+          sharedEmails = sharedArray.map(item => item.email);
+        } catch (error) {
+          console.error("Error parsing shared_with field:", error);
+        }
+      }
+      // Check if the email is the owner or in the shared_with list
+      const isOwner = itinerary.user_email === email;
+      const isShared = sharedEmails.includes(email);
+      console.log(`Itinerary ${itinerary.itinerary_id}: isOwner=${isOwner}, isShared=${isShared}`);
+      return isOwner || isShared;
+    });
+
+    return res.status(200).json({ itineraries: filtered });
+  } catch (error) {
+    console.error("Error fetching itineraries:", error);
+    return res.status(500).json({ error: "Error fetching itineraries" });
+  }
 });
+
 
 
 // ----------------------
@@ -565,5 +602,99 @@ app.post('/Favorite', async (req, res) => {
   } catch (error) {
     console.error("Error toggling favorite:", error);
     return res.status(500).json({ error: "Failed to update favorite status." });
+  }
+});
+
+app.post('/shareItinerary', (req, res) => {
+  const { itinerary_id, friend_email, access_type,friend_name,owner_name } = req.body;
+
+  // Validate required fields
+  if (!itinerary_id || !friend_email || !access_type) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+
+  updateSharedWith(itinerary_id, friend_email, access_type,friend_name,owner_name)
+    .then((result) => res.status(200).json(result))
+    .catch((err) =>
+      res.status(err.status || 500).json({ error: err.message || 'Internal server error' })
+    );
+});
+
+/**
+ * DELETE endpoint for owners to unshare an itinerary with a friend.
+ * Expected body: { itinerary_id: string, friend_email: string }
+ */
+app.delete('/unshare', async (req, res) => {
+  const { itinerary_id, friend_email } = req.body;
+  if (!itinerary_id || !friend_email) {
+    return res.status(400).json({ error: "Missing itinerary_id or friend_email" });
+  }
+  try {
+    const result = await unshareItinerary(itinerary_id, friend_email);
+    res.status(200).json(result);
+  } catch (error) {
+    console.error("Error unsharing itinerary:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * DELETE endpoint for shared users (non-owners) to unadd themselves from an itinerary.
+ * Expected body: { itinerary_id: string, friend_email: string }
+ * (Here, friend_email should be the email of the current user.)
+ */
+app.delete('/unadd', async (req, res) => {
+  const { itinerary_id, friend_email } = req.body;
+  if (!itinerary_id || !friend_email) {
+    return res.status(400).json({ error: "Missing itinerary_id or friend_email" });
+  }
+  try {
+    const result = await unshareItinerary(itinerary_id, friend_email);
+    res.status(200).json(result);
+  } catch (error) {
+    console.error("Error unadding from itinerary:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/sendFriendRequest', async (req, res) => {
+  const { from_email, to_email } = req.body;
+  console.log("request received")
+  if (!from_email || !to_email) {
+    return res.status(400).json({ error: "Missing from_email or to_email" });
+  }
+  
+  try {
+    // Generate a unique ID using current timestamp (or replace with your preferred method)
+    const newId = Date.now();
+    
+    // Optionally, you might check for duplicate requests here
+
+    await appendFriendRequest({ id: newId, from_email, to_email });
+    res.status(200).json({ message: "Friend request sent successfully" });
+  } catch (error) {
+    console.error("Error sending friend request:", error);
+    res.status(500).json({ error: "Error sending friend request" });
+  }
+});
+
+app.get('/findUserByPhone', async (req, res) => {
+  const { phone } = req.query;
+  if (!phone) {
+    return res.status(400).json({ error: "Missing phone number" });
+  }
+  try {
+    const users = await readUsers();
+    // Match the phone number exactly.
+    // You might want to trim spaces and/or standardize the format if necessary.
+    const user = users.find(u => u.phone_number && u.phone_number.trim() === phone.trim());
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    // Return the user's email (and any other info if needed)
+    res.status(200).json({ email: user.email });
+  } catch (error) {
+    console.error("Error finding user by phone:", error);
+    res.status(500).json({ error: "Error looking up phone number" });
   }
 });

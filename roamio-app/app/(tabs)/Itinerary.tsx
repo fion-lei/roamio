@@ -91,7 +91,7 @@ export default function Itinerary() {
         return;
       }
       const response = await fetch(
-        `http://10.0.2.2:3000/itineraries?email=${encodeURIComponent(user.email)}`
+        `http://10.0.0.197:3000/itineraries?email=${encodeURIComponent(user.email)}`
       );
       const data = await response.json();
       if (response.ok) {
@@ -140,7 +140,7 @@ export default function Itinerary() {
   // Fetch event counts for all itineraries
   const fetchEventCounts = async () => {
     try {
-      const response = await fetch('http://10.0.2.2:3000/event-counts');
+      const response = await fetch('http://10.0.0.197:3000/event-counts');
       if (response.ok) {
         const data = await response.json();
         setEventCounts(data.counts || {});
@@ -213,7 +213,7 @@ export default function Itinerary() {
     };
 
     try {
-      const response = await fetch("http://10.0.2.2:3000/itineraries", {
+      const response = await fetch("http://10.0.0.197:3000/itineraries", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -224,7 +224,7 @@ export default function Itinerary() {
       if (response.ok) { 
        
         const updatedResponse = await fetch(
-          `http://10.0.2.2:3000/itineraries?email=${encodeURIComponent(user.email)}`
+          `http://10.0.0.197:3000/itineraries?email=${encodeURIComponent(user.email)}`
         );
         const updatedData = await updatedResponse.json();
         
@@ -281,6 +281,13 @@ export default function Itinerary() {
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                       <Entypo name="location-pin" size={18} color={Colors.primary} />
                       <Text style={styles.title}>{item.title}</Text>
+                      {item.shared_with &&
+                        item.shared_with.trim() !== "" &&
+                        item.shared_with.trim() !== "[]" && (
+                          <View style={styles.sharedBadge}>
+                            <Text style={styles.sharedBadgeText}>Shared</Text>
+                          </View>
+                        )}                   
                     </View>
                     <Text style={styles.date}>
                       {`${formatDate(item.fromDate)} - ${formatDate(item.toDate)}`}
@@ -312,7 +319,13 @@ export default function Itinerary() {
                   <View key={item.id} style={[styles.box, styles.upcomingBox]}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                       <Entypo name="location-pin" size={18} color={Colors.primary} />
-                      <Text style={styles.title}>{item.title}</Text>
+                      {item.shared_with &&
+                        item.shared_with.trim() !== "" &&
+                        item.shared_with.trim() !== "[]" && (
+                          <View style={styles.sharedBadge}>
+                            <Text style={styles.sharedBadgeText}>Shared</Text>
+                          </View>
+                        )}                   
                     </View>
                     <Text style={styles.date}>
                       {`${formatDate(item.fromDate)} - ${formatDate(item.toDate)}`}
@@ -739,4 +752,17 @@ eventCountText: {
   fontFamily: "quicksand-bold",
   color: Colors.coral,
 },
+sharedBadge: {
+  backgroundColor: Colors.coral, // Use your coral color
+  paddingHorizontal: 8,
+  paddingVertical: 2,
+  borderRadius: 12,
+  marginLeft: 8, // Space between title and badge
+},
+sharedBadgeText: {
+  color: "#fff",
+  fontSize: 12,
+  fontFamily: "quicksand-bold", // Ensure this font is loaded
+},
+
 });
