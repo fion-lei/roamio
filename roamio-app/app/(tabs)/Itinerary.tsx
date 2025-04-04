@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -14,15 +14,14 @@ import {
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Colors } from "../../constants/Colors";
-import { AntDesign } from "@expo/vector-icons";
-import { router } from "expo-router";
-import { Entypo } from "@expo/vector-icons";
+import { AntDesign, Entypo, FontAwesome } from "@expo/vector-icons";
+import { router, useFocusEffect } from "expo-router";
 
 import { useUser } from "@/contexts/UserContext";
 
-// Function to format dates in "MMM DD, YYYY" format
+// Function to format dates in "MM/DD/YYYY" format
 const formatDate = (date: Date | null) => {
-  if (!date) return "MM DD, YYYY"; // Default placeholder
+  if (!date) return "MM/DD/YYYY"; // Default placeholder
   return date.toLocaleDateString("en-US", {
     month: "2-digit",
     day: "2-digit",
@@ -40,28 +39,23 @@ const defaultItineraryData = [
   },
 ];
 
-
 export default function Itinerary() {
   const { user } = useUser();
   const [modalVisible, setModalVisible] = useState(false);
   const [showFromDatePicker, setShowFromDatePicker] = useState(false);
   const [showToDatePicker, setShowToDatePicker] = useState(false);
   const [itineraryList, setItineraryList] = useState<any[]>([]);
+  const [eventCounts, setEventCounts] = useState<{ [key: string]: number }>({});
   const today = new Date();
-  today.setHours(0, 0, 0, 0); 
+  today.setHours(0, 0, 0, 0);
 
   const ongoingTrips = itineraryList.filter(
     (trip) => trip.fromDate <= today && trip.toDate >= today
   );
-  
-  const upcomingTrips = itineraryList.filter(
-    (trip) => trip.fromDate > today
-  );
-  
-  const pastTrips = itineraryList.filter(
-    (trip) => trip.toDate < today
-  );
 
+  const upcomingTrips = itineraryList.filter((trip) => trip.fromDate > today);
+
+  const pastTrips = itineraryList.filter((trip) => trip.toDate < today);
 
   // Define initial state
   const [newTrip, setNewTrip] = useState<{
@@ -76,55 +70,102 @@ export default function Itinerary() {
     description: "",
   });
 
-
   const parseDate = (dateStr: string) => {
     const [month, day, year] = dateStr.split("/");
-    return new Date(Number(year), Number(month) - 1, Number(day)); 
+    return new Date(Number(year), Number(month) - 1, Number(day));
   };
-  
-  
-  // Fetch itineraries from backend 
-  useEffect(() => {
-    const fetchItineraries = async () => {
-      try {
-        if (!user.email) {
-          Alert.alert("Error", "User email not found. Please log in.");
-          return;
-        }
-        const response = await fetch(
-          `http://10.0.2.2:3000/itineraries?email=${encodeURIComponent(user.email)}`
-        );
-        const data = await response.json();
-        if (response.ok) {
-              const formattedItineraries = (data.itineraries || []).map((trip: any) => ({
-                ...trip,
-                fromDate: parseDate(trip.start_date),
-                toDate: parseDate(trip.end_date),
 
-                title: trip.trip_title,
-                description: trip.trip_description,
-                id: trip.itinerary_id,
-              }));
-              
-              setItineraryList(
-                formattedItineraries.length > 0
-                  ? formattedItineraries
-                  : defaultItineraryData
-              );
-              
-        } else {
-          Alert.alert("Error", data.error || "Failed to load itineraries.");
-          setItineraryList(defaultItineraryData);
-        }
-      } catch (error) {
-        console.error("Error fetching itineraries:", error);
-        Alert.alert("Error", "Failed to load itineraries.");
+  // Fetch itineraries from backend
+  const fetchItineraries = async () => {
+    try {
+      if (!user.email) {
+        Alert.alert("Error", "User email not found. Please log in.");
+        return;
+      }
+      const response = await fetch(
+        // `http://10.0.2.2:3000/itineraries?email=${encodeURIComponent(user.email)}`
+        `http://10.0.2.2:3000/itineraries?email=${encodeURIComponent(
+          user.email
+        )}`
+      );
+      const data = await response.json();
+      if (response.ok) {
+        const formattedItineraries = (data.itineraries || []).map(
+          (trip: any) => ({
+            ...trip,
+            fromDate: parseDate(trip.start_date),
+            toDate: parseDate(trip.end_date),
+
+            title: trip.trip_title,
+            description: trip.trip_description,
+            id: trip.itinerary_id,
+          })
+        );
+
+        setItineraryList(
+          formattedItineraries.length > 0
+            ? formattedItineraries
+            : defaultItineraryData
+        );
+
+        // Fetch event counts
+        fetchEventCounts();
+      } else {
+        Alert.alert("Error", data.error || "Failed to load itineraries.");
         setItineraryList(defaultItineraryData);
       }
-    };
+    } catch (error) {
+      console.error("Error fetching itineraries:", error);
+      Alert.alert("Error", "Failed to load itineraries.");
+      setItineraryList(defaultItineraryData);
+    }
+  };
 
+  useEffect(() => {
     fetchItineraries();
   }, [user.email]);
+
+  // Refresh data whenever screen is focused
+  useFocusEffect(
+    useCallback(() => {
+      fetchItineraries();
+      fetchEventCounts();
+      return () => {};
+    }, [user.email])
+  );
+
+  // Fetch event counts for all itineraries
+  const fetchEventCounts = async () => {
+    try {
+      const response = await fetch("http://10.0.2.2:3000/event-counts");
+      if (response.ok) {
+        const data = await response.json();
+        setEventCounts(data.counts || {});
+      } else {
+        console.error("Failed to fetch event counts");
+      }
+    } catch (error) {
+      console.error("Error fetching event counts:", error);
+    }
+  };
+
+  // Get event count for a specific itinerary
+  const getEventCount = (itineraryId: string) => {
+    return eventCounts[itineraryId] || 0;
+  };
+
+  // Format event count display text for itineraries
+  const formatEventCountText = (itineraryId: string) => {
+    const count = getEventCount(itineraryId);
+
+    if (count === 0) {
+      return "No events scheduled yet. Start browsing to add!";
+    } else if (count === 1) {
+      return "1 event scheduled";
+    } else {
+      return `${count} events scheduled`;
+    }
+  };
 
   // Handle date selection
   const handleDateChange = (
@@ -149,69 +190,133 @@ export default function Itinerary() {
   // Handle adding a new trip
   const handleAddTrip = async () => {
     if (
-      newTrip.title &&
-      newTrip.fromDate &&
-      newTrip.toDate &&
-      newTrip.description
+      !newTrip.title ||
+      !newTrip.fromDate ||
+      !newTrip.toDate ||
+      !newTrip.description
     ) {
-      if (!user.email) {
-        Alert.alert("Error", "User email not found. Please log in.");
-        return;
-      }
-      // Build payload to pass into backend
-      const payload = {
-        user_email: user.email,
-        trip_title: newTrip.title,
-        trip_description: newTrip.description,
-        start_date: formatDate(newTrip.fromDate),
-        end_date: formatDate(newTrip.toDate),
-      };
-      try {
-        const response = await fetch("http://10.0.2.2:3000/itineraries", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-        const result = await response.json();
-        console.log("POST response:", result); // Log POST response
-        if (response.ok) {
-          // Re-fetch itinerary list from backend after adding trip
-          const updatedResponse = await fetch(
-            `http://10.0.2.2:3000/itineraries?email=${encodeURIComponent(user.email)}`
-          );
-          const updatedData = await updatedResponse.json();
-          console.log("GET response:", updatedData); // Log GET response
-          if (updatedResponse.ok) {
-            const formattedUpdatedItineraries = (updatedData.itineraries || []).map((trip: any) => ({
-              ...trip,
-              fromDate: parseDate(trip.start_date),
-              toDate: parseDate(trip.end_date),
-              title: trip.trip_title,
-              description: trip.trip_description,
-              id: trip.itinerary_id,
-            }));
-            setItineraryList(
-              formattedUpdatedItineraries.length > 0
-                ? formattedUpdatedItineraries
-                : defaultItineraryData
-            );
-          }
-          
-          setModalVisible(false);
-          setNewTrip({ title: "", fromDate: null, toDate: null, description: "" });
-        } else {
-          Alert.alert("Error", result.error || "Failed to add trip.");
-        }
-      } catch (error) {
-        console.error("Error adding trip:", error);
-        Alert.alert("Error", "Failed to add trip.");
-      }
-    } else {
       Alert.alert("Error", "Please fill in all fields.");
+      return;
+    }
+
+    if (newTrip.toDate < newTrip.fromDate) {
+      Alert.alert(
+        "Error",
+        "Please select an end date that is on or after the start date."
+      );
+      return;
+    }
+
+    // Build payload to pass into backend
+    const payload = {
+      user_email: user.email,
+      trip_title: newTrip.title,
+      trip_description: newTrip.description,
+      start_date: formatDate(newTrip.fromDate),
+      end_date: formatDate(newTrip.toDate),
+    };
+
+    try {
+      const response = await fetch("http://10.0.2.2:3000/itineraries", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const result = await response.json();
+
+      // Re-fetch itinerary list from backend after adding trip
+      if (response.ok) {
+        const updatedResponse = await fetch(
+          `http://10.0.2.2:3000/itineraries?email=${encodeURIComponent(
+            user.email
+          )}`
+        );
+        const updatedData = await updatedResponse.json();
+
+        if (updatedResponse.ok) {
+          const formattedUpdatedItineraries = (
+            updatedData.itineraries || []
+          ).map((trip: any) => ({
+            ...trip,
+            fromDate: parseDate(trip.start_date),
+            toDate: parseDate(trip.end_date),
+            title: trip.trip_title,
+            description: trip.trip_description,
+            id: trip.itinerary_id,
+          }));
+          setItineraryList(
+            formattedUpdatedItineraries.length > 0
+              ? formattedUpdatedItineraries
+              : defaultItineraryData
+          );
+        }
+
+        setModalVisible(false);
+        setNewTrip({
+          title: "",
+          fromDate: null,
+          toDate: null,
+          description: "",
+        });
+      } else {
+        Alert.alert("Error", result.error || "Failed to add trip.");
+      }
+    } catch (error) {
+      console.error("Error adding trip:", error);
+      Alert.alert("Error", "Failed to add trip.");
     }
   };
-  
-  
+
+  const handleDeleteItinerary = async (id: string) => {
+    Alert.alert(
+      "Delete Itinerary",
+      "Are you sure you want to delete this itinerary? This action cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              // const response = await fetch("http://10.0.2.2:3000/itineraries/remove-user", {
+              //   method: "POST",
+              //   headers: { "Content-Type": "application/json" },
+              //   body: JSON.stringify({
+              //     itinerary_id: id,
+              //     user_email: user.email,
+              //   }),
+              // });
+              const response = await fetch(
+                `http://10.0.2.2:3000/itineraries/${id}`,
+                {
+                  method: "DELETE",
+                  headers: { "Content-Type": "application/json" },
+                }
+              );
+
+              const result = await response.json();
+
+              if (response.ok) {
+                setItineraryList((prev) =>
+                  prev.filter((trip) => trip.id !== id)
+                );
+                Alert.alert("Deleted", "Itinerary was successfully removed.");
+              } else {
+                Alert.alert(
+                  "Error",
+                  result.error || "Failed to delete itinerary."
+                );
+              }
+            } catch (err) {
+              console.error("Delete Error:", err);
+              Alert.alert("Error", "Something went wrong while deleting.");
+            }
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <SafeAreaView style={styles.safeContainer}>
       <View style={styles.container}>
@@ -227,73 +332,211 @@ export default function Itinerary() {
         </View>
 
         {/* Itinerary List */}
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-            {/* Ongoing Trips */}
-            {ongoingTrips.length > 0 && (
-              <>
-                <Text style={[styles.sectionTitle, styles.ongoingTitle]}>Ongoing Trips</Text>
-                {ongoingTrips.map((item) => (
-                  <View key={item.id} style={[styles.box, styles.ongoingBox]}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                      <Entypo name="location-pin" size={18} color={Colors.primary} />
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Ongoing Trips */}
+          {ongoingTrips.length > 0 && (
+            <>
+              <Text style={[styles.sectionTitle, styles.ongoingTitle]}>
+                Ongoing Trips
+              </Text>
+              {ongoingTrips.map((item) => (
+                <View key={item.id} style={[styles.box, styles.ongoingBox]}>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 4,
+                      }}
+                    >
+                      <Entypo
+                        name="location-pin"
+                        size={18}
+                        color={Colors.primary}
+                      />
                       <Text style={styles.title}>{item.title}</Text>
                     </View>
-                    <Text style={styles.date}>
-                      {`${formatDate(item.fromDate)} - ${formatDate(item.toDate)}`}
-                    </Text>
-                    <Text style={styles.description}>{item.description}</Text>
-                    <Pressable style={styles.viewButtonOngoing} onPress={() => router.push('/screens/DetailedItinerary')}>
-                      <Text style={styles.buttonText}>View Details</Text>
-                    </Pressable>
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 8,
+                        
+                      }}
+                    >
+                      {item.shared_with &&
+                        item.shared_with.trim() !== "" &&
+                        item.shared_with.trim() !== "[]" && (
+                          <View style={styles.sharedBadge}>
+                            <Text style={styles.sharedBadgeText}>Shared</Text>
+                          </View>
+                        )}
+                      <Pressable onPress={() => handleDeleteItinerary(item.id)}>
+                        <AntDesign name="minuscircle" size={22} color="red" />
+                      </Pressable>
+                    </View>
                   </View>
-                ))}
-              </>
-            )}
+                  <Text style={styles.date}>
+                    {`${formatDate(item.fromDate)} - ${formatDate(
+                      item.toDate
+                    )}`}
+                  </Text>
+                  <Text style={styles.description}>{item.description}</Text>
+                  {getEventCount(item.id) > 0 ? (
+                    <View style={styles.eventCountContainer}>
+                      <FontAwesome
+                        name="check-square-o"
+                        size={16}
+                        color={Colors.coral}
+                        style={{ top: 2 }}
+                      />
+                      <Text style={styles.eventCountText}>
+                        {formatEventCountText(item.id)}
+                      </Text>
+                    </View>
+                  ) : (
+                    <Text style={styles.emptyEventText}>
+                      {formatEventCountText(item.id)}
+                    </Text>
+                  )}
+                  <Pressable
+                    style={styles.viewButtonOngoing}
+                    onPress={() => router.push("/screens/DetailedItinerary")}
+                  >
+                    <Text style={styles.buttonText}>View Details</Text>
+                  </Pressable>
+                </View>
+              ))}
+            </>
+          )}
 
-            {/* Upcoming Trips */}
-            {upcomingTrips.length > 0 && (
-              <>
-                <Text style={[styles.sectionTitle, styles.upcomingTitle]}>Upcoming Trips</Text>
-                {upcomingTrips.map((item) => (
-                  <View key={item.id} style={[styles.box, styles.upcomingBox]}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                      <Entypo name="location-pin" size={18} color={Colors.primary} />
+          {/* Upcoming Trips */}
+          {upcomingTrips.length > 0 && (
+            <>
+              <Text style={[styles.sectionTitle, styles.upcomingTitle]}>
+                Upcoming Trips
+              </Text>
+              {upcomingTrips.map((item) => (
+                <View key={item.id} style={[styles.box, styles.upcomingBox]}>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 4,
+                      }}
+                    >
+                      <Entypo
+                        name="location-pin"
+                        size={18}
+                        color={Colors.primary}
+                      />
                       <Text style={styles.title}>{item.title}</Text>
                     </View>
-                    <Text style={styles.date}>
-                      {`${formatDate(item.fromDate)} - ${formatDate(item.toDate)}`}
-                    </Text>
-                    <Text style={styles.description}>{item.description}</Text>
-                    <Pressable style={styles.viewButtonUpcoming} onPress={() => console.log("View Details Clicked!")}>
-                      <Text style={styles.buttonText}>View Details</Text>
+                    <Pressable onPress={() => handleDeleteItinerary(item.id)}>
+                      <AntDesign name="minuscircle" size={22} color="red" />
                     </Pressable>
                   </View>
-                ))}
-              </>
-            )}
 
-            {/* Past Trips */}
-            {pastTrips.length > 0 && (
-              <>
-                <Text style={[styles.sectionTitle, styles.pastTitle]}>Past Trips</Text>
-                {pastTrips.map((item) => (
-                  <View key={item.id} style={[styles.box, styles.pastBox]}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                      <Entypo name="location-pin" size={18} color={Colors.primary} />
+                  <Text style={styles.date}>
+                    {`${formatDate(item.fromDate)} - ${formatDate(
+                      item.toDate
+                    )}`}
+                  </Text>
+                  <Text style={styles.description}>{item.description}</Text>
+                  {getEventCount(item.id) > 0 ? (
+                    <View style={styles.eventCountContainer}>
+                      <FontAwesome
+                        name="check-square-o"
+                        size={16}
+                        color={Colors.coral}
+                        styles={{ top: 2 }}
+                      />
+                      <Text style={styles.eventCountText}>
+                        {formatEventCountText(item.id)}
+                      </Text>
+                    </View>
+                  ) : (
+                    <Text style={styles.emptyEventText}>
+                      {formatEventCountText(item.id)}
+                    </Text>
+                  )}
+                  <Pressable
+                    style={styles.viewButtonUpcoming}
+                    onPress={() => console.log("View Details Clicked!")}
+                  >
+                    <Text style={styles.buttonText}>View Details</Text>
+                  </Pressable>
+                </View>
+              ))}
+            </>
+          )}
+
+          {/* Past Trips */}
+          {pastTrips.length > 0 && (
+            <>
+              <Text style={[styles.sectionTitle, styles.pastTitle]}>
+                Past Trips
+              </Text>
+              {pastTrips.map((item) => (
+                <View key={item.id} style={[styles.box, styles.pastBox]}>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 4,
+                      }}
+                    >
+                      <Entypo
+                        name="location-pin"
+                        size={18}
+                        color={Colors.primary}
+                      />
                       <Text style={styles.title}>{item.title}</Text>
                     </View>
-                    <Text style={styles.date}>
-                      {`${formatDate(item.fromDate)} - ${formatDate(item.toDate)}`}
-                    </Text>
-                    <Text style={styles.description}>{item.description}</Text>
-                    <Pressable style={styles.viewButtonPast} onPress={() => console.log("View Details Clicked!")}>
-                      <Text style={styles.buttonText}>View Details</Text>
+                    <Pressable onPress={() => handleDeleteItinerary(item.id)}>
+                      <AntDesign name="minuscircle" size={22} color="red" />
                     </Pressable>
                   </View>
-                ))}
-              </>
-            )}
-          </ScrollView>
+                  <Text style={styles.date}>
+                    {`${formatDate(item.fromDate)} - ${formatDate(
+                      item.toDate
+                    )}`}
+                  </Text>
+                  <Text style={styles.description}>{item.description}</Text>
+                  <Pressable
+                    style={styles.viewButtonPast}
+                    onPress={() => console.log("View Details Clicked!")}
+                  >
+                    <Text style={styles.buttonText}>View Details</Text>
+                  </Pressable>
+                </View>
+              ))}
+            </>
+          )}
+        </ScrollView>
 
         {/* Modal for Adding New Trip */}
         <Modal visible={modalVisible} animationType="fade" transparent={true}>
@@ -324,7 +567,7 @@ export default function Itinerary() {
                     <Text style={styles.dateText}>
                       {newTrip.fromDate
                         ? formatDate(newTrip.fromDate)
-                        : "MM DD, YYYY"}
+                        : "MM/DD/YYYY"}
                     </Text>
                   </Pressable>
                 </View>
@@ -339,7 +582,7 @@ export default function Itinerary() {
                     <Text style={styles.dateText}>
                       {newTrip.toDate
                         ? formatDate(newTrip.toDate)
-                        : "MM DD, YYYY"}
+                        : "MM/DD/YYYY"}
                     </Text>
                   </Pressable>
                 </View>
@@ -465,7 +708,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 10,
   },
-   
+
   button: {
     borderRadius: 10,
     padding: 10,
@@ -567,89 +810,123 @@ const styles = StyleSheet.create({
   },
 
   // Section Titles
-sectionTitle: {
-  fontSize: 20,
-  fontFamily: "quicksand-bold",
-  marginVertical: 10,
-},
+  sectionTitle: {
+    fontSize: 20,
+    fontFamily: "quicksand-bold",
+    marginVertical: 10,
+  },
 
-ongoingTitle: {
-  color: Colors.coral
-},
-upcomingTitle: {
-  color: Colors.peachySalmon, 
-},
-pastTitle: {
-  color: Colors.grey, 
-},
+  ongoingTitle: {
+    color: Colors.coral,
+  },
+  upcomingTitle: {
+    color: Colors.peachySalmon,
+  },
+  pastTitle: {
+    color: Colors.grey,
+  },
 
-ongoingBox: {
-  borderLeftWidth: 4,
-  borderLeftColor: Colors.coral, 
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.15,
-  shadowRadius: 4,
-  elevation: 3,
-},
+  ongoingBox: {
+    borderLeftWidth: 4,
+    borderLeftColor: Colors.coral,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
+  },
 
-upcomingBox: { 
-  borderLeftWidth: 4,
-  borderLeftColor: Colors.peachySalmon, 
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.15,
-  shadowRadius: 4,
-  elevation: 3,
-},
+  upcomingBox: {
+    borderLeftWidth: 4,
+    borderLeftColor: Colors.peachySalmon,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
+  },
 
-pastBox: {
-  borderLeftWidth: 4,
-  borderLeftColor: Colors.grey,
-},
+  pastBox: {
+    borderLeftWidth: 4,
+    borderLeftColor: Colors.grey,
+  },
 
-// Past Button Styling
-pastButton: {
-  backgroundColor: Colors.grey,
-},
-inputContainer: {
-  marginBottom: 15,
-},
+  // Past Button Styling
+  pastButton: {
+    backgroundColor: Colors.grey,
+  },
+  inputContainer: {
+    marginBottom: 15,
+  },
 
-inputLabel: {
-  fontSize: 14,
-  fontFamily: "quicksand-semibold",
-  marginBottom: 5,
-},
+  inputLabel: {
+    fontSize: 14,
+    fontFamily: "quicksand-semibold",
+    marginBottom: 5,
+  },
 
-dateInputContainer: {
-  flex: 1,
-  marginHorizontal: 5,
-},
+  dateInputContainer: {
+    flex: 1,
+    marginHorizontal: 5,
+  },
 
-viewButtonOngoing: {
-  backgroundColor: Colors.coral, 
-  paddingVertical: 12,
-  paddingHorizontal: 16,
-  borderRadius: 10,
-  alignItems: "center",
-  justifyContent: "center",
-  marginTop: 10,
-},
-viewButtonUpcoming: {
-  backgroundColor: Colors.peachySalmon, 
-  paddingVertical: 12,
-  paddingHorizontal: 16,
-  borderRadius: 10,
-  alignItems: "center",
-  justifyContent: "center",
-  marginTop: 10,
-},
-viewButtonPast: {
-  backgroundColor: Colors.grey, 
-  paddingVertical: 12,
-  paddingHorizontal: 16,
-  borderRadius: 10,
-  alignItems: "center",
-  justifyContent: "center",
-  marginTop: 10,
-},
+  viewButtonOngoing: {
+    backgroundColor: Colors.coral,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 10,
+  },
+  viewButtonUpcoming: {
+    backgroundColor: Colors.peachySalmon,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 10,
+  },
+  viewButtonPast: {
+    backgroundColor: Colors.grey,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 10,
+  },
+  eventCountContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    gap: 8,
+    marginVertical: 8,
+    backgroundColor: Colors.palePink,
+    borderRadius: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+  },
+  emptyEventText: {
+    fontSize: 14,
+    fontFamily: "quicksand-bold",
+    color: Colors.coral,
+    marginVertical: 8,
+  },
+  eventCountText: {
+    fontSize: 14,
+    fontFamily: "quicksand-bold",
+    color: Colors.coral,
+  },
+  sharedBadge: {
+    backgroundColor: "mediumseagreen", // Use your coral color
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
+    marginRight: 8,
+  },
+  sharedBadgeText: {
+    color: "#fff",
+    fontSize: 13,
+    fontFamily: "quicksand-bold", // Ensure this font is loaded
+  },
 });
