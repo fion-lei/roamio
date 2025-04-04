@@ -209,4 +209,53 @@ const deleteEvent = (eventId) => {
   });
 };
 
-module.exports = { appendEvent, readEvents, getEvents, countEvents, deleteEvent };
+// Helper function to update an event
+const updateEvent = (eventId, updates) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const events = await readEvents();
+      const eventIndex = events.findIndex(event => String(event.event_id) === String(eventId));
+      
+      if (eventIndex === -1) {
+        return reject(new Error("Event not found"));
+      }
+      
+      // Update the event with new data
+      events[eventIndex] = {
+        ...events[eventIndex],
+        ...updates
+      };
+      
+      // Write all events back to CSV
+      const headerFields = EVENTS_HEADER.split(',');
+      const lines = events.map(event => {
+        const fields = headerFields.map(field => {
+          const trimmedField = field.trim();
+          let value = event[trimmedField] || "";
+          
+          if (trimmedField === 'tags') {
+            if (typeof value !== 'string') {
+              return formatTags(value);
+            }
+            return value;
+          }
+           
+          return escapeCSVField(value);
+        });
+        
+        return fields.join(',');
+      });
+      
+      const newCSV = EVENTS_HEADER + (events.length > 0 ? "\n" + lines.join("\n") : "");
+      
+      fs.writeFile(eventsCSV, newCSV, (err) => {
+        if (err) return reject(err);
+        resolve();
+      });
+    } catch (e) {
+      reject(e);
+    }
+  });
+};
+
+module.exports = { appendEvent, readEvents, getEvents, countEvents, deleteEvent, updateEvent };

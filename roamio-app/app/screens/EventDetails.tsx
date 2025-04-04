@@ -157,6 +157,10 @@ const EventDetails = () => {
     const [endTime, setEndTime] = useState<Date | null>(null);
     const [showStartTimePicker, setShowStartTimePicker] = useState(false);
     const [showEndTimePicker, setShowEndTimePicker] = useState(false);
+    
+    // state variables to track display times
+    const [displayStartTime, setDisplayStartTime] = useState(time);
+    const [displayEndTime, setDisplayEndTime] = useState(calculateEndTime(time, duration));
 
     // initialize time values based on the current time and duration
     useEffect(() => {
@@ -226,7 +230,7 @@ const EventDetails = () => {
     };
 
     // Function to save the time changes
-    const handleSaveTime = () => {
+    const handleSaveTime = async () => {
         if (!startTime || !endTime) {
             Alert.alert("Error", "Please select both start and end times");
             return;
@@ -237,8 +241,73 @@ const EventDetails = () => {
             return;
         }
 
-        // add logic here to save the time changes
-        setIsModalVisible(false);
+        // Format the times for the API in AM/PM format
+        const formatTimeForAPI = (date: Date) => {
+            return date.toLocaleTimeString("en-US", {
+                hour: "numeric",
+                minute: "2-digit",
+                hour12: true
+            });
+        };
+
+        // Format the times for display (12-hour format)
+        const newStartTime = formatTimeForAPI(startTime);
+        const newEndTime = formatTimeForAPI(endTime);
+
+        // Calculate the new duration in hours
+        const startMs = startTime.getTime();
+        const endMs = endTime.getTime();
+        const durationHours = (endMs - startMs) / (1000 * 60 * 60);
+
+        try {
+            setIsModalVisible(false);
+            
+            // Check if eventId exists
+            if (!eventId) {
+                Alert.alert("Error", "Event ID not found");
+                return;
+            }
+
+            // Create the update payload
+            const updateData = {
+                start_time: newStartTime,
+                end_time: newEndTime
+            };
+
+            // Call the API to update the event
+            const response = await fetch(`http://10.0.2.2:3000/events/${eventId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(updateData),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to update event time');
+            }
+
+            // Convert time objects to format that component can use
+            const formatTo24Hr = (date: Date) => {
+                const hours = date.getHours();
+                const minutes = date.getMinutes();
+                return `${hours}:${minutes.toString().padStart(2, '0')}`;
+            };
+            
+            // Update display times
+            setDisplayStartTime(formatTo24Hr(startTime));
+            setDisplayEndTime(formatTo24Hr(endTime));
+
+            // Show success message
+            Alert.alert(
+                "Success", 
+                "Event time has been updated.",
+            );
+        } catch (error) {
+            console.error('Error updating event time:', error);
+            Alert.alert("Error", "Failed to update event time.");
+        }
     };
 
     // Format duration to include one decimal place if it's not a whole number
@@ -275,7 +344,7 @@ const EventDetails = () => {
             <View style={styles.infoList}>
                 <InfoItem
                     icon={<FontAwesome name="clock-o" size={20} color={Colors.coral} />}
-                    text={`${formatTimeToAMPM(time)} - ${formatTimeToAMPM(calculateEndTime(time, duration))}`}
+                    text={`${formatTimeToAMPM(displayStartTime)} - ${formatTimeToAMPM(displayEndTime)}`}
                     showEditButton={true}
                     onEditPress={handleEditTime}
                 />
@@ -411,8 +480,7 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     editButton: {
-        padding: 0,
-        marginRight: 170,
+        marginRight: 160,
     },
     descriptionContainer: {
         marginTop: 20,

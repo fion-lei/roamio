@@ -15,6 +15,7 @@ import { FontAwesome } from "@expo/vector-icons";
 
 import { useNavigation, useRouter, useLocalSearchParams } from "expo-router";
 import { useUser } from "@/contexts/UserContext";
+import { useFocusEffect } from "@react-navigation/native";
 
 // for ensuring timeslot sizes/positions are consistent. E.g. each hour chunk = 60px in height
 const pixelsForHour = 60;
@@ -498,12 +499,9 @@ const DetailedItinerary = () => {
 
                   // Calculate duration in hours
                   duration = (endHours - hours) + (endMinutes - minutes) / 60;
-                  duration = Math.round(duration * 10) / 10; // Round to nearest tenth
 
                   //       console.log(`Calculated duration: ${duration}h`);
 
-                  // Ensure minimum duration for display
-                  duration = Math.max(duration, 0.5);
                 }
               }
             } else {
@@ -570,6 +568,17 @@ const DetailedItinerary = () => {
       fetchItineraryItems(selectedDate);
     }
   }, [selectedDate, itineraryId]);
+
+  // useFocusEffect to reload data when screen comes into focus
+  useFocusEffect(
+    React.useCallback(() => {
+      // runs when the screen is focused (including when navigating back)
+      if (selectedDate) {
+    //    console.log("Screen focused, refreshing itinerary data...");
+        fetchItineraryItems(selectedDate);
+      }
+    }, [selectedDate, itineraryId])
+  );
 
   return (
     <SafeAreaView style={styles.mainContainer}>
