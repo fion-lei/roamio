@@ -10,6 +10,7 @@ import {
     Pressable,
     TouchableWithoutFeedback,
     Alert,
+    Share,
 } from 'react-native';
 import {
     FontAwesome,
@@ -183,8 +184,38 @@ const EventDetails = () => {
         });
     }, [navigation]);
 
-    const handleShare = () => {
-        // do something when share button is pressed
+    const handleShare = async () => {
+        try {
+            const shareMessage = `Check out this event: ${activity}`;
+            
+            // build the details string with available information
+            let details = `Time: ${formatTimeToAMPM(displayStartTime)} - ${formatTimeToAMPM(displayEndTime)}`;
+            
+            // Add address
+            if (address) {
+                details += `\nLocation: ${address}`;
+            }
+            
+            // Add description
+            const descriptionText = description ? `\n\n${description}` : '';
+            
+            const shareDetails = {
+                message: `${shareMessage}\n\n${details}${descriptionText}`,
+                title: activity,
+            };
+            
+            const result = await Share.share(shareDetails);
+            
+            if (result.action === Share.sharedAction) {
+                if (result.activityType) {
+                    // shared with activity type of result.activityType
+                    console.log(`Shared via ${result.activityType}`);
+                } 
+            }
+        } catch (error) {
+            console.error('Error sharing:', error);
+            Alert.alert('Error', 'Could not share this event');
+        }
     };
 
     // Format time function for the modal
