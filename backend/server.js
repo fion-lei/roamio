@@ -1,6 +1,6 @@
 const express = require('express');
 const { readUsers, appendUser, updateUserDetails } = require('./helpers/usersHelpers');
-const { appendItinerary, readItineraries, updateItinerary, deleteItinerary,updateSharedWith,unshareItinerary} = require('./helpers/itineraryHelpers');
+const { appendItinerary, readItineraries, updateItinerary, deleteItinerary, updateSharedWith, unshareItinerary } = require('./helpers/itineraryHelpers');
 const { appendEvent, readEvents, getEvents, countEvents } = require('./helpers/eventsHelpers');
 const app = express();
 const cors = require('cors'); // Add this
@@ -115,7 +115,7 @@ app.post('/login', async (req, res) => {
 // ----------------------
 app.put('/updateUserDetails', async (req, res) => {
   const { email, first_name, last_name, phone_number, traveller_type, bio } = req.body;
-  
+
   if (!email) {
     return res.status(400).json({ error: 'Email is required.' });
   }
@@ -126,7 +126,7 @@ app.put('/updateUserDetails', async (req, res) => {
     console.log("Email to update:", email);
     console.log("Current users:", users);
 
-    await updateUserDetails(email, { first_name, last_name, phone_number, traveller_type , bio});
+    await updateUserDetails(email, { first_name, last_name, phone_number, traveller_type, bio });
     return res.status(200).json({ message: 'User details updated successfully.' });
   } catch (error) {
     console.error("Error updating user details:", error);
@@ -189,7 +189,7 @@ app.post('/itineraries', async (req, res) => {
   if (!user_email || !trip_title) {
     return res.status(400).json({ error: 'Missing required fields.' });
   }
-  
+
   const itinerary = {
     itinerary_id: Date.now(), // simple unique id
     user_email,
@@ -259,22 +259,22 @@ app.get('/active-itineraries', async (req, res) => {
     const itineraries = await readItineraries();
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     // Filter itineraries to include only those belonging to the specified email that are either ongoing or upcoming 
     // (end date >= today)
     const filtered = itineraries.filter(it => {
       if (it.user_email !== email) return false;
-      
+
       // Parse the end date from MM/DD/YYYY format
       if (!it.end_date) return true; // If no end date, include it
-      
+
       const [month, day, year] = it.end_date.split('/');
       const endDate = new Date(Number(year), Number(month) - 1, Number(day));
-      
+
       // Keep only if end date is today or in future
       return endDate >= today;
     });
-    
+
     return res.status(200).json({ itineraries: filtered });
   } catch (error) {
     return res.status(500).json({ error: "Error fetching active itineraries" });
@@ -318,16 +318,16 @@ app.delete('/itineraries/:id', async (req, res) => {
 // Add event to itinerary 
 // ----------------------
 app.post('/events', async (req, res) => {
-  const { 
-    itinerary_id, 
-    title, 
-    description, 
-    address, 
-    contact, 
-    hours, 
-    price, 
-    rating, 
-    rating_count, 
+  const {
+    itinerary_id,
+    title,
+    description,
+    address,
+    contact,
+    hours,
+    price,
+    rating,
+    rating_count,
     tags,
     image_path,
     start_date,
@@ -343,15 +343,15 @@ app.post('/events', async (req, res) => {
   try {
     // Check if the itinerary exists
     const itineraries = await readItineraries();
-    
+
     // Convert to string for comparison since IDs from CSV will be strings
     const itineraryIdStr = String(itinerary_id);
     const itinerary = itineraries.find(id => String(id.itinerary_id) === itineraryIdStr);
-    
+
     if (!itinerary) {
       return res.status(404).json({ error: 'Itinerary not found.' });
     }
-    
+
     // Process tags to ensure they're handled as an array
     let processedTags = [];
     if (tags) {
@@ -399,7 +399,7 @@ app.post('/events', async (req, res) => {
 // ----------------------
 app.get('/events/:itineraryId', async (req, res) => {
   const itineraryId = req.params.itineraryId;
-  
+
   try {
     const events = await getEvents(itineraryId);
     return res.status(200).json({ events });
@@ -416,33 +416,33 @@ app.get('/event-counts', async (req, res) => {
   try {
     const counts = await countEvents();
     const itineraries = await readItineraries();
-    
+
     // Filter out past itineraries
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     const filteredCounts = {};
-    
+
     // Only include counts for non-past itineraries
     Object.keys(counts).forEach(itineraryId => {
       const itinerary = itineraries.find(it => String(it.itinerary_id) === itineraryId);
-      
+
       // If no itinerary found or no end date, keep the count
       if (!itinerary || !itinerary.end_date) {
         filteredCounts[itineraryId] = counts[itineraryId];
         return;
       }
-      
+
       // Parse the end date from MM/DD/YYYY format
       const [month, day, year] = itinerary.end_date.split('/');
       const endDate = new Date(Number(year), Number(month) - 1, Number(day));
-      
+
       // Only include counts for active itineraries 
       if (endDate >= today) {
         filteredCounts[itineraryId] = counts[itineraryId];
       }
     });
-    
+
     return res.status(200).json({ counts: filteredCounts });
   } catch (error) {
     console.error("Error fetching event counts:", error);
@@ -455,27 +455,27 @@ app.get('/event-counts', async (req, res) => {
 // ----------------------
 app.get('/event-counts/:itineraryId', async (req, res) => {
   const itineraryId = req.params.itineraryId;
-  
+
   try {
     // First check if the itinerary is past
     const itineraries = await readItineraries();
     const itinerary = itineraries.find(it => String(it.itinerary_id) === itineraryId);
-    
+
     if (itinerary && itinerary.end_date) {
-      
+
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      
+
       // Parse the end date from MM/DD/YYYY format
       const [month, day, year] = itinerary.end_date.split('/');
       const endDate = new Date(Number(year), Number(month) - 1, Number(day));
-      
+
       // If itinerary is past, return empty object without count field so it does not show up in the interface
       if (endDate < today) {
         return res.status(200).json({});
       }
     }
-    
+
     const events = await getEvents(itineraryId);
     return res.status(200).json({ count: events.length });
   } catch (error) {
@@ -592,18 +592,23 @@ app.post('/Favorite', async (req, res) => {
 });
 
 app.post('/shareItinerary', (req, res) => {
-  const { itinerary_id, friend_email, access_type,friend_name,owner_name } = req.body;
-
+  const { itinerary_id, friend_email, access_type, friend_name, owner_name } = req.body;
+  console.log("Share itinerary request received:", req.body);
   // Validate required fields
   if (!itinerary_id || !friend_email || !access_type) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
+  try {
+    updateSharedWith(itinerary_id, friend_email, access_type, friend_name, owner_name)
+      .then((result) => res.status(200).json(result))
+      .catch((err) =>
+        res.status(err.status || 500).json({ error: err.message || 'Internal server error' })
+      );
+  } catch (error) {
+    console.error("Error sharing itinerary:", error);
+    return res.status(500).json({ error: "Failed to share itinerary." });
+  };
 
-  updateSharedWith(itinerary_id, friend_email, access_type,friend_name,owner_name)
-    .then((result) => res.status(200).json(result))
-    .catch((err) =>
-      res.status(err.status || 500).json({ error: err.message || 'Internal server error' })
-    );
 });
 
 /**
@@ -649,11 +654,11 @@ app.post('/sendFriendRequest', async (req, res) => {
   if (!from_email || !to_email) {
     return res.status(400).json({ error: "Missing from_email or to_email" });
   }
-  
+
   try {
     // Generate a unique ID using current timestamp (or replace with your preferred method)
     const newId = Date.now();
-    
+
     // Optionally, you might check for duplicate requests here
 
     await appendFriendRequest({ id: newId, from_email, to_email });
