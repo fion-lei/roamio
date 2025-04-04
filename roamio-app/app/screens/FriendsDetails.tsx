@@ -176,7 +176,7 @@ const DetailScreen = () => {
           "Unfriended!",
           `${name} has been removed from your friends list.`
         );
-        navigation.goBack();
+        router.back();
       } else {
         Alert.alert("Oops!", "Could not unfriend. Try again.");
       }

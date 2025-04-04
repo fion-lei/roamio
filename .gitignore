@@ -30,4 +30,3 @@ backend/data/users.csv
 backend/data/favourites.csv
 backend/data/events.csv
 backend/data/friend_requests.csv
-backend/data/itineraries.csv
