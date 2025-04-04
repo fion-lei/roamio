@@ -801,7 +801,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary + '20',
   },
   selectedDateText: {
-    fontWeight: 'bold',
+    fontFamily: "quicksand-bold",
   },
 });
 

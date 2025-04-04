@@ -161,6 +161,7 @@ const EventDetails = () => {
     // state variables to track display times
     const [displayStartTime, setDisplayStartTime] = useState(time);
     const [displayEndTime, setDisplayEndTime] = useState(calculateEndTime(time, duration));
+    const [displayDuration, setDisplayDuration] = useState(duration);
 
     // initialize time values based on the current time and duration
     useEffect(() => {
@@ -289,15 +290,16 @@ const EventDetails = () => {
             }
 
             // Convert time objects to format that component can use
-            const formatTo24Hr = (date: Date) => {
+            const formatTimesForComponent = (date: Date) => {
                 const hours = date.getHours();
                 const minutes = date.getMinutes();
                 return `${hours}:${minutes.toString().padStart(2, '0')}`;
             };
             
             // Update display times
-            setDisplayStartTime(formatTo24Hr(startTime));
-            setDisplayEndTime(formatTo24Hr(endTime));
+            setDisplayStartTime(formatTimesForComponent(startTime));
+            setDisplayEndTime(formatTimesForComponent(endTime));
+            setDisplayDuration(durationHours);
 
             // Show success message
             Alert.alert(
@@ -311,9 +313,9 @@ const EventDetails = () => {
     };
 
     // Format duration to include one decimal place if it's not a whole number
-    const formattedDuration = Number.isInteger(duration) ? 
-        `${duration} hour(s)` : 
-        `${duration} hour(s)`;
+    const formattedDuration = Number.isInteger(displayDuration) ? 
+        `${displayDuration} hour(s)` : 
+        `${displayDuration} hour(s)`;
 
     // Handle image source (very basic, doesn't take into account if other activities are added)
     const getImageSource = () => {
