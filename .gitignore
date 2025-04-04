@@ -1,6 +1,5 @@
-
-
 .env*
+
 
 # Dependency 
 node_modules/
@@ -24,3 +23,11 @@ yarn-error.*
 
 # Typescript
 *.tsbuildinfo
+
+
+backend/data/itineraries.csv
+backend/data/users.csv
+backend/data/favourites.csv
+backend/data/events.csv
+backend/data/friend_requests.csv
+backend/data/itineraries.csv

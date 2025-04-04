@@ -630,7 +630,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(52, 52, 52, 0.8)", // Background will blur when date selection is open
+    backgroundColor: "rgba(0,0,0,0.5)",
   },
   modalView: {
     width: "90%",
