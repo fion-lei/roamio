@@ -105,6 +105,8 @@ export default function FriendsScreen() {
         avatar: require("../../assets/images/avatar1.png"),
         email_friend: friend.email || "",
         favorited: friend.favorite === true,
+        bio: friend.bio, // add bio
+        traveller_type: friend.traveller_type, // add traveller_type
       }));
 
       setFriendsList(mappedFriends);
@@ -613,10 +615,12 @@ export default function FriendsScreen() {
                   params: {
                     name: item.name,
                     phone: item.phone,
-                    avatar: item.avatar,
                     email_friend: item.email_friend,
+                    avatar: item.avatar,
                     first_name: item.first_name,
                     owner_name: user.first_name,
+                    traveller_type: item.traveller_type,
+                    bio: item.bio,
                   },
                 })
               }
@@ -1021,7 +1025,7 @@ const styles = StyleSheet.create({
   segmentButtonText: {
     fontFamily: "quicksand-regular",
     fontSize: 16,
-    color: Colors.dark.text,
+    color: Colors.grey,
   },
   segmentButtonTextActive: {
     fontFamily: "quicksand-bold",
