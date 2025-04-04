@@ -19,14 +19,15 @@ import {
   Ionicons,
 } from "@expo/vector-icons";
 import { Colors } from "@/constants/Colors";
+import { useLocalSearchParams } from "expo-router";
 
-interface RouteParams {
-  name: string;
-  phone: string;
-  first_name: string;
-  email_friend: string;
-  avatar: any;
-}
+// interface RouteParams {
+//   name: string;
+//   phone: string;
+//   first_name: string;
+//   RouteParams.email_friend: string;
+//   avatar: any;
+// }
 
 interface InfoItemProps {
   icon: React.ReactNode;
@@ -40,12 +41,22 @@ const InfoItem = ({ icon, text }: InfoItemProps) => (
   </View>
 );
 
-const DetailScreen = () => {
-  const route = useRoute();
-  const { name, phone, avatar, email_friend, first_name } =
-    route.params as RouteParams;
+export default function FriendsDetails() {
+  // const route = useRoute();
+  // const navigation = useNavigation();
+  const params = useLocalSearchParams();
+
+  const RouteParams = {
+    name: params.name as string,
+    phone: params.phone as any,
+    first_name: params.first_name as string,
+    email_friend: params.email_friend as string,
+    avatar: params.avatar as any,
+  };
+
+  // const { name, phone, avatar, RouteParams.email_friend, first_name } =
+  //   route.params as RouteParams;
   const { user } = useUser();
-  const navigation = useNavigation();
   const [sent, setSent] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedItinerary, setSelectedItinerary] = useState<any | null>(null);
@@ -54,12 +65,9 @@ const DetailScreen = () => {
   );
   const [itineraries, setItineraries] = useState<any[]>([]);
   const [trips, setTrips] = useState<Itinerary[]>([]);
-
   const SERVER_IP = "http://10.0.2.2:3000";
   const currentUserEmail = user.email;
-
   const [favorited, setFavorited] = useState(false); // NEW
-
   // NEW: Toggle favorite and sync with backend
   const handleToggleFavorite = async () => {
     try {
@@ -68,7 +76,7 @@ const DetailScreen = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           user_email: currentUserEmail,
-          friend_email: email_friend,
+          friend_email: RouteParams.email_friend,
           favorited: !favorited,
         }),
       });
@@ -111,7 +119,6 @@ const DetailScreen = () => {
         const formattedItineraries = (data.itineraries || []).map(
           (trip: any) => ({
             ...trip,
-            // We leave dates as strings for now, but you could also convert them.
           })
         );
 
@@ -139,7 +146,9 @@ const DetailScreen = () => {
           `${SERVER_IP}/friends?email=${encodeURIComponent(currentUserEmail)}`
         );
         const data = await res.json();
-        const friend = data.find((f: any) => f.email === email_friend);
+        const friend = data.find(
+          (f: any) => f.email === RouteParams.email_friend
+        );
         if (friend) {
           setFavorited(!!friend.favorite);
         }
@@ -149,7 +158,7 @@ const DetailScreen = () => {
     };
 
     fetchFavorites();
-  }, [currentUserEmail, email_friend]);
+  }, [currentUserEmail, RouteParams.email_friend]);
 
   const handleUnfriend = async () => {
     try {
@@ -158,7 +167,7 @@ const DetailScreen = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           user_email: currentUserEmail,
-          friend_email: email_friend,
+          friend_email: RouteParams.email_friend,
         }),
       });
 
@@ -167,7 +176,7 @@ const DetailScreen = () => {
           "Unfriended!",
           `${name} has been removed from your friends list.`
         );
-        navigation.goBack();
+        // navigation.goBack();
       } else {
         Alert.alert("Oops!", "Could not unfriend. Try again.");
       }
@@ -186,9 +195,9 @@ const DetailScreen = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           itinerary_id: selectedItinerary.itinerary_id,
-          friend_email: email_friend,
+          friend_email: RouteParams.email_friend,
           access_type: accessType,
-          friend_name: first_name,
+          friend_name: RouteParams.first_name,
           owner_name: user.first_name,
         }),
       });
@@ -215,7 +224,7 @@ const DetailScreen = () => {
         resizeMode="cover"
       />
       <View style={styles.nameRow}>
-        <Text style={styles.title}>{name}</Text>
+        <Text style={styles.title}>{RouteParams.name}</Text>
         <TouchableOpacity onPress={handleToggleFavorite}>
           {favorited ? (
             <FontAwesome
@@ -240,10 +249,13 @@ const DetailScreen = () => {
       </TouchableOpacity>
 
       <View style={styles.infoList}>
-        <InfoItem icon={<Entypo name="phone" size={20} />} text={phone} />
+        <InfoItem
+          icon={<Entypo name="phone" size={20} />}
+          text={RouteParams.phone}
+        />
         <InfoItem
           icon={<Feather name="mail" size={20} />}
-          text={email_friend}
+          text={RouteParams.email_friend}
         />
         <InfoItem
           icon={<FontAwesome name="plane" size={20} />}
@@ -264,7 +276,7 @@ const DetailScreen = () => {
       </View>
 
       <View style={styles.sendCard}>
-        <Image source={avatar} style={styles.avatar} />
+        <Image source={RouteParams.avatar} style={styles.avatar} />
         <View style={styles.musicInfo}>
           <Text style={styles.musicTitle}>Share Itinerary</Text>
         </View>
@@ -345,7 +357,7 @@ const DetailScreen = () => {
       )}
     </ScrollView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: { padding: 20, backgroundColor: "#fffff" },
@@ -406,7 +418,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   modalContainer: {
-    backgroundColor: "white",
+    backgroundColor: "#fff",
     padding: 20,
     borderRadius: 12,
     width: "80%",
@@ -448,5 +460,3 @@ const styles = StyleSheet.create({
     fontFamily: "Quicksand-Bold",
   },
 });
-
-export default DetailScreen;
