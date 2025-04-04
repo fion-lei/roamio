@@ -190,19 +190,20 @@ export default function Itinerary() {
       }
     }
   };
-
-  // Handle adding a new trip
-  const handleAddTrip = async () => {
-    if (
-      newTrip.title &&
-      newTrip.fromDate &&
-      newTrip.toDate &&
-      newTrip.description
-    ) {
-      if (!user.email) {
-        Alert.alert("Error", "User email not found. Please log in.");
+  
+    // Handle adding a new trip
+    const handleAddTrip = async () => {
+    
+      if (!newTrip.title || !newTrip.fromDate || !newTrip.toDate || !newTrip.description) {
+        Alert.alert("Error", "Please fill in all fields.");
         return;
       }
+  
+      if (newTrip.toDate < newTrip.fromDate) {
+        Alert.alert("Error", "Please select an end date that is on or after the start date.");
+        return;
+      }
+      
       // Build payload to pass into backend
       const payload = {
         user_email: user.email,
@@ -211,6 +212,7 @@ export default function Itinerary() {
         start_date: formatDate(newTrip.fromDate),
         end_date: formatDate(newTrip.toDate),
       };
+  
       try {
         const response = await fetch("http://10.0.2.2:3000/itineraries", {
           method: "POST",
@@ -218,14 +220,15 @@ export default function Itinerary() {
           body: JSON.stringify(payload),
         });
         const result = await response.json();
-        console.log("POST response:", result); // Log POST response
-        if (response.ok) {
-          // Re-fetch itinerary list from backend after adding trip
+        
+        // Re-fetch itinerary list from backend after adding trip
+        if (response.ok) { 
+         
           const updatedResponse = await fetch(
             `http://10.0.2.2:3000/itineraries?email=${encodeURIComponent(user.email)}`
           );
           const updatedData = await updatedResponse.json();
-          console.log("GET response:", updatedData); // Log GET response
+          
           if (updatedResponse.ok) {
             const formattedUpdatedItineraries = (updatedData.itineraries || []).map((trip: any) => ({
               ...trip,
@@ -251,11 +254,8 @@ export default function Itinerary() {
         console.error("Error adding trip:", error);
         Alert.alert("Error", "Failed to add trip.");
       }
-    } else {
-      Alert.alert("Error", "Please fill in all fields.");
-    }
-  };
-  
+    };
+    
   
   const handleDeleteItinerary = async (id: string) => {
     Alert.alert(
