@@ -410,8 +410,14 @@ export default function Itinerary() {
                   )}
                   <Pressable
                     style={styles.viewButtonOngoing}
-                    onPress={() => router.push("/screens/DetailedItinerary")}
-                  >
+                    onPress={() => router.push({
+                      pathname: '/screens/DetailedItinerary',
+                      params: {
+                        id: item.id,
+                        title: item.title,
+                        date: `${formatDate(item.fromDate)} - ${formatDate(item.toDate)}`
+                      }
+                    })}>
                     <Text style={styles.buttonText}>View Details</Text>
                   </Pressable>
                 </View>
@@ -478,8 +484,14 @@ export default function Itinerary() {
                   )}
                   <Pressable
                     style={styles.viewButtonUpcoming}
-                    onPress={() => console.log("View Details Clicked!")}
-                  >
+                    onPress={() => router.push({
+                      pathname: '/screens/DetailedItinerary',
+                      params: {
+                        id: item.id,
+                        title: item.title,
+                        date: `${formatDate(item.fromDate)} - ${formatDate(item.toDate)}`
+                      }
+                    })}>
                     <Text style={styles.buttonText}>View Details</Text>
                   </Pressable>
                 </View>
@@ -528,8 +540,14 @@ export default function Itinerary() {
                   <Text style={styles.description}>{item.description}</Text>
                   <Pressable
                     style={styles.viewButtonPast}
-                    onPress={() => console.log("View Details Clicked!")}
-                  >
+                    onPress={() => router.push({
+                      pathname: '/screens/DetailedItinerary',
+                      params: {
+                        id: item.id,
+                        title: item.title,
+                        date: `${formatDate(item.fromDate)} - ${formatDate(item.toDate)}`
+                      }
+                    })}>
                     <Text style={styles.buttonText}>View Details</Text>
                   </Pressable>
                 </View>
