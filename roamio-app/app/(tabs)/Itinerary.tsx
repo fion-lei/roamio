@@ -244,11 +244,7 @@ export default function Itinerary() {
             description: trip.trip_description,
             id: trip.itinerary_id,
           }));
-          setItineraryList(
-            formattedUpdatedItineraries.length > 0
-              ? formattedUpdatedItineraries
-              : defaultItineraryData
-          );
+          setItineraryList(formattedUpdatedItineraries);
         }
 
         setModalVisible(false);
@@ -336,6 +332,16 @@ export default function Itinerary() {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
+          {/* No Itineraries */}
+          {itineraryList.length === 1 && itineraryList[0].id === "0" && (
+            <View style={styles.box}>
+              <Text style={styles.title}>No itineraries available</Text>
+              <Text style={styles.description}>
+                You have not created any trip itineraries yet.
+              </Text>
+            </View>
+          )}
+
           {/* Ongoing Trips */}
           {ongoingTrips.length > 0 && (
             <>
@@ -410,14 +416,8 @@ export default function Itinerary() {
                   )}
                   <Pressable
                     style={styles.viewButtonOngoing}
-                    onPress={() => router.push({
-                      pathname: '/screens/DetailedItinerary',
-                      params: {
-                        id: item.id,
-                        title: item.title,
-                        date: `${formatDate(item.fromDate)} - ${formatDate(item.toDate)}`
-                      }
-                    })}>
+                    onPress={() => router.push("/screens/DetailedItinerary")}
+                  >
                     <Text style={styles.buttonText}>View Details</Text>
                   </Pressable>
                 </View>
@@ -484,14 +484,8 @@ export default function Itinerary() {
                   )}
                   <Pressable
                     style={styles.viewButtonUpcoming}
-                    onPress={() => router.push({
-                      pathname: '/screens/DetailedItinerary',
-                      params: {
-                        id: item.id,
-                        title: item.title,
-                        date: `${formatDate(item.fromDate)} - ${formatDate(item.toDate)}`
-                      }
-                    })}>
+                    onPress={() => console.log("View Details Clicked!")}
+                  >
                     <Text style={styles.buttonText}>View Details</Text>
                   </Pressable>
                 </View>
@@ -540,14 +534,8 @@ export default function Itinerary() {
                   <Text style={styles.description}>{item.description}</Text>
                   <Pressable
                     style={styles.viewButtonPast}
-                    onPress={() => router.push({
-                      pathname: '/screens/DetailedItinerary',
-                      params: {
-                        id: item.id,
-                        title: item.title,
-                        date: `${formatDate(item.fromDate)} - ${formatDate(item.toDate)}`
-                      }
-                    })}>
+                    onPress={() => console.log("View Details Clicked!")}
+                  >
                     <Text style={styles.buttonText}>View Details</Text>
                   </Pressable>
                 </View>
@@ -624,13 +612,12 @@ export default function Itinerary() {
                     value={newTrip.toDate || new Date()}
                     mode="date"
                     display="spinner"
-                    onChange={(event, date) =>
-                      handleDateChange(event, date, "to")
-                    }
-                    minimumDate={new Date()}
+                    onChange={(event, date) => handleDateChange(event, date, "to")}
+                    minimumDate={newTrip.fromDate ? newTrip.fromDate : new Date()}
                   />
                 </View>
               )}
+
               <View style={styles.inputContainer}>
                 <Text style={styles.inputLabel}>Enter Trip Description</Text>
                 <TextInput
