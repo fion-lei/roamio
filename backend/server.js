@@ -1,7 +1,7 @@
 const express = require('express');
 const { readUsers, appendUser, updateUserDetails } = require('./helpers/usersHelpers');
 const { appendItinerary, readItineraries, updateItinerary, deleteItinerary, updateSharedWith, unshareItinerary } = require('./helpers/itineraryHelpers');
-const { appendEvent, readEvents, getEvents, countEvents } = require('./helpers/eventsHelpers');
+const { appendEvent, readEvents, getEvents, countEvents, deleteEvent, updateEvent } = require('./helpers/eventsHelpers');
 const app = express();
 const cors = require('cors'); // Add this
 const { readFriendRequests } = require('./helpers/friendsHelper'); // if not already imported
@@ -481,6 +481,49 @@ app.get('/event-counts/:itineraryId', async (req, res) => {
   } catch (error) {
     console.error("Error fetching event count:", error);
     return res.status(500).json({ error: 'Error fetching event count.' });
+  }
+});
+
+// ----------------------
+// Delete event from itinerary
+// ----------------------
+app.delete('/events/:id', async (req, res) => {
+  const eventId = req.params.id;
+  try {
+    await deleteEvent(eventId);
+    return res.status(200).json({ message: "Event deleted successfully." });
+  } catch (error) {
+    console.error("Error deleting event:", error);
+    return res.status(error.message === "Event not found" ? 404 : 500).json({ 
+      error: error.message || "Error deleting event." 
+    });
+  }
+});
+
+// ----------------------
+// Update event Endpoint
+// ----------------------
+app.put('/events/:id', async (req, res) => {
+  const eventId = req.params.id;
+  const updates = req.body;
+  
+  try {
+    // First check if the event exists
+    const events = await readEvents();
+    const eventIndex = events.findIndex(event => String(event.event_id) === String(eventId));
+    
+    if (eventIndex === -1) {
+      return res.status(404).json({ error: 'Event not found.' });
+    }
+    
+    // Add a helper function in eventsHelpers.js
+    await updateEvent(eventId, updates);
+    return res.status(200).json({ message: "Event updated successfully." });
+  } catch (error) {
+    console.error("Error updating event:", error);
+    return res.status(500).json({ 
+      error: error.message || "Error updating event." 
+    });
   }
 });
 
