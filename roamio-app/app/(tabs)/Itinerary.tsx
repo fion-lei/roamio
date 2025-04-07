@@ -312,6 +312,60 @@ export default function Itinerary() {
                 ))}
               </>
             )}
+                    </View>
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 8,
+                        
+                      }}
+                    >
+                      {item.shared_with &&
+                        item.shared_with.trim() !== "" &&
+                        item.shared_with.trim() !== "[]" && (
+                          <View style={styles.sharedBadge}>
+                            <Text style={styles.sharedBadgeText}>Shared</Text>
+                          </View>
+                        )}
+                      <Pressable onPress={() => handleDeleteItinerary(item.id)}>
+                        <AntDesign name="minuscircle" size={22} color="red" />
+                      </Pressable>
+                    </View>
+                  </View>
+                  <Text style={styles.date}>
+                    {`${formatDate(item.fromDate)} - ${formatDate(
+                      item.toDate
+                    )}`}
+                  </Text>
+                  <Text style={styles.description}>{item.description}</Text>
+                  {getEventCount(item.id) > 0 ? (
+                    <View style={styles.eventCountContainer}>
+                      <FontAwesome
+                        name="check-square-o"
+                        size={16}
+                        color={Colors.coral}
+                        style={{ top: 2 }}
+                      />
+                      <Text style={styles.eventCountText}>
+                        {formatEventCountText(item.id)}
+                      </Text>
+                    </View>
+                  ) : (
+                    <Text style={styles.emptyEventText}>
+                      {formatEventCountText(item.id)}
+                    </Text>
+                  )}
+                  <Pressable
+                    style={styles.viewButtonOngoing}
+                    onPress={() => router.push("/screens/DetailedItinerary")}
+                  >
+                    <Text style={styles.buttonText}>View Details</Text>
+                  </Pressable>
+                </View>
+              ))}
+            </>
+          )}
 
             {/* Upcoming Trips */}
             {upcomingTrips.length > 0 && (
@@ -353,6 +407,49 @@ export default function Itinerary() {
                 ))}
               </>
             )}
+                    <Pressable onPress={() => handleDeleteItinerary(item.id)}>
+                      <AntDesign name="minuscircle" size={22} color="red" />
+                    </Pressable>
+                  </View>
+
+                  <Text style={styles.date}>
+                    {`${formatDate(item.fromDate)} - ${formatDate(
+                      item.toDate
+                    )}`}
+                  </Text>
+                  <Text style={styles.description}>{item.description}</Text>
+                  {getEventCount(item.id) > 0 ? (
+                    <View style={styles.eventCountContainer}>
+                      <FontAwesome
+                        name="check-square-o"
+                        size={16}
+                        color={Colors.coral}
+                        styles={{ top: 2 }}
+                      />
+                      <Text style={styles.eventCountText}>
+                        {formatEventCountText(item.id)}
+                      </Text>
+                    </View>
+                  ) : (
+                    <Text style={styles.emptyEventText}>
+                      {formatEventCountText(item.id)}
+                    </Text>
+                  )}
+                     <Pressable 
+                      style={styles.viewButtonUpcoming} 
+                      onPress={() => router.push({
+                        pathname: '/screens/DetailedItinerary',
+                        params: {
+                          id: item.id,
+                          title: item.title,
+                          date: `${formatDate(item.fromDate)} - ${formatDate(item.toDate)}`
+                        }
+                      })}>
+                    <Text style={styles.buttonText}>View Details</Text>
+                  </Pressable>
+                </View>
+            </>
+          )}
 
             {/* Past Trips */}
             {pastTrips.length > 0 && (
@@ -385,6 +482,28 @@ export default function Itinerary() {
               </>
             )}
           </ScrollView>
+                    </View>
+                    <Pressable onPress={() => handleDeleteItinerary(item.id)}>
+                      <AntDesign name="minuscircle" size={22} color="red" />
+                    </Pressable>
+                  </View>
+                  <Text style={styles.date}>
+                    {`${formatDate(item.fromDate)} - ${formatDate(
+                      item.toDate
+                    )}`}
+                  </Text>
+                  <Text style={styles.description}>{item.description}</Text>
+                  <Pressable
+                    style={styles.viewButtonPast}
+                    onPress={() => console.log("View Details Clicked!")}
+                  >
+                    <Text style={styles.buttonText}>View Details</Text>
+                  </Pressable>
+                </View>
+              ))}
+            </>
+          )}
+        </ScrollView>
 
         {/* Modal for Adding New Trip */}
         <Modal visible={modalVisible} animationType="fade" transparent={true}>

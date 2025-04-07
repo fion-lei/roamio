@@ -5,7 +5,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import { useLocalSearchParams } from "expo-router";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useUser } from "@/contexts/UserContext";
-
+import { useRouter } from "expo-router";
 // Gets the appropriate image filename based on activity
 const getImageForActivity = (title: string): string => {
   // Map activity titles to specific images
@@ -61,6 +61,7 @@ export default function AddItinerary() {
   const [showStartTimePicker, setShowStartTimePicker] = useState(false);
   const [showEndTimePicker, setShowEndTimePicker] = useState(false);
 
+  const router = useRouter();
   // Fetch itinerary options from backend when modal opens 
   useEffect(() => {
     if (isModalVisible) {
@@ -213,6 +214,7 @@ export default function AddItinerary() {
       if (!response.ok) {
         Alert.alert("Error", data.error || "Failed to get active itineraries");
         return;
+        router.back(); // Go back to the previous screen if error occurs
       }
       
       const selectedItineraryObj = data.itineraries.find((it: any) => it.trip_title === selectedItinerary);
@@ -630,7 +632,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(52, 52, 52, 0.8)", // Background will blur when date selection is open
+    backgroundColor: "rgba(0,0,0,0.5)",
   },
   modalView: {
     width: "90%",

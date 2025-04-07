@@ -1,9 +1,9 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Trip from "./Trip";
 import Itinerary from "./Itinerary";
+import Friends from "./Friends";
 import { FontAwesome } from "@expo/vector-icons";
 import { Colors } from "@/constants/Colors";
-import FriendsStackNavigator from "../navigation/FriendsStackNavigator";
 
 const Tab = createBottomTabNavigator();
 
@@ -60,7 +60,7 @@ export default function TabLayout() {
 
       <Tab.Screen
         name="Friends"
-        component={FriendsStackNavigator}
+        component={Friends}
         options={{
           title: "Friends",
           tabBarIcon: ({ color, size }) => (
