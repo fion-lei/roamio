@@ -12,29 +12,11 @@ import {
   Alert,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
-// import { useNavigation } from "@react-navigation/native";
-// import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useFonts } from "expo-font";
 import { Colors } from "@/constants/Colors";
 import { useUser } from "@/contexts/UserContext";
 import { useNavigation, useRouter, useLocalSearchParams } from "expo-router";
 
-// type RootStackParamList = {
-//   FriendsScreen: undefined;
-//   Detail: {
-//     name: string;
-//     phone: string;
-//     avatar: any;
-//     email_friend: string;
-//     first_name: string;
-//     owner_name: string;
-//   };
-// };
-
-// type NavigationProp = NativeStackNavigationProp<
-//   RootStackParamList,
-//   "FriendsScreen"
-// >;
 
 const SERVER_IP = "http://10.0.2.2:3000"; // Replace with your actual backend address
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -16,9 +16,11 @@ import { Colors } from "@/constants/Colors";
 import { FontAwesome } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useUser } from "@/contexts/UserContext";
+import { useNavigation } from "@react-navigation/native";
 
 export default function EditProfile() {
   const router = useRouter();
+  const navigation = useNavigation();
   const { user, setUser } = useUser();
 
   // Local state for profile data
@@ -29,6 +31,10 @@ export default function EditProfile() {
   const [phone, setPhone] = useState("");
   const [bio, setBio] = useState("");
   const [travellerType, setTravellerType] = useState("");
+  // State to store the initially loaded profile data for unsaved change checks
+  const [initialData, setInitialData] = useState(null);
+  // Use a ref to track if a save action has occurred
+  const isNavigatingRef = useRef(false);
 
   const BIO_CHAR_LIMIT = 200;
 
@@ -55,17 +61,25 @@ export default function EditProfile() {
         );
         const data = await response.json();
         if (response.ok) {
-          // Fields from your CSV: first_name, last_name, phone_number, traveller_type, bio, email
+          // Populate local state with data from your backend
           setFirstName(data.first_name);
           setLastName(data.last_name);
           setEmail(data.email);
           setPhone(data.phone_number);
           setBio(data.bio || "");
           setTravellerType(data.traveller_type);
-          // Optionally, set profileImage if your backend provides one
           if (data.profileImage) {
             setProfileImage(data.profileImage);
           }
+          // Store the initial state to detect unsaved changes
+          setInitialData({
+            firstName: data.first_name,
+            lastName: data.last_name,
+            phone: data.phone_number,
+            bio: data.bio || "",
+            travellerType: data.traveller_type,
+            profileImage: data.profileImage || null,
+          });
         } else {
           Alert.alert("Error", data.error || "Failed to load profile data.");
         }
@@ -77,6 +91,56 @@ export default function EditProfile() {
 
     fetchProfileData();
   }, [user.email]);
+
+  // Function to determine if there are unsaved changes
+  const hasUnsavedChanges = () => {
+    if (!initialData) return false;
+    return (
+      firstName !== initialData.firstName ||
+      lastName !== initialData.lastName ||
+      phone !== initialData.phone ||
+      bio !== initialData.bio ||
+      travellerType !== initialData.travellerType ||
+      profileImage !== initialData.profileImage
+    );
+  };
+
+  // Listen for navigation events (back button, etc.) to warn about unsaved changes
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("beforeRemove", (e) => {
+      // Bypass the alert if a save action has already been triggered
+      if (isNavigatingRef.current) {
+        return;
+      }
+      if (!hasUnsavedChanges()) {
+        return;
+      }
+      // Prevent the default behavior of leaving the screen
+      e.preventDefault();
+      Alert.alert(
+        "Discard changes?",
+        "You have unsaved changes. Are you sure you want to discard them and leave?",
+        [
+          { text: "Cancel", style: "cancel", onPress: () => {} },
+          {
+            text: "Discard",
+            style: "destructive",
+            onPress: () => navigation.dispatch(e.data.action),
+          },
+        ]
+      );
+    });
+    return unsubscribe;
+  }, [
+    navigation,
+    firstName,
+    lastName,
+    phone,
+    bio,
+    travellerType,
+    profileImage,
+    initialData,
+  ]);
 
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -121,9 +185,23 @@ export default function EditProfile() {
           phone_number: phone,
           traveller_type: travellerType,
         });
-        router.replace("../Profile");
+        // Update initialData to reflect saved changes
+        setInitialData({
+          firstName,
+          lastName,
+          phone,
+          bio,
+          travellerType,
+          profileImage,
+        });
+        // Set the ref flag to bypass unsaved changes prompt
+        isNavigatingRef.current = true;
+        router.back();
       } else {
-        Alert.alert("Update Failed", result.error || "An error occurred while updating profile.");
+        Alert.alert(
+          "Update Failed",
+          result.error || "An error occurred while updating the profile."
+        );
       }
     } catch (error) {
       console.error("Error saving profile data:", error);
@@ -178,7 +256,7 @@ export default function EditProfile() {
           </View>
         </View>
 
-        {/* Email (Optionally read-only) */}
+        {/* Email (read-only) */}
         <View style={styles.fieldContainer}>
           <Text style={styles.label}>Email</Text>
           <View style={styles.inputContainer}>
@@ -188,7 +266,7 @@ export default function EditProfile() {
               onChangeText={setEmail}
               style={styles.input}
               keyboardType="email-address"
-              editable={false} // set to false if you want it read-only
+              editable={false}
             />
             <FontAwesome
               name="envelope"
@@ -314,8 +392,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: "quicksand-bold",
   },
-
-  /* Each field is wrapped in fieldContainer for label + input. */
   fieldContainer: {
     width: "100%",
     marginBottom: 15,
@@ -345,8 +421,6 @@ const styles = StyleSheet.create({
   icon: {
     marginLeft: 10,
   },
-
-  /* Bio section with character counter. */
   bioContainer: {
     backgroundColor: Colors.white,
     borderWidth: 2,
@@ -378,7 +452,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontWeight: "bold",
   },
-
   pickerContainer: {
     backgroundColor: Colors.white,
     borderWidth: 2,
@@ -412,8 +485,6 @@ const styles = StyleSheet.create({
     fontFamily: "quicksand-semibold",
     color: Colors.black,
   },
-
-  /* Save button at the bottom. */
   saveButton: {
     width: "100%",
     backgroundColor: Colors.palePink,

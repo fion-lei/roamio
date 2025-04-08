@@ -106,6 +106,23 @@ export default function RootLayout() {
               ),
             }}
           />
+          <Stack.Screen
+          name="Profile"
+          options={{
+            headerTitle: "",
+            headerRight: () => (
+              <Pressable onPress={() => router.push("./settings/Settings")}>
+                <FontAwesome
+                  name="gear"
+                  size={24}
+                  color={Colors.coral}
+                  style={{ marginRight: 15 }}
+                />
+              </Pressable>
+            ),
+          }}
+          />
+          
         </Stack>
       </ThemeProvider>
     </UserProvider>

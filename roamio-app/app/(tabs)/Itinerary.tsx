@@ -278,14 +278,6 @@ export default function Itinerary() {
           style: "destructive",
           onPress: async () => {
             try {
-              // const response = await fetch("http://10.0.2.2:3000/itineraries/remove-user", {
-              //   method: "POST",
-              //   headers: { "Content-Type": "application/json" },
-              //   body: JSON.stringify({
-              //     itinerary_id: id,
-              //     user_email: user.email,
-              //   }),
-              // });
               const response = await fetch(
                 `http://10.0.2.2:3000/itineraries/${id}`,
                 {
@@ -669,6 +661,7 @@ const styles = StyleSheet.create({
   safeContainer: {
     flex: 1,
     paddingTop: 20,
+    paddingBottom: 20,
     backgroundColor: Colors.white,
   },
   container: {
