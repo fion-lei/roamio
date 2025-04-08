@@ -400,7 +400,7 @@ export default function FriendsScreen() {
             <Text style={styles.dropdownText}>
               {filterType === "default" ? "Filter" : filterType}
             </Text>
-            <Feather name="chevron-down" size={16} color="#888" />
+            <Feather name="chevron-down" size={18} color="#d9534f" />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => setShowFriendRequestModal(true)}>
             <Feather name="user-plus" size={24} color="#333" />
@@ -925,16 +925,22 @@ const styles = StyleSheet.create({
   },
   dropdownToggleMini: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-end",
     paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderRadius: 10,
-    backgroundColor: Colors.palePink,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    backgroundColor: "#ffe5e5",
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 3,
+    elevation: 2,
   },
   dropdownText: {
-    fontFamily: "quicksand-semibold",
+    color: "#d9534f",
     fontSize: 16,
-    marginRight: 5,
+    fontFamily: "quicksand-semibold",
+    // marginRight: 5,
   },
   toggleContainer: {
     flexDirection: "row",

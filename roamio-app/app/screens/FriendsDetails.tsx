@@ -136,7 +136,7 @@ const DetailScreen = () => {
           })
         );
 
-        const parseDate = (dateStr) => {
+        const parseDate = (dateStr: string) => {
           // dateStr expected to be in "MM/DD/YYYY" format
           const [month, day, year] = dateStr.split("/");
           return new Date(Number(year), Number(month) - 1, Number(day));
@@ -161,29 +161,46 @@ const DetailScreen = () => {
   }, [currentUserEmail]);
 
   const handleUnfriend = async () => {
-    try {
-      const res = await fetch(`${SERVER_IP}/unfriend`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          user_email: currentUserEmail,
-          friend_email: email_friend,
-        }),
-      });
+    Alert.alert(
+      "Confirm Unfriend",
+      `Are you sure you want to unfriend ${name}?`,
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Unfriend",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const res = await fetch(`${SERVER_IP}/unfriend`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  user_email: currentUserEmail,
+                  friend_email: email_friend,
+                }),
+              });
 
-      if (res.ok) {
-        Alert.alert(
-          "Unfriended!",
-          `${name} has been removed from your friends list.`
-        );
-        router.back();
-      } else {
-        Alert.alert("Oops!", "Could not unfriend. Try again.");
-      }
-    } catch (error) {
-      console.error("Unfriend error:", error);
-      Alert.alert("Error", "Something went wrong while unfriending.");
-    }
+              if (res.ok) {
+                Alert.alert(
+                  "Unfriended",
+                  `${name} has been removed from your friends list.`
+                );
+                router.back();
+              } else {
+                Alert.alert("Oops!", "Could not unfriend. Try again.");
+              }
+            } catch (error) {
+              console.error("Unfriend error:", error);
+              Alert.alert("Error", "Something went wrong while unfriending.");
+            }
+          },
+        },
+      ],
+      { cancelable: true }
+    );
   };
 
   const handleSend = async () => {
@@ -205,8 +222,7 @@ const DetailScreen = () => {
         Alert.alert("Shared!", "Itinerary successfully shared.");
         setSent(true);
         router.back();
-      } 
-      else {
+      } else {
         Alert.alert("Error", "Failed to share itinerary.");
       }
     } catch (error) {
@@ -371,7 +387,7 @@ const styles = StyleSheet.create({
   },
   avatar: { width: 40, height: 40, borderRadius: 20, marginRight: 10 },
   musicInfo: { flex: 1 },
-  musicTitle: {fontSize: 18,fontFamily: "quicksand-bold"  },
+  musicTitle: { fontSize: 18, fontFamily: "quicksand-bold" },
   itineraryText: { fontFamily: "quicksand-semibold", fontSize: 16 },
   unfriendButton: {
     alignSelf: "flex-end",

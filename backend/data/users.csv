@@ -1,7 +1,7 @@
 id,email,password,first_name,last_name,phone_number,traveller_type,bio,friends
-1742862155937,test@gmail.com,1,Test1,Test,123,International Traveler,Test,"[{""email"":""samantha@gmail.com"",""favorite"":false}]"
-1742864328360,wendy@gmail.com,1,Wendy,,555-1234,adventurer,Loves the mountains,"[{""email"":""test@gmail.com"",""favorite"":true},{""email"":""wendy1@gmail.com"",""favorite"":false}]"
+1742862155937,test@gmail.com,1,Test1,Test,123,International Traveler,Test,"[{""email"":""samantha@gmail.com"",""favorite"":false},{""email"":""wendy@gmail.com"",""favorite"":true}]"
+1742864328360,wendy@gmail.com,1,Wendy,,555-1234,adventurer,Loves the mountains,"[{""email"":""test@gmail.com"",""favorite"":true},{""email"":""wendy1@gmail.com"",""favorite"":false},{""email"":""samantha@gmail.com"",""favorite"":false}]"
 1742864494977,wendy1@gmail.com,1,Wendy,Smith,555-5678,solo,Always exploring,"[{""email"":""test@gmail.com"",""favorite"":false},{""email"":""test1@gmail.com"",""favorite"":true}]"
 1742864561426,test1@gmail.com,1,Test,Test,123,Retiree Traveler,test,"[{""email"":""test@gmail.com"",""favorite"":true},{""email"":""wendy1@gmail.com"",""favorite"":false}]"
-1742864324857,samantha@gmail.com,1,samantha,,403-299,adventurer,Loves the mountains,"[{""email"":""test@gmail.com"",""favorite"":false}]"
+1742864324857,samantha@gmail.com,1,samantha,,403-299,adventurer,Loves the mountains,"[{""email"":""test@gmail.com"",""favorite"":false},{""email"":""wendy@gmail.com"",""favorite"":false}]"
 id,email,password,first_name,last_name,phone_number,traveller_type,bio,
