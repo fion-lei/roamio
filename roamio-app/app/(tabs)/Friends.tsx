@@ -188,50 +188,83 @@ export default function FriendsScreen() {
     });
 
   const handleUnadd = async (itineraryId: string) => {
-    try {
-      const response = await fetch(`${SERVER_IP}/unadd`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          itinerary_id: itineraryId,
-          friend_email: currentUserEmail,
-        }),
-      });
-      if (response.ok) {
-        await fetchTrips(); // refresh trips list
-        Alert.alert("Success", "You have been removed from this itinerary.");
-      } else {
-        Alert.alert("Error", "Failed to remove you from the itinerary.");
-      }
-    } catch (error) {
-      console.error("Error in unadd:", error);
-      Alert.alert(
-        "Error",
-        "Something went wrong while processing your request."
-      );
-    }
+    Alert.alert(
+      "Confirm Removal",
+      "Are you sure you want to remove yourself from this itinerary?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Remove",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const response = await fetch(`${SERVER_IP}/unadd`, {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  itinerary_id: itineraryId,
+                  friend_email: currentUserEmail,
+                }),
+              });
+              if (response.ok) {
+                await fetchTrips(); // refresh trips list
+                Alert.alert(
+                  "Success",
+                  "You have been removed from this itinerary."
+                );
+              } else {
+                Alert.alert(
+                  "Error",
+                  "Failed to remove you from the itinerary."
+                );
+              }
+            } catch (error) {
+              console.error("Error in unadd:", error);
+              Alert.alert(
+                "Error",
+                "Something went wrong while processing your request."
+              );
+            }
+          },
+        },
+      ]
+    );
   };
 
   const handleUnshare = async (itineraryId: string, friendEmail: string) => {
-    try {
-      const response = await fetch(`${SERVER_IP}/unshare`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          itinerary_id: itineraryId,
-          friend_email: friendEmail,
-        }),
-      });
-      if (response.ok) {
-        await fetchTrips(); // refresh trips list
-        Alert.alert("Success", "Friend removed from the itinerary.");
-      } else {
-        Alert.alert("Error", "Failed to unshare itinerary.");
-      }
-    } catch (error) {
-      console.error("Error unsharing itinerary:", error);
-      Alert.alert("Error", "Something went wrong.");
-    }
+    Alert.alert(
+      "Confirm Unshare",
+      "Are you sure you want to remove this friend from the itinerary?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Unshare",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const response = await fetch(`${SERVER_IP}/unshare`, {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  itinerary_id: itineraryId,
+                  friend_email: friendEmail,
+                }),
+              });
+              if (response.ok) {
+                await fetchTrips(); // refresh trips list
+                setUnshareModalVisible(false); // close modal
+                Alert.alert("Success", "Friend removed from the itinerary.");
+              } else {
+                Alert.alert("Error", "Failed to unshare itinerary.");
+              }
+            } catch (error) {
+              console.error("Error unsharing itinerary:", error);
+              Alert.alert("Error", "Something went wrong.");
+            }
+          },
+        },
+      ]
+    );
   };
 
   const handleAddFriend = async () => {
@@ -348,7 +381,7 @@ export default function FriendsScreen() {
       <View style={styles.searchBarContainer}>
         <Feather name="search" size={18} color="#888" />
         <TextInput
-          placeholder="Search friends (First Name Last Name)"
+          placeholder="Search friends"
           value={searchText}
           onChangeText={setSearchText}
           placeholderTextColor="#aaaa"
@@ -400,7 +433,7 @@ export default function FriendsScreen() {
           </View>
         </TouchableOpacity>
       </Modal>
-      
+
       <Modal
         visible={showFriendRequestModal}
         transparent
@@ -595,7 +628,7 @@ export default function FriendsScreen() {
         <Modal
           visible={unshareModalVisible}
           transparent
-          animationType="slide"
+          animationType="fade"
           onRequestClose={() => setUnshareModalVisible(false)}
         >
           <View style={styles.modalOverlay}>
@@ -628,7 +661,7 @@ export default function FriendsScreen() {
                         selectedItinerary.itinerary_id,
                         friend.email
                       );
-                      setUnshareModalVisible(false);
+                      setUnshareModalVisible(true);
                     }}
                   >
                     <Text style={styles.requestUnshareText}>
@@ -649,44 +682,45 @@ export default function FriendsScreen() {
       )}
 
       {/* Friends List */}
-      <FlatList
-        data={filteredFriends}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.friendItem}>
-            <Image source={item.avatar} style={styles.avatar} />
-            <View style={styles.friendInfo}>
-              <Text style={styles.friendName}>
-                {item.name}{" "}
-                {item.favorited && (
-                  <Feather name="star" size={16} color="#FFD700" />
-                )}
-              </Text>
-              <Text style={styles.friendPhone}>{item.phone}</Text>
+      <View style = {styles.friendListContainer}>
+        <FlatList
+          data={filteredFriends}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <View style={styles.friendItem}>
+              <Image source={item.avatar} style={styles.avatar} />
+              <View style={styles.friendInfo}>
+                <Text style={styles.friendName}>
+                  {item.name}{" "}
+                  {item.favorited && (
+                    <Feather name="star" size={16} color="#FFD700" />
+                  )}
+                </Text>
+                <Text style={styles.friendPhone}>{item.phone}</Text>
+              </View>
+              <TouchableOpacity
+                onPress={() =>
+                  router.push({
+                    pathname: "/screens/FriendsDetails",
+                    params: {
+                      name: item.name,
+                      phone: item.phone,
+                      email_friend: item.email_friend,
+                      avatar: item.avatar,
+                      first_name: item.first_name,
+                      owner_name: user.first_name,
+                      traveller_type: item.traveller_type,
+                      bio: item.bio,
+                    },
+                  })
+                }
+              >
+                <Text style={styles.menuDots}>⋯</Text>
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity
-              onPress={() =>
-                router.push({
-                  pathname: "/screens/FriendsDetails",
-                  params: {
-                    name: item.name,
-                    phone: item.phone,
-                    email_friend: item.email_friend,
-                    avatar: item.avatar,
-                    first_name: item.first_name,
-                    owner_name: user.first_name,
-                    traveller_type: item.traveller_type,
-                    bio: item.bio,
-                  },
-                })
-              }
-            >
-              <Text style={styles.menuDots}>⋯</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      />
-
+          )}
+        />
+      </View>
       {/* Segmented Control for Trips */}
       <View style={styles.segmentedControlContainer}>
         <TouchableOpacity
@@ -812,7 +846,7 @@ export default function FriendsScreen() {
               : "No trips have been shared with you."}
           </Text>
         }
-        showsHorizontalScrollIndicator={false}
+        showsHorizontalScrollIndicator={true}
       />
     </View>
   );
@@ -840,6 +874,7 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
+    padding: 10,
     fontSize: 16,
     fontFamily: "quicksand-regular",
     color: "#333",
@@ -854,7 +889,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 22,
     fontFamily: "quicksand-bold",
-    marginBottom: 10,
   },
   unshareButton: {
     position: "absolute",
@@ -895,9 +929,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 10,
     borderRadius: 10,
-    backgroundColor: "#fff0f0",
-    borderWidth: 1,
-    borderColor: "#ddd",
+    backgroundColor: Colors.palePink,
   },
   dropdownText: {
     fontFamily: "quicksand-semibold",
@@ -975,6 +1007,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: "quicksand-bold",
   },
+  friendListContainer: {
+    height:300,
+  },
   friendItem: {
     flexDirection: "row",
     alignItems: "center",
@@ -990,8 +1025,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.coral,
   },
-  avatar: { width: 40, height: 40, borderRadius: 20, marginRight: 15 },
-  friendInfo: { flex: 1 },
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 15,
+  },
+  friendInfo: {
+    flex: 1,
+  },
   friendName: {
     fontWeight: "600",
     fontSize: 16,
@@ -1064,8 +1106,8 @@ const styles = StyleSheet.create({
   segmentedControlContainer: {
     flexDirection: "row",
     marginBottom: 10,
-    borderWidth: 1,
-    borderColor: "#ccc",
+    borderWidth: 2,
+    borderColor: Colors.palePink,
     borderRadius: 8,
     overflow: "hidden",
   },

@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, Pressable, StyleSheet, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
+import { Colors } from "@/constants/Colors";
 
 export default function EmergencyInfo() {
   const router = useRouter();
@@ -33,9 +34,6 @@ export default function EmergencyInfo() {
         </Text>
       </View>
 
-      <Pressable style={styles.backButton} onPress={() => router.back()}>
-        <Text style={styles.backButtonText}>Back</Text>
-      </Pressable>
     </ScrollView>
   );
 }
@@ -50,7 +48,11 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontFamily:"quicksand-bold",
     marginBottom: 20,
+    padding: 10,
+    borderRadius: 8,
     textAlign: "center",
+    color: Colors.coral,
+    backgroundColor: Colors.palePink,
   },
   subHeader: {
     fontSize: 22,
@@ -71,16 +73,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginTop: 5,
     fontFamily:"quicksand-medium",
-  },
-  backButton: {
-    marginTop: 30,
-    backgroundColor: "#007BFF",
-    paddingVertical: 15,
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  backButtonText: {
-    fontSize: 18,
-    color: "#fff",
   },
 });
