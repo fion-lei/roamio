@@ -241,29 +241,39 @@ const DetailScreen = () => {
         resizeMode="cover"
       />
       <View style={styles.nameRow}>
-        <Text style={styles.title}>{name}</Text>
-        <TouchableOpacity onPress={handleToggleFavorite}>
-          {favorited ? (
-            <FontAwesome
-              name="star"
-              size={25}
-              color="#FFD700"
-              style={{ marginLeft: 20, marginBottom: 15 }}
-            />
-          ) : (
-            <Feather
-              name="star"
-              size={25}
-              color="#999"
-              style={{ marginLeft: 20, marginBottom: 15 }}
-            />
-          )}
-        </TouchableOpacity>
-      </View>
+        <View style={{ 
+          flexDirection: "row", 
+          alignItems: "center", 
+          }}>
+          <Text style={styles.title}>{name}</Text>
+          <TouchableOpacity onPress={handleToggleFavorite}>
+            {favorited ? (
+              <FontAwesome
+                name="star"
+                size={25}
+                color="#FFD700"
+                style={{ marginLeft: 20, marginBottom: 15 }}
+              />
+            ) : (
+              <Feather
+                name="star"
+                size={25}
+                color="#999"
+                style={{ marginLeft: 20, marginBottom: 15 }}
+              />
+            )}
+          </TouchableOpacity>
+        </View>
 
-      <TouchableOpacity style={styles.unfriendButton} onPress={handleUnfriend}>
-        <Text style={styles.unfriendText}>Unfriend</Text>
-      </TouchableOpacity>
+        <View style={{ alignItems: "flex-end" }}>
+          <TouchableOpacity
+            style={styles.unfriendButton}
+            onPress={handleUnfriend}
+          >
+            <Text style={styles.unfriendText}>Unfriend</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
 
       <View style={styles.infoList}>
         <InfoItem icon={<Entypo name="phone" size={20} />} text={phone} />
@@ -374,8 +384,15 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     fontFamily: "quicksand-bold",
   },
-  nameRow: { flexDirection: "row", alignItems: "center", marginBottom: 16 },
-  infoList: { marginBottom: 32 },
+  nameRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 16,
+  },
+  infoList: {
+    marginBottom: 32,
+  },
   infoItem: { flexDirection: "row", alignItems: "center", marginBottom: 10 },
   infoText: { marginLeft: 10, fontSize: 16, fontFamily: "quicksand-regular" },
   sendCard: {

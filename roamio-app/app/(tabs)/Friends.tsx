@@ -11,31 +11,12 @@ import {
   Modal,
   Alert,
 } from "react-native";
-import { Feather } from "@expo/vector-icons";
-// import { useNavigation } from "@react-navigation/native";
-// import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { Feather, FontAwesome } from "@expo/vector-icons";
 import { useFonts } from "expo-font";
 import { Colors } from "@/constants/Colors";
 import { useUser } from "@/contexts/UserContext";
 import { useNavigation, useRouter, useLocalSearchParams } from "expo-router";
 import { TouchableWithoutFeedback } from "react-native";
-
-// type RootStackParamList = {
-//   FriendsScreen: undefined;
-//   Detail: {
-//     name: string;
-//     phone: string;
-//     avatar: any;
-//     email_friend: string;
-//     first_name: string;
-//     owner_name: string;
-//   };
-// };
-
-// type NavigationProp = NativeStackNavigationProp<
-//   RootStackParamList,
-//   "FriendsScreen"
-// >;
 
 const SERVER_IP = "http://10.0.2.2:3000"; // Replace with your actual backend address
 
@@ -50,7 +31,7 @@ export default function FriendsScreen() {
   const [friendRequests, setFriendRequests] = useState<any[]>([]);
   const [searchText, setSearchText] = useState("");
   const [filterType, setFilterType] = useState<
-    "default" | "alphabetical" | "reverse" | "favorites"
+    "default" | "A-Z" | "Z-A" | "Favorites"
   >("default");
   const [showDropdown, setShowDropdown] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -175,13 +156,16 @@ export default function FriendsScreen() {
   };
 
   const filteredFriends = friendsList
-    .filter((friend) =>
-      friend.name.toLowerCase().includes(searchText.toLowerCase())
+    .filter(
+      (friend) =>
+        friend.name.toLowerCase().includes(searchText.toLowerCase()) ||
+        friend.phone.toLowerCase().includes(searchText.toLowerCase()) ||
+        friend.email_friend.toLowerCase().includes(searchText.toLowerCase()) // Added email search
     )
     .sort((a, b) => {
-      if (filterType === "alphabetical") return a.name.localeCompare(b.name);
-      if (filterType === "reverse") return b.name.localeCompare(a.name);
-      if (filterType === "favorites") {
+      if (filterType === "A-Z") return a.name.localeCompare(b.name);
+      if (filterType === "Z-A") return b.name.localeCompare(a.name);
+      if (filterType === "Favorites") {
         return a.favorited === b.favorited ? 0 : a.favorited ? -1 : 1;
       }
       return 0;
@@ -381,10 +365,10 @@ export default function FriendsScreen() {
       <View style={styles.searchBarContainer}>
         <Feather name="search" size={18} color="#888" />
         <TextInput
-          placeholder="Search friends"
+          placeholder="Search Friends"
           value={searchText}
           onChangeText={setSearchText}
-          placeholderTextColor="#aaaa"
+          placeholderTextColor="darkgrey"
           style={styles.searchInput}
         />
       </View>
@@ -420,9 +404,9 @@ export default function FriendsScreen() {
               <TouchableOpacity
                 key={option}
                 onPress={() => {
-                  if (option === "A-Z") setFilterType("alphabetical");
-                  else if (option === "Z-A") setFilterType("reverse");
-                  else setFilterType("favorites");
+                  if (option === "A-Z") setFilterType("A-Z");
+                  else if (option === "Z-A") setFilterType("Z-A");
+                  else setFilterType("Favorites");
                   setShowDropdown(false);
                 }}
                 style={styles.modalItem}
@@ -682,7 +666,7 @@ export default function FriendsScreen() {
       )}
 
       {/* Friends List */}
-      <View style = {styles.friendListContainer}>
+      <View style={styles.friendListContainer}>
         <FlatList
           data={filteredFriends}
           keyExtractor={(item) => item.id}
@@ -693,7 +677,7 @@ export default function FriendsScreen() {
                 <Text style={styles.friendName}>
                   {item.name}{" "}
                   {item.favorited && (
-                    <Feather name="star" size={16} color="#FFD700" />
+                    <FontAwesome name="star" size={16} color="#FFD700" />
                   )}
                 </Text>
                 <Text style={styles.friendPhone}>{item.phone}</Text>
@@ -863,7 +847,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#fff0f0",
-    borderRadius: 25,
+    borderRadius: 20,
     padding: 10,
     marginBottom: 20,
     shadowColor: "#000",
@@ -1014,7 +998,7 @@ const styles = StyleSheet.create({
     fontFamily: "quicksand-bold",
   },
   friendListContainer: {
-    height:300,
+    height: 300,
   },
   friendItem: {
     flexDirection: "row",
