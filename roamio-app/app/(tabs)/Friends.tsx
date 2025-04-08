@@ -12,11 +12,30 @@ import {
   Alert,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
+// import { useNavigation } from "@react-navigation/native";
+// import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useFonts } from "expo-font";
 import { Colors } from "@/constants/Colors";
 import { useUser } from "@/contexts/UserContext";
 import { useNavigation, useRouter, useLocalSearchParams } from "expo-router";
+import { TouchableWithoutFeedback } from "react-native";
 
+// type RootStackParamList = {
+//   FriendsScreen: undefined;
+//   Detail: {
+//     name: string;
+//     phone: string;
+//     avatar: any;
+//     email_friend: string;
+//     first_name: string;
+//     owner_name: string;
+//   };
+// };
+
+// type NavigationProp = NativeStackNavigationProp<
+//   RootStackParamList,
+//   "FriendsScreen"
+// >;
 
 const SERVER_IP = "http://10.0.2.2:3000"; // Replace with your actual backend address
 
@@ -39,8 +58,11 @@ export default function FriendsScreen() {
   const [selectedItinerary, setSelectedItinerary] = useState<Itinerary | null>(
     null
   );
+  const [friendModalTab, setFriendModalTab] = useState<"add" | "requests">(
+    "add"
+  );
+
   const [searchType, setSearchType] = useState<"phone" | "email">("phone");
-  const [countryCode, setCountryCode] = useState("+1");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [emailSearch, setEmailSearch] = useState("");
   const [showFriendRequestModal, setShowFriendRequestModal] = useState(false);
@@ -261,7 +283,9 @@ export default function FriendsScreen() {
 
       if (requestRes.ok) {
         Alert.alert("Success", "Friend request sent");
-        setShowAddModal(false);
+        setPhoneNumber("");
+        setEmailSearch("");
+        setShowFriendRequestModal(false);
       } else {
         Alert.alert("Error", "Failed to send friend request.");
       }
@@ -345,9 +369,6 @@ export default function FriendsScreen() {
             </Text>
             <Feather name="chevron-down" size={16} color="#888" />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => setShowAddModal(true)}>
-            <Feather name="plus-circle" size={24} color="#333" />
-          </TouchableOpacity>
           <TouchableOpacity onPress={() => setShowFriendRequestModal(true)}>
             <Feather name="user-plus" size={24} color="#333" />
           </TouchableOpacity>
@@ -379,69 +400,195 @@ export default function FriendsScreen() {
           </View>
         </TouchableOpacity>
       </Modal>
-
-      {/* Add Friend Modal */}
-      <Modal visible={showAddModal} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Add a Friend</Text>
-            {/* Toggle between phone/email */}
-            <View style={styles.toggleContainer}>
-              <TouchableOpacity
-                style={[
-                  styles.toggleButton,
-                  searchType === "phone" && styles.toggleButtonActive,
-                ]}
-                onPress={() => setSearchType("phone")}
-              >
-                <Text style={styles.toggleText}>Phone</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  styles.toggleButton,
-                  searchType === "email" && styles.toggleButtonActive,
-                ]}
-                onPress={() => setSearchType("email")}
-              >
-                <Text style={styles.toggleText}>Email</Text>
-              </TouchableOpacity>
-            </View>
-            {searchType === "phone" ? (
-              <View style={styles.phoneInputRow}>
-                <TextInput
-                  style={[styles.modalInput, { flex: 1, fontSize: 20 }]}
-                  value={phoneNumber}
-                  onChangeText={setPhoneNumber}
-                  placeholder="--- --- ---"
-                  placeholderTextColor="#4B5563"
-                  keyboardType="phone-pad"
-                />
+      
+      <Modal
+        visible={showFriendRequestModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowFriendRequestModal(false)}
+      >
+        <TouchableOpacity
+          style={modalStyles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowFriendRequestModal(false)}
+        >
+          <TouchableWithoutFeedback>
+            <View style={[modalStyles.modalContent]}>
+              {/* Modal Tab Header */}
+              <View style={modalStyles.modalTabContainer}>
+                <TouchableOpacity
+                  style={[
+                    modalStyles.modalTabButton,
+                    friendModalTab === "add" && modalStyles.modalTabActive,
+                  ]}
+                  onPress={() => setFriendModalTab("add")}
+                >
+                  <Text
+                    style={[
+                      modalStyles.modalTabText,
+                      friendModalTab === "add" &&
+                        modalStyles.modalTabTextActive,
+                    ]}
+                  >
+                    Add Friend
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    modalStyles.modalTabButton,
+                    friendModalTab === "requests" && modalStyles.modalTabActive,
+                  ]}
+                  onPress={() => setFriendModalTab("requests")}
+                >
+                  <Text
+                    style={[
+                      modalStyles.modalTabText,
+                      friendModalTab === "requests" &&
+                        modalStyles.modalTabTextActive,
+                    ]}
+                  >
+                    Friend Requests
+                  </Text>
+                </TouchableOpacity>
               </View>
-            ) : (
-              <TextInput
-                style={styles.modalInput}
-                value={emailSearch}
-                onChangeText={setEmailSearch}
-                placeholder="abc@email.com"
-                placeholderTextColor="#4B5563"
-                autoCapitalize="none"
-                keyboardType="email-address"
-              />
-            )}
-            <TouchableOpacity
-              style={styles.addButton}
-              onPress={handleAddFriend}
-            >
-              <Text style={styles.addButtonText}>Send Friend Request</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => setShowAddModal(false)}
-              style={{ marginTop: 10 }}
-            >
-              <Text style={{ color: "#888" }}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+
+              {friendModalTab === "add" ? (
+                <>
+                  <View style={modalStyles.toggleContainer}>
+                    <TouchableOpacity
+                      style={[
+                        modalStyles.toggleButton,
+                        searchType === "phone" &&
+                          modalStyles.toggleButtonActive,
+                      ]}
+                      onPress={() => setSearchType("phone")}
+                    >
+                      <Text style={modalStyles.toggleText}>Phone</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[
+                        modalStyles.toggleButton,
+                        searchType === "email" &&
+                          modalStyles.toggleButtonActive,
+                      ]}
+                      onPress={() => setSearchType("email")}
+                    >
+                      <Text style={modalStyles.toggleText}>Email</Text>
+                    </TouchableOpacity>
+                  </View>
+                  {searchType === "phone" ? (
+                    <View style={modalStyles.phoneInputRow}>
+                      <TextInput
+                        style={[
+                          modalStyles.modalInput,
+                          { flex: 1, fontSize: 20 },
+                        ]}
+                        value={phoneNumber}
+                        onChangeText={setPhoneNumber}
+                        placeholder="--- --- ---"
+                        placeholderTextColor="#4B5563"
+                        keyboardType="phone-pad"
+                      />
+                    </View>
+                  ) : (
+                    <TextInput
+                      style={modalStyles.modalInput}
+                      value={emailSearch}
+                      onChangeText={setEmailSearch}
+                      placeholder="abc@email.com"
+                      placeholderTextColor="#4B5563"
+                      autoCapitalize="none"
+                      keyboardType="email-address"
+                    />
+                  )}
+                  <TouchableOpacity
+                    style={modalStyles.addButton}
+                    onPress={handleAddFriend}
+                  >
+                    <Text style={modalStyles.addButtonText}>
+                      Send Friend Request
+                    </Text>
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <>
+                  {friendRequests.length === 0 ? (
+                    <Text
+                      style={{
+                        fontFamily: "quicksand-medium",
+                        marginBottom: 10,
+                      }}
+                    >
+                      No friend requests at the moment.
+                    </Text>
+                  ) : (
+                    friendRequests.map((request) => (
+                      <View key={request.id} style={modalStyles.requestItem}>
+                        <Image
+                          source={request.avatar}
+                          style={{
+                            width: 40,
+                            height: 40,
+                            borderRadius: 20,
+                            marginBottom: 5,
+                          }}
+                        />
+                        <Text
+                          style={{
+                            fontFamily: "quicksand-bold",
+                            marginBottom: 5,
+                          }}
+                        >
+                          {request.name}
+                        </Text>
+                        <View style={{ flexDirection: "row", gap: 10 }}>
+                          <TouchableOpacity
+                            style={{
+                              backgroundColor: "#ff8080",
+                              padding: 8,
+                              borderRadius: 8,
+                            }}
+                            onPress={() =>
+                              handleAcceptFriendRequest(request.id)
+                            }
+                          >
+                            <Text
+                              style={{
+                                color: "#fff",
+                                fontFamily: "quicksand-bold",
+                              }}
+                            >
+                              Accept
+                            </Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                            style={{
+                              backgroundColor: "#ccc",
+                              padding: 8,
+                              borderRadius: 8,
+                            }}
+                            onPress={() =>
+                              handleDeclineFriendRequest(request.id)
+                            }
+                          >
+                            <Text
+                              style={{
+                                color: "#333",
+                                fontFamily: "quicksand-bold",
+                              }}
+                            >
+                              Decline
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    ))
+                  )}
+                </>
+              )}
+            </View>
+          </TouchableWithoutFeedback>
+        </TouchableOpacity>
       </Modal>
 
       {unshareModalVisible && selectedItinerary && (
@@ -500,79 +647,6 @@ export default function FriendsScreen() {
           </View>
         </Modal>
       )}
-
-      {/* Friend Requests Modal */}
-      <Modal visible={showFriendRequestModal} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { width: 340 }]}>
-            <Text style={styles.modalTitle}>Friend Requests</Text>
-            {friendRequests.length === 0 ? (
-              <Text
-                style={{ fontFamily: "quicksand-regular", marginBottom: 10 }}
-              >
-                No friend requests at the moment.
-              </Text>
-            ) : (
-              friendRequests.map((request) => (
-                <View key={request.id} style={styles.requestItem}>
-                  <Image
-                    source={request.avatar}
-                    style={{
-                      width: 40,
-                      height: 40,
-                      borderRadius: 20,
-                      marginBottom: 5,
-                    }}
-                  />
-                  <Text
-                    style={{ fontFamily: "quicksand-bold", marginBottom: 5 }}
-                  >
-                    {request.name}
-                  </Text>
-                  <View style={{ flexDirection: "row", gap: 10 }}>
-                    <TouchableOpacity
-                      style={{
-                        backgroundColor: "#ff8080",
-                        padding: 8,
-                        borderRadius: 8,
-                      }}
-                      onPress={() => handleAcceptFriendRequest(request.id)}
-                    >
-                      <Text
-                        style={{ color: "#fff", fontFamily: "quicksand-bold" }}
-                      >
-                        Accept
-                      </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={{
-                        backgroundColor: "#ccc",
-                        padding: 8,
-                        borderRadius: 8,
-                      }}
-                      onPress={() => handleDeclineFriendRequest(request.id)}
-                    >
-                      <Text
-                        style={{ color: "#333", fontFamily: "quicksand-bold" }}
-                      >
-                        Decline
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              ))
-            )}
-            <TouchableOpacity
-              onPress={() => setShowFriendRequestModal(false)}
-              style={{ marginTop: 10 }}
-            >
-              <Text style={{ color: "#888", fontFamily: "quicksand-regular" }}>
-                Close
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
 
       {/* Friends List */}
       <FlatList
@@ -1013,6 +1087,130 @@ const styles = StyleSheet.create({
     fontFamily: "quicksand-bold",
     fontSize: 16,
     color: "#000",
+  },
+});
+
+const modalStyles = StyleSheet.create({
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.5)",
+  },
+  modalContent: {
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    padding: 20,
+    alignItems: "center",
+    width: "80%",
+  },
+  closeButton: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    zIndex: 1,
+    padding: 5,
+  },
+  closeButtonText: {
+    fontSize: 18,
+    fontFamily: "quicksand-bold",
+    color: "#888",
+  },
+  modalTabContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    // padding: 10,
+    marginBottom: 20,
+    width: "100%",
+  },
+  modalTabButton: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: "center",
+    borderBottomWidth: 2,
+    borderColor: "transparent",
+  },
+  modalTabActive: {
+    borderColor: Colors.coral,
+  },
+  modalTabText: {
+    fontSize: 16,
+    fontFamily: "quicksand-bold",
+    color: "#888",
+  },
+  modalTabTextActive: {
+    color: Colors.coral,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontFamily: "quicksand-bold",
+    marginBottom: 15,
+  },
+  toggleContainer: {
+    flexDirection: "row",
+    marginBottom: 15,
+    backgroundColor: "#f5f5f5",
+    borderRadius: 8,
+    overflow: "hidden",
+  },
+  toggleButton: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: "center",
+  },
+  toggleButtonActive: {
+    backgroundColor: "#ffcccc",
+  },
+  toggleText: {
+    fontFamily: "quicksand-bold",
+    fontSize: 14,
+  },
+  phoneInputRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 10,
+    width: "100%",
+  },
+  modalInput: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 10,
+    width: "100%",
+    fontFamily: "quicksand-regular",
+  },
+  addButton: {
+    backgroundColor: "#ff8080",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+  },
+  addButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontFamily: "quicksand-bold",
+  },
+  modalCancelButton: {
+    backgroundColor: Colors.grey,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    marginTop: 10,
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontFamily: "quicksand-bold",
+  },
+  requestItem: {
+    marginBottom: 10,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: Colors.coral,
+    borderRadius: 8,
+    padding: 10,
+    width: "100%",
   },
 });
 
