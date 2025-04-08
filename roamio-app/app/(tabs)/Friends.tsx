@@ -742,7 +742,6 @@ export default function FriendsScreen() {
       </View>
 
       {/* Dynamic Trips With Friends Section */}
-      <Text style={styles.sectionTitle}></Text>
       <FlatList
         horizontal
         // Filter trips based on the active tab:
@@ -785,21 +784,49 @@ export default function FriendsScreen() {
             (friend) => friend.email === currentUserEmail
           );
 
+          const friendAccess =
+            activeTripTab === "shared"
+              ? "Owner"
+              : (
+                  sharedWith.find((friend) => friend.email === friend.email)
+                    ?.access || "No access type"
+                ).replace(/\b\w/g, (char) => char.toUpperCase());
+
           // Determine display name
           const displayName = isOwner
             ? sharedWith.length > 0
               ? sharedWith.map((friend) => friend.friend_name).join(", ")
               : "Not shared"
-            : `Shared by: ${friendMapping?.owner_name || item.user_email}`;
-
+            : `${friendMapping?.owner_name || item.user_email}`;
+          console.log(friendMapping);
           return (
             <View style={styles.tripCard}>
               <Image
                 source={require("../../assets/images/avatar1.png")}
                 style={styles.tripImage}
               />
-              <Text style={styles.friendTripName}>{item.trip_title}</Text>
+
+              <View
+                style={{
+                  alignSelf: "center",
+                  backgroundColor: "#ffe5e5",
+                  paddingHorizontal: 16,
+                  paddingVertical: 6,
+                  borderRadius: 20,
+                  marginBottom: 5,
+                  shadowColor: "#000",
+                  shadowOpacity: 0.05,
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowRadius: 3,
+                  elevation: 2,
+  
+                }}
+              >
+                <Text style={styles.friendTripName}>{item.trip_title}</Text>
+              </View>
               <Text style={styles.friendName}>{displayName}</Text>
+              <Text style={styles.friendAccess}>{friendAccess}</Text>
+
               {isOwner ? (
                 // Owner: Unshare button to open modal for selective removal
                 <TouchableOpacity
@@ -1025,15 +1052,19 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   friendName: {
-    fontWeight: "600",
-    fontSize: 16,
+    fontSize: 14,
+    fontFamily: "quicksand-semibold",
+  },
+  friendAccess: {
+    fontSize: 14,
+    color: Colors.peachySalmon,
     fontFamily: "quicksand-semibold",
   },
   friendPhone: { color: "#888", marginTop: 2, fontFamily: "quicksand-regular" },
   menuDots: { fontSize: 20, color: "#888", paddingLeft: 10 },
   tripCard: {
     width: 180,
-    height: 150,
+    height: 180,
     borderRadius: 16,
     padding: 10,
     alignItems: "center",
@@ -1045,8 +1076,17 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.coral,
   },
-  tripImage: { width: 50, height: 50, borderRadius: 25, marginBottom: 6 },
-  friendTripName: { color: Colors.grey, fontFamily: "quicksand-semibold" },
+  tripImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginBottom: 6,
+  },
+  friendTripName: {
+    fontSize: 16,
+    color: "black",
+    fontFamily: "quicksand-semibold",
+  },
   requestItem: {
     marginBottom: 10,
     alignItems: "center",

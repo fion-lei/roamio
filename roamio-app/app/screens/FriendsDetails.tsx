@@ -126,13 +126,11 @@ const DetailScreen = () => {
         const data = await res.json();
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        // console.log("Fetched itineraries:", data);
         console.log("Current date:", today);
         // Map data to your Itinerary interface and filter out past trips.
         const formattedItineraries = (data.itineraries || []).map(
           (trip: any) => ({
             ...trip,
-            // We leave dates as strings for now, but you could also convert them.
           })
         );
 
@@ -146,9 +144,7 @@ const DetailScreen = () => {
           (trip: Itinerary) => {
             if (!trip.end_date) return false;
             const endDate = parseDate(trip.end_date);
-            console.log("TODAY", today);
-            console.log("TRIP END DATE", endDate);
-            return endDate >= today;
+            return endDate >= today && trip.user_email !== email_friend;
           }
         );
         console.log("filtered itineraries:", filteredItineraries);
