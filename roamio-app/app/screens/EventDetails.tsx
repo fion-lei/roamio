@@ -21,7 +21,7 @@ import {
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { Colors } from '@/constants/Colors';
 import DateTimePicker from '@react-native-community/datetimepicker';
-
+import { useRouter } from 'expo-router';
 
 interface RouteParams {
     activity: string;
@@ -132,7 +132,7 @@ const TimeSelector = ({ label, time, showPicker, onPress, onTimeChange, formatTi
 const EventDetails = () => {
     const route = useRoute();
     const navigation = useNavigation();
-
+    const router = useRouter();
     // Get all parameters from the route
     const { 
         activity,
@@ -337,6 +337,7 @@ const EventDetails = () => {
                 "Success", 
                 "Event time has been updated.",
             );
+            router.back();
         } catch (error) {
             console.error('Error updating event time:', error);
             Alert.alert("Error", "Failed to update event time.");

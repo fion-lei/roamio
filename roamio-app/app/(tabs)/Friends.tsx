@@ -363,7 +363,12 @@ export default function FriendsScreen() {
     <View style={styles.container}>
       {/* Search Bar */}
       <View style={styles.searchBarContainer}>
-        <FontAwesome name="search" size={18} color="grey" style={styles.searchIcon}/>
+        <FontAwesome
+          name="search"
+          size={18}
+          color="grey"
+          style={styles.searchIcon}
+        />
         <TextInput
           placeholder="Search Friends"
           value={searchText}
@@ -818,7 +823,6 @@ export default function FriendsScreen() {
                   shadowOffset: { width: 0, height: 2 },
                   shadowRadius: 3,
                   elevation: 2,
-  
                 }}
               >
                 <Text style={styles.friendTripName}>{item.trip_title}</Text>
@@ -865,31 +869,30 @@ export default function FriendsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.white, 
-    paddingHorizontal: 16, 
+    backgroundColor: Colors.white,
+    paddingHorizontal: 16,
   },
   searchBarContainer: {
-    width: "100%",  
+    width: "100%",
     flexDirection: "row",
-    alignItems: "center", 
-    paddingVertical: 8, 
+    alignItems: "center",
+    paddingVertical: 8,
     paddingHorizontal: 20,
     borderRadius: 15,
-    borderWidth: 1.5, 
+    borderWidth: 1.5,
     backgroundColor: "#F9F9F9", // Off-white
     borderColor: Colors.grey,
-    marginTop: 20,     
+    marginTop: 20,
     marginBottom: 20,
-
   },
   searchInput: {
     flex: 1,
     color: Colors.grey,
-    fontSize: 16, 
-    fontFamily: "quicksand-semibold", 
+    fontSize: 16,
+    fontFamily: "quicksand-semibold",
   },
   searchIcon: {
-    marginRight: 10, 
+    marginRight: 10,
   },
   headerRow: {
     flexDirection: "row",
