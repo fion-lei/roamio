@@ -80,8 +80,6 @@ export default function FriendsScreen() {
         `${SERVER_IP}/friends?email=${encodeURIComponent(currentUserEmail)}`
       );
       const data = await res.json();
-      console.log("DEBUG: /friends endpoint returned:", data);
-
       const mappedFriends = data.map((friend: any, idx: number) => ({
         id: friend.id ? friend.id.toString() : String(idx),
         first_name: friend.first_name.trim(),
@@ -388,10 +386,10 @@ export default function FriendsScreen() {
             <Text style={styles.dropdownText}>
               {filterType === "default" ? "Filter" : filterType}
             </Text>
-            <Feather name="chevron-down" size={18} color="#d9534f" />
+            <FontAwesome name="filter" size={20} color="#d9534f" />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => setShowFriendRequestModal(true)}>
-            <Feather name="user-plus" size={24} color="#333" />
+            <FontAwesome name="user-plus" size={24} color="#333" />
           </TouchableOpacity>
         </View>
       </View>
@@ -802,7 +800,6 @@ export default function FriendsScreen() {
               ? sharedWith.map((friend) => friend.friend_name).join(", ")
               : "Not shared"
             : `${friendMapping?.owner_name || item.user_email}`;
-          console.log(friendMapping);
           return (
             <View style={styles.tripCard}>
               <Image
@@ -839,7 +836,7 @@ export default function FriendsScreen() {
                     setUnshareModalVisible(true);
                   }}
                 >
-                  <Feather name="trash-2" size={20} color="red" />
+                  <FontAwesome name="trash-o" size={20} color="red" />
                 </TouchableOpacity>
               ) : (
                 // Non-owner: Unadd button to remove self
@@ -940,12 +937,14 @@ const styles = StyleSheet.create({
   },
   dropdownToggleMini: {
     flexDirection: "row",
-    alignItems: "flex-end",
+    alignItems: "center",
+    alignContent: "space-between",
+    gap: 5,
     paddingVertical: 6,
     paddingHorizontal: 16,
     borderRadius: 10,
     backgroundColor: Colors.palePink,
-    elevation: 2,
+    elevation: 1,
   },
   dropdownText: {
     color: "#d9534f",

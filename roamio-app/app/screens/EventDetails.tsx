@@ -388,7 +388,7 @@ const EventDetails = () => {
                 />
                 {address && (
                     <InfoItem
-                        icon={<Entypo name="location-pin" size={20} color={Colors.coral} />}
+                        icon={<FontAwesome name="map-pin" size={20} color={Colors.coral} />}
                         text={address}
                     />
                 )}

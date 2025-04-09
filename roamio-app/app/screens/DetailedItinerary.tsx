@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { Colors } from "@/constants/Colors";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { Entypo, FontAwesome } from "@expo/vector-icons";
+import { FontAwesome } from "@expo/vector-icons";
 import { useNavigation, useRouter, useLocalSearchParams } from "expo-router";
 import { useUser } from "@/contexts/UserContext";
 import { useFocusEffect } from "@react-navigation/native";
@@ -372,7 +372,7 @@ const DetailedItinerary = () => {
     <SafeAreaView style={styles.mainContainer}>
       {/* Top Header and Weekly Calendar */}
       <View style={styles.headerContainer}>
-        <Entypo name="location-pin" size={18} color={Colors.primary} />
+        <FontAwesome name="map-pin" size={18} color={Colors.primary} />
         <Text style={styles.itineraryTitle}>{itineraryTitle}</Text>
         <Pressable onPress={() => setIsEditMode(!isEditMode)}>
           <Text style={styles.editButtonText}>
