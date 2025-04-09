@@ -14,7 +14,7 @@ import {
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Colors } from "../../constants/Colors";
-import { AntDesign, Entypo, FontAwesome } from "@expo/vector-icons";
+import {FontAwesome } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
 
 import { useUser } from "@/contexts/UserContext";
@@ -322,7 +322,7 @@ export default function Itinerary() {
             onPress={() => setModalVisible(true)}
             style={styles.addButton}
           >
-            <AntDesign name="pluscircle" size={30} color={Colors.coral} />
+            <FontAwesome name="plus-circle" size={30} color={Colors.coral} />
           </Pressable>
         </View>
 
@@ -350,11 +350,11 @@ export default function Itinerary() {
                       style={{
                         flexDirection: "row",
                         alignItems: "center",
-                        gap: 4,
+                        gap: 10,
                       }}
                     >
-                      <Entypo
-                        name="location-pin"
+                      <FontAwesome
+                        name="map-pin"
                         size={18}
                         color={Colors.primary}
                       />
@@ -375,7 +375,11 @@ export default function Itinerary() {
                           </View>
                         )}
                       <Pressable onPress={() => handleDeleteItinerary(item.id)}>
-                        <AntDesign name="minuscircle" size={22} color="red" />
+                        <FontAwesome
+                          name="minus-circle"
+                          size={22}
+                          color={Colors.coral}
+                        />
                       </Pressable>
                     </View>
                   </View>
@@ -443,18 +447,22 @@ export default function Itinerary() {
                       style={{
                         flexDirection: "row",
                         alignItems: "center",
-                        gap: 4,
+                        gap: 10,
                       }}
                     >
-                      <Entypo
-                        name="location-pin"
+                      <FontAwesome
+                        name="map-pin"
                         size={18}
                         color={Colors.primary}
                       />
                       <Text style={styles.title}>{item.title}</Text>
                     </View>
                     <Pressable onPress={() => handleDeleteItinerary(item.id)}>
-                      <AntDesign name="minuscircle" size={22} color="red" />
+                      <FontAwesome
+                        name="minus-circle"
+                        size={22}
+                        color={Colors.coral}
+                      />
                     </Pressable>
                   </View>
 
@@ -522,18 +530,22 @@ export default function Itinerary() {
                       style={{
                         flexDirection: "row",
                         alignItems: "center",
-                        gap: 4,
+                        gap: 10,
                       }}
                     >
-                      <Entypo
-                        name="location-pin"
+                      <FontAwesome
+                        name="map-pin"
                         size={18}
                         color={Colors.primary}
                       />
                       <Text style={styles.title}>{item.title}</Text>
                     </View>
                     <Pressable onPress={() => handleDeleteItinerary(item.id)}>
-                      <AntDesign name="minuscircle" size={22} color="red" />
+                      <FontAwesome
+                        name="minus-circle"
+                        size={22}
+                        color={Colors.coral}
+                      />
                     </Pressable>
                   </View>
                   <Text style={styles.date}>
@@ -1000,5 +1012,4 @@ const styles = StyleSheet.create({
     fontFamily: "quicksand-regular",
     color: Colors.grey,
   },
-  
 });
