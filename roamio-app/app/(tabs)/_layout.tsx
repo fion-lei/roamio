@@ -37,12 +37,12 @@ export default function TabLayout() {
       }}
     >
       <Tab.Screen
-        name="Trip"
+        name="Discover"
         component={Trip}
         options={{
-          title: "Trip",
+          title: "Discover",
           tabBarIcon: ({ color, size }) => (
-            <FontAwesome name="suitcase" color={color} size={size} />
+            <FontAwesome name="map-pin" color={color} size={size} />
           ),
         }}
       />

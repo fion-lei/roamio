@@ -21,11 +21,11 @@ export default function TabNavigator() {
       }}
     >
       <Tab.Screen
-        name="Home"
+        name="Discover"
         component={Trip}
         options={{
           tabBarIcon: ({ color, size }) => (
-            <FontAwesome name="home" color={color} size={size} />
+            <FontAwesome name="map-pin" color={color} size={size} />
           ),
         }}
       />

@@ -285,6 +285,7 @@ export default function AddItinerary() {
           }
         }]
       );
+      router.back(); // Go back to the previous screen after adding the event
     } catch (error) {
       Alert.alert("Error", "Failed to add event.");
     }

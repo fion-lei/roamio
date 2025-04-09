@@ -14,12 +14,15 @@ import {
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Colors } from "../../constants/Colors";
-import { AntDesign, Entypo, FontAwesome } from "@expo/vector-icons";
+import {FontAwesome } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
 
 import { useUser } from "@/contexts/UserContext";
 
-// Function to format dates in "MM/DD/YYYY" format
+const TRIP_TITLE_LIMIT = 20; // New limit for trip title (20 characters)
+const tripLengthCharLimit = 50; // Existing limit for trip description
+
+//// Function to format dates in "MM/DD/YYYY" format
 const formatDate = (date: Date | null) => {
   if (!date) return "MM/DD/YYYY"; // Default placeholder
   return date.toLocaleDateString("en-US", {
@@ -278,14 +281,6 @@ export default function Itinerary() {
           style: "destructive",
           onPress: async () => {
             try {
-              // const response = await fetch("http://10.0.2.2:3000/itineraries/remove-user", {
-              //   method: "POST",
-              //   headers: { "Content-Type": "application/json" },
-              //   body: JSON.stringify({
-              //     itinerary_id: id,
-              //     user_email: user.email,
-              //   }),
-              // });
               const response = await fetch(
                 `http://10.0.2.2:3000/itineraries/${id}`,
                 {
@@ -327,7 +322,7 @@ export default function Itinerary() {
             onPress={() => setModalVisible(true)}
             style={styles.addButton}
           >
-            <AntDesign name="pluscircle" size={30} color={Colors.coral} />
+            <FontAwesome name="plus-circle" size={30} color={Colors.coral} />
           </Pressable>
         </View>
 
@@ -355,11 +350,11 @@ export default function Itinerary() {
                       style={{
                         flexDirection: "row",
                         alignItems: "center",
-                        gap: 4,
+                        gap: 10,
                       }}
                     >
-                      <Entypo
-                        name="location-pin"
+                      <FontAwesome
+                        name="map-pin"
                         size={18}
                         color={Colors.primary}
                       />
@@ -370,7 +365,6 @@ export default function Itinerary() {
                         flexDirection: "row",
                         alignItems: "center",
                         gap: 8,
-                        
                       }}
                     >
                       {item.shared_with &&
@@ -381,7 +375,11 @@ export default function Itinerary() {
                           </View>
                         )}
                       <Pressable onPress={() => handleDeleteItinerary(item.id)}>
-                        <AntDesign name="minuscircle" size={22} color="red" />
+                        <FontAwesome
+                          name="minus-circle"
+                          size={22}
+                          color={Colors.coral}
+                        />
                       </Pressable>
                     </View>
                   </View>
@@ -410,14 +408,19 @@ export default function Itinerary() {
                   )}
                   <Pressable
                     style={styles.viewButtonOngoing}
-                    onPress={() => router.push({
-                      pathname: '/screens/DetailedItinerary',
-                      params: {
-                        id: item.id,
-                        title: item.title,
-                        date: `${formatDate(item.fromDate)} - ${formatDate(item.toDate)}`
-                      }
-                    })}>
+                    onPress={() =>
+                      router.push({
+                        pathname: "/screens/DetailedItinerary",
+                        params: {
+                          id: item.id,
+                          title: item.title,
+                          date: `${formatDate(item.fromDate)} - ${formatDate(
+                            item.toDate
+                          )}`,
+                        },
+                      })
+                    }
+                  >
                     <Text style={styles.buttonText}>View Details</Text>
                   </Pressable>
                 </View>
@@ -444,18 +447,22 @@ export default function Itinerary() {
                       style={{
                         flexDirection: "row",
                         alignItems: "center",
-                        gap: 4,
+                        gap: 10,
                       }}
                     >
-                      <Entypo
-                        name="location-pin"
+                      <FontAwesome
+                        name="map-pin"
                         size={18}
                         color={Colors.primary}
                       />
                       <Text style={styles.title}>{item.title}</Text>
                     </View>
                     <Pressable onPress={() => handleDeleteItinerary(item.id)}>
-                      <AntDesign name="minuscircle" size={22} color="red" />
+                      <FontAwesome
+                        name="minus-circle"
+                        size={22}
+                        color={Colors.coral}
+                      />
                     </Pressable>
                   </View>
 
@@ -484,14 +491,19 @@ export default function Itinerary() {
                   )}
                   <Pressable
                     style={styles.viewButtonUpcoming}
-                    onPress={() => router.push({
-                      pathname: '/screens/DetailedItinerary',
-                      params: {
-                        id: item.id,
-                        title: item.title,
-                        date: `${formatDate(item.fromDate)} - ${formatDate(item.toDate)}`
-                      }
-                    })}>
+                    onPress={() =>
+                      router.push({
+                        pathname: "/screens/DetailedItinerary",
+                        params: {
+                          id: item.id,
+                          title: item.title,
+                          date: `${formatDate(item.fromDate)} - ${formatDate(
+                            item.toDate
+                          )}`,
+                        },
+                      })
+                    }
+                  >
                     <Text style={styles.buttonText}>View Details</Text>
                   </Pressable>
                 </View>
@@ -518,18 +530,22 @@ export default function Itinerary() {
                       style={{
                         flexDirection: "row",
                         alignItems: "center",
-                        gap: 4,
+                        gap: 10,
                       }}
                     >
-                      <Entypo
-                        name="location-pin"
+                      <FontAwesome
+                        name="map-pin"
                         size={18}
                         color={Colors.primary}
                       />
                       <Text style={styles.title}>{item.title}</Text>
                     </View>
                     <Pressable onPress={() => handleDeleteItinerary(item.id)}>
-                      <AntDesign name="minuscircle" size={22} color="red" />
+                      <FontAwesome
+                        name="minus-circle"
+                        size={22}
+                        color={Colors.coral}
+                      />
                     </Pressable>
                   </View>
                   <Text style={styles.date}>
@@ -540,14 +556,19 @@ export default function Itinerary() {
                   <Text style={styles.description}>{item.description}</Text>
                   <Pressable
                     style={styles.viewButtonPast}
-                    onPress={() => router.push({
-                      pathname: '/screens/DetailedItinerary',
-                      params: {
-                        id: item.id,
-                        title: item.title,
-                        date: `${formatDate(item.fromDate)} - ${formatDate(item.toDate)}`
-                      }
-                    })}>
+                    onPress={() =>
+                      router.push({
+                        pathname: "/screens/DetailedItinerary",
+                        params: {
+                          id: item.id,
+                          title: item.title,
+                          date: `${formatDate(item.fromDate)} - ${formatDate(
+                            item.toDate
+                          )}`,
+                        },
+                      })
+                    }
+                  >
                     <Text style={styles.buttonText}>View Details</Text>
                   </Pressable>
                 </View>
@@ -563,14 +584,27 @@ export default function Itinerary() {
               <Text style={styles.modalTitle}>Add New Trip</Text>
               <View style={styles.inputContainer}>
                 <Text style={styles.inputLabel}>Enter Trip Name</Text>
-                <TextInput
-                  placeholder="Trip Name"
-                  style={styles.input}
-                  value={newTrip.title}
-                  onChangeText={(text) =>
-                    setNewTrip({ ...newTrip, title: text })
-                  }
-                />
+                <View style={styles.inputWrapper}>
+                  <TextInput
+                    placeholder="Trip Name"
+                    style={styles.input}
+                    value={newTrip.title}
+                    onChangeText={(text) =>
+                      text.length <= TRIP_TITLE_LIMIT &&
+                      setNewTrip({ ...newTrip, title: text })
+                    }
+                    maxLength={TRIP_TITLE_LIMIT}
+                  />
+                  <Text style={styles.charCounterInside}>
+                    {newTrip.title.length}/{TRIP_TITLE_LIMIT}
+                  </Text>
+                </View>
+
+                {newTrip.title.length === TRIP_TITLE_LIMIT && (
+                  <Text style={styles.warningText}>
+                    Maximum character limit reached
+                  </Text>
+                )}
               </View>
               {/* Date Pickers */}
               <View style={styles.dateContainer}>
@@ -638,8 +672,10 @@ export default function Itinerary() {
                   style={[styles.input, styles.textArea]}
                   value={newTrip.description}
                   onChangeText={(text) =>
+                    text.length <= tripLengthCharLimit &&
                     setNewTrip({ ...newTrip, description: text })
                   }
+                  maxLength={tripLengthCharLimit}
                   multiline
                 />
               </View>
@@ -669,6 +705,7 @@ const styles = StyleSheet.create({
   safeContainer: {
     flex: 1,
     paddingTop: 20,
+    paddingBottom: 20,
     backgroundColor: Colors.white,
   },
   container: {
@@ -946,5 +983,33 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 13,
     fontFamily: "quicksand-bold", // Ensure this font is loaded
+  },
+  charCounter: {
+    marginLeft: 10,
+    fontSize: 14,
+    fontFamily: "quicksand-regular",
+    color: Colors.grey,
+  },
+  charCounterWarning: {
+    color: "red",
+  },
+  warningText: {
+    fontSize: 12,
+    fontFamily: "quicksand-medium",
+    color: "red",
+    marginTop: 5,
+    marginLeft: 5,
+  },
+  inputWrapper: {
+    position: "relative",
+    width: "100%",
+  },
+  charCounterInside: {
+    position: "absolute",
+    right: 10,
+    bottom: 10,
+    fontSize: 14,
+    fontFamily: "quicksand-regular",
+    color: Colors.grey,
   },
 });
