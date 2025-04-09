@@ -363,12 +363,11 @@ export default function FriendsScreen() {
     <View style={styles.container}>
       {/* Search Bar */}
       <View style={styles.searchBarContainer}>
-        <Feather name="search" size={18} color="#888" />
+        <FontAwesome name="search" size={18} color="grey" style={styles.searchIcon}/>
         <TextInput
           placeholder="Search Friends"
           value={searchText}
           onChangeText={setSearchText}
-          placeholderTextColor="darkgrey"
           style={styles.searchInput}
         />
       </View>
@@ -866,29 +865,31 @@ export default function FriendsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 25,
-    paddingHorizontal: 20,
-    backgroundColor: "#ffffff",
+    backgroundColor: Colors.white, 
+    paddingHorizontal: 16, 
   },
   searchBarContainer: {
+    width: "100%",  
     flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#fff0f0",
-    borderRadius: 20,
-    padding: 10,
+    alignItems: "center", 
+    paddingVertical: 8, 
+    paddingHorizontal: 20,
+    borderRadius: 15,
+    borderWidth: 1.5, 
+    backgroundColor: "#F9F9F9", // Off-white
+    borderColor: Colors.grey,
+    marginTop: 20,     
     marginBottom: 20,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-    elevation: 3,
+
   },
   searchInput: {
     flex: 1,
-    padding: 10,
-    fontSize: 16,
-    fontFamily: "quicksand-regular",
-    color: "#333",
+    color: Colors.grey,
+    fontSize: 16, 
+    fontFamily: "quicksand-semibold", 
+  },
+  searchIcon: {
+    marginRight: 10, 
   },
   headerRow: {
     flexDirection: "row",
@@ -939,12 +940,8 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
     paddingVertical: 6,
     paddingHorizontal: 16,
-    borderRadius: 20,
-    backgroundColor: "#ffe5e5",
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 3,
+    borderRadius: 10,
+    backgroundColor: Colors.palePink,
     elevation: 2,
   },
   dropdownText: {
