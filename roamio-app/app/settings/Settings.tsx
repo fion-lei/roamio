@@ -1,7 +1,6 @@
 import React from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
-import { Colors } from "@/constants/Colors";
 
 export default function Settings() {
   const router = useRouter();
@@ -45,9 +44,9 @@ export default function Settings() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1, 
-    backgroundColor: Colors.white, 
-    paddingHorizontal: 16, 
+    flex: 1,
+    backgroundColor: "#fff",
+    padding: 20,
   },
   title: {
     fontSize: 28,

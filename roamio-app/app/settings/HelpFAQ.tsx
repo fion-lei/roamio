@@ -122,9 +122,9 @@ export default function HelpFAQ() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1, 
-    backgroundColor: Colors.white, 
-    paddingHorizontal: 16, 
+    flex: 1,
+    backgroundColor: "#fff",
+    padding: 20,
   },
   header: {
     fontSize: 28,

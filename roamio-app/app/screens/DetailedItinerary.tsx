@@ -8,8 +8,10 @@ import {
   ActivityIndicator,
   SafeAreaView,
   Alert,
+  Modal,
 } from "react-native";
 import { Colors } from "@/constants/Colors";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { Entypo, FontAwesome } from "@expo/vector-icons";
 import { useNavigation, useRouter, useLocalSearchParams } from "expo-router";
 import { useUser } from "@/contexts/UserContext";
@@ -25,13 +27,18 @@ const DetailedItinerary = () => {
   const navigation = useNavigation();
   const router = useRouter();
   const { user } = useUser();
-
+  const [selectedEvent, setSelectedEvent] = useState<any>(null);
+  const [eventModalVisible, setEventModalVisible] = useState(false);
+  const [eventTimePickerVisible, setEventTimePickerVisible] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [availableDates, setAvailableDates] = useState<string[]>([]);
   const [selectedDate, setSelectedDate] = useState("");
   const [itineraryItems, setItineraryItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-
+  const [isEditingTime, setIsEditingTime] = useState(false);
+  const [editedStartTime, setEditedStartTime] = useState<Date | null>(null);
+  const [editedEndTime, setEditedEndTime] = useState<Date | null>(null);
+  
   // Helper: Format a time string (HH:MM, 24-hour) into AM/PM format.
   const formatTimeToAMPM = (time: string): string => {
     const [hours, minutes] = time.split(":").map(Number);
@@ -72,69 +79,24 @@ const DetailedItinerary = () => {
     <View style={styles.eventContent}>
       <View style={styles.eventTextContainer}>
         <Text style={styles.activityText}>{item.activity}</Text>
-        <Text style={styles.durationText}>
-          {`${formatTimeToAMPM(item.time)} - ${formatTimeToAMPM(
-            calculateEndTime(item.time, item.duration)
-          )}`}
+        <Text style={styles.locationText}>
+          {item.address || "No location provided"}
         </Text>
       </View>
-      {isEditMode ? (
-        <Pressable
-          style={styles.deleteButton}
-          onPress={() => {
-            Alert.alert(
-              "Confirm Removal",
-              `Are you sure you want to remove ${item.activity} from your itinerary?`,
-              [
-                { text: "Cancel", style: "cancel" },
-                {
-                  text: "Remove",
-                  onPress: async () => {
-                    try {
-                      setLoading(true);
-                      const response = await fetch(
-                        `http://10.0.2.2:3000/events/${item.eventId}`,
-                        { method: "DELETE" }
-                      );
-                      if (!response.ok) {
-                        const errorData = await response.json();
-                        throw new Error(
-                          errorData.error || "Failed to delete event"
-                        );
-                      }
-                      setItineraryItems((currentItems) =>
-                        currentItems.filter(
-                          (event) => event.eventId !== item.eventId
-                        )
-                      );
-                      Alert.alert(
-                        "Success",
-                        `${item.activity} has been removed from your itinerary.`
-                      );
-                    } catch (error) {
-                      console.error("Error deleting event:", error);
-                      Alert.alert(
-                        "Error",
-                        `Failed to remove ${item.activity}. Please try again.`
-                      );
-                    } finally {
-                      setLoading(false);
-                    }
-                  },
-                },
-              ]
-            );
-          }}
-        >
-          <View style={styles.iconContainer}>
-            <FontAwesome name="minus" size={16} color={Colors.primary} />
-          </View>
-        </Pressable>
-      ) : (
-        <View style={styles.dotsContainer}>
-          <FontAwesome name="ellipsis-h" size={20} color={Colors.grey} />
-        </View>
-      )}
+      <View style={styles.dotsContainer}>
+        <Text style={styles.menuDots}>
+          {isEditMode ? (
+            <FontAwesome
+              name="pencil"
+              size={20}
+              color={Colors.coral}
+              style={{ marginLeft: 20, marginBottom: 15 }}
+            />
+          ) : (
+            "⋯"
+          )}
+        </Text>
+      </View>
     </View>
   );
 
@@ -410,58 +372,65 @@ const DetailedItinerary = () => {
     <SafeAreaView style={styles.mainContainer}>
       {/* Top Header and Weekly Calendar */}
       <View style={styles.headerContainer}>
-        {/* <Entypo name="location-pin" size={18} color={Colors.primary} /> */}
+        <Entypo name="location-pin" size={18} color={Colors.primary} />
         <Text style={styles.itineraryTitle}>{itineraryTitle}</Text>
-
         <Pressable onPress={() => setIsEditMode(!isEditMode)}>
           <Text style={styles.editButtonText}>
             {isEditMode ? "Done" : "Edit"}
           </Text>
         </Pressable>
       </View>
-      {selectedDate && (
-        <View style={styles.monthYearContainer}>
-          <Text style={styles.monthYearText}>
-            {getMonthYearHeader(selectedDate)}
-          </Text>
+      <View
+        style={{
+          borderRadius: 10,
+          borderWidth: 3,
+          borderColor: Colors.palePink,
+          marginHorizontal: 5,
+        }}
+      >
+        {selectedDate && (
+          <View style={styles.monthYearContainer}>
+            <Text style={styles.monthYearText}>
+              {getMonthYearHeader(selectedDate)}
+            </Text>
+          </View>
+        )}
+        <View style={styles.weeklyCalendarContainer}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            {availableDates.map((date, index) => {
+              const { dayName, dayNumber } = getDayInfo(date);
+              const isSelected = date === selectedDate;
+              return (
+                <Pressable key={index} onPress={() => setSelectedDate(date)}>
+                  <View
+                    style={[
+                      styles.calendarDateItem,
+                      isSelected && styles.selectedCalendarDateItem,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.calendarDayName,
+                        isSelected && styles.selectedCalendarDayName,
+                      ]}
+                    >
+                      {dayName}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.calendarDayNumber,
+                        isSelected && styles.selectedCalendarDayNumber,
+                      ]}
+                    >
+                      {dayNumber}
+                    </Text>
+                  </View>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
         </View>
-      )}
-      <View style={styles.weeklyCalendarContainer}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {availableDates.map((date, index) => {
-            const { dayName, dayNumber } = getDayInfo(date);
-            const isSelected = date === selectedDate;
-            return (
-              <Pressable key={index} onPress={() => setSelectedDate(date)}>
-                <View
-                  style={[
-                    styles.calendarDateItem,
-                    isSelected && styles.selectedCalendarDateItem,
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.calendarDayName,
-                      isSelected && styles.selectedCalendarDayName,
-                    ]}
-                  >
-                    {dayName}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.calendarDayNumber,
-                      isSelected && styles.selectedCalendarDayNumber,
-                    ]}
-                  >
-                    {dayNumber}
-                  </Text>
-                </View>
-              </Pressable>
-            );
-          })}
-        </ScrollView>
       </View>
-
       {/* Timeline Header (Time & Event labels) */}
       <View style={styles.timelineHeader}>
         <View style={styles.timeHeaderCell}>
@@ -506,7 +475,18 @@ const DetailedItinerary = () => {
                     getEventStyle(item.time, item.duration),
                   ]}
                   onPress={() => {
-                    if (!isEditMode) {
+                    if (isEditMode) {
+                      setSelectedEvent(item);
+                      // Initialize editedStartTime from item's time (assume "HH:MM" format)
+                      const [startHour, startMin] = item.time.split(":").map(Number);
+                      setEditedStartTime(new Date(new Date().setHours(startHour, startMin, 0, 0)));
+                      // Calculate the end time using your existing helper then initialize editedEndTime
+                      const endTimeStr = calculateEndTime(item.time, item.duration); // e.g. "HH:MM"
+                      const [endHour, endMin] = endTimeStr.split(":").map(Number);
+                      setEditedEndTime(new Date(new Date().setHours(endHour, endMin, 0, 0)));
+                      setEventModalVisible(true);
+                    } else {
+                      // Navigate normally
                       router.push({
                         pathname: "/screens/EventDetails",
                         params: {
@@ -522,16 +502,14 @@ const DetailedItinerary = () => {
                           ratingCount: item.ratingCount || "",
                           image: item.imagePath || "",
                           eventId: item.eventId || "",
-                          tags: item.tags
-                            ? Array.isArray(item.tags)
-                              ? item.tags.join(",")
-                              : item.tags
-                            : "",
+                          tags:
+                            item.tags ? (Array.isArray(item.tags) ? item.tags.join(",") : item.tags) : "",
                         },
                       });
                     }
                   }}
-                  disabled={isEditMode}
+                  
+                  // Remove any disabled prop if present for edit mode
                 >
                   {renderEventContent(item)}
                 </Pressable>
@@ -540,6 +518,139 @@ const DetailedItinerary = () => {
           </View>
         </View>
       </ScrollView>
+
+      {eventModalVisible && selectedEvent && (
+        <Modal visible={eventModalVisible} animationType="fade" transparent>
+          <View style={styles.modalOverlay}>
+            <View style={styles.eventModalView}>
+              <Text style={styles.modalTitle}>{selectedEvent.activity}</Text>
+              <Text style={styles.modalSubtitle}>
+                {`Current Time: ${formatTimeToAMPM(selectedEvent.time)}`}
+              </Text>
+              {isEditingTime && (
+                <DateTimePicker
+                  value={
+                    // Convert the event's current time (assumed "HH:MM") to a Date object on today's date.
+                    new Date(
+                      new Date().setHours(
+                        parseInt(selectedEvent.time.split(":")[0], 10),
+                        parseInt(selectedEvent.time.split(":")[1], 10)
+                      )
+                    )
+                  }
+                  mode="time"
+                  display="spinner"
+                  onChange={async (event, date) => {
+                    if (date) {
+                      try {
+                        const newTime = `${date.getHours()}:${date
+                          .getMinutes()
+                          .toString()
+                          .padStart(2, "0")}`;
+                        const response = await fetch(
+                          `http://10.0.2.2:3000/events/${selectedEvent.eventId}`,
+                          {
+                            method: "PUT",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ time: newTime }),
+                          }
+                        );
+                        if (response.ok) {
+                          setItineraryItems((currentItems) =>
+                            currentItems.map((ev) =>
+                              ev.eventId === selectedEvent.eventId
+                                ? { ...ev, time: newTime }
+                                : ev
+                            )
+                          );
+                          Alert.alert("Success", "Event time updated.");
+                        } else {
+                          Alert.alert("Error", "Failed to update event time.");
+                        }
+                      } catch (error) {
+                        console.error(error);
+                      }
+                    }
+                    setIsEditingTime(false);
+                    setEventModalVisible(false);
+                    setSelectedEvent(null);
+                  }}
+                />
+              )}
+              <View style={styles.modalButtonContainer}>
+                <Pressable
+                  style={[styles.button, styles.modalButton]}
+                  onPress={() => {
+                    Alert.alert(
+                      "Confirm Removal",
+                      "Are you sure you want to remove this event?",
+                      [
+                        {
+                          text: "Cancel",
+                          style: "cancel",
+                        },
+                        {
+                          text: "Remove",
+                          onPress: async () => {
+                            try {
+                              setLoading(true);
+                              const response = await fetch(
+                                `http://10.0.2.2:3000/events/${selectedEvent.eventId}`,
+                                { method: "DELETE" }
+                              );
+                              if (!response.ok) {
+                                const errorData = await response.json();
+                                throw new Error(
+                                  errorData.error || "Failed to delete event"
+                                );
+                              }
+                              setItineraryItems((currentItems) =>
+                                currentItems.filter(
+                                  (ev) => ev.eventId !== selectedEvent.eventId
+                                )
+                              );
+                              Alert.alert("Success", "Event has been removed.");
+                            } catch (error) {
+                              console.error("Error deleting event:", error);
+                              Alert.alert("Error", "Failed to remove event.");
+                            } finally {
+                              setLoading(false);
+                              setEventModalVisible(false);
+                              setSelectedEvent(null);
+                            }
+                          },
+                        },
+                      ]
+                    );
+                  }}
+                >
+                  <Text style={styles.buttonText}>Remove Event</Text>
+                </Pressable>
+                {!isEditingTime && (
+                  <Pressable
+                    style={[styles.button, styles.modalButton]}
+                    onPress={() => {
+                      setIsEditingTime(true);
+                    }}
+                  >
+                    <Text style={styles.buttonText}>Change Time</Text>
+                  </Pressable>
+                )}
+              </View>
+              <Pressable
+                style={styles.cancelButton}
+                onPress={() => {
+                  setEventModalVisible(false);
+                  setSelectedEvent(null);
+                  setIsEditingTime(false);
+                }}
+              >
+                <Text style={styles.buttonText}>Cancel</Text>
+              </Pressable>
+            </View>
+          </View>
+        </Modal>
+      )}
     </SafeAreaView>
   );
 };
@@ -554,8 +665,6 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingBottom: 10,
     backgroundColor: Colors.white,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.primary + "20",
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -572,7 +681,10 @@ const styles = StyleSheet.create({
   },
   monthYearContainer: {
     alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 5,
+    backgroundColor: Colors.palestPink,
+    borderRadius: 10,
   },
   monthYearText: {
     fontSize: 18,
@@ -581,19 +693,20 @@ const styles = StyleSheet.create({
   },
   weeklyCalendarContainer: {
     paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.primary + "20",
+    backgroundColor: Colors.palestPink,
+    borderRadius: 10,
   },
   calendarDateItem: {
-    marginHorizontal: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 15,
+    width: 60, // Fixed width
+    height: 60, // Fixed height
+    justifyContent: "center",
+    alignItems: "center",
     borderRadius: 8,
     backgroundColor: Colors.palePink,
-    alignItems: "center",
+    marginHorizontal: 10,
   },
   selectedCalendarDateItem: {
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.peachySalmon,
   },
   calendarDayName: {
     fontSize: 12,
@@ -613,7 +726,6 @@ const styles = StyleSheet.create({
   },
   timelineHeader: {
     flexDirection: "row",
-    backgroundColor: Colors.primary + "10",
     paddingVertical: 5,
     paddingHorizontal: 20,
   },
@@ -621,11 +733,17 @@ const styles = StyleSheet.create({
     width: 70,
     alignItems: "center",
     justifyContent: "center",
+    backgroundColor: Colors.palePink,
+    borderRadius: 10,
   },
   eventHeaderCell: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
+    backgroundColor: Colors.palePink,
+    borderRadius: 10,
+    marginLeft: 10,
+    marginRight: 5,
   },
   headerText: {
     fontSize: 16,
@@ -650,9 +768,9 @@ const styles = StyleSheet.create({
   timeSlot: {
     height: pixelsForHour,
     justifyContent: "center",
+    alignItems: "center",
     borderBottomWidth: 1,
-    borderBottomColor: Colors.primary + "20",
-    paddingLeft: 5,
+    borderBottomColor: "lightgrey",
   },
   timeText: {
     fontSize: 14,
@@ -664,16 +782,11 @@ const styles = StyleSheet.create({
     marginLeft: 20,
   },
   eventBubble: {
-    backgroundColor: Colors.palePink,
+    backgroundColor: Colors.palestPink,
     borderRadius: 8,
     padding: 10,
-    borderWidth: 1,
-    borderColor: Colors.primary,
-    shadowColor: Colors.grey,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
+    borderWidth: 2,
+    borderColor: Colors.palePink,
   },
   eventContent: {
     flexDirection: "row",
@@ -724,6 +837,77 @@ const styles = StyleSheet.create({
     fontFamily: "quicksand-semibold",
     color: Colors.grey,
     textAlign: "center",
+  },
+  menuDots: {
+    fontSize: 20,
+    color: "#888",
+    paddingLeft: 10,
+  },
+  locationText: {
+    fontSize: 13,
+    fontFamily: "quicksand-regular",
+    color: Colors.primary,
+    marginTop: 4,
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  eventModalView: {
+    width: "80%",
+    backgroundColor: Colors.white,
+    borderRadius: 20,
+    padding: 20,
+    alignItems: "center",
+    elevation: 5,
+  },
+  timePickerModalView: {
+    width: "80%",
+    backgroundColor: Colors.white,
+    borderRadius: 20,
+    padding: 20,
+    alignItems: "center",
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontFamily: "quicksand-bold",
+    marginBottom: 10,
+  },
+  modalSubtitle: {
+    fontSize: 16,
+    fontFamily: "quicksand-regular",
+    marginBottom: 20,
+  },
+  modalButtonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    width: "100%",
+    marginBottom: 20,
+  },
+  button: {
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    marginHorizontal: 5,
+  },
+  modalButton: {
+    backgroundColor: Colors.coral,
+  },
+  cancelButton: {
+    backgroundColor: Colors.grey,
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    width: "100%",
+    alignItems: "center",
+  },
+  buttonText: {
+    color: Colors.white,
+    fontSize: 16,
+    fontFamily: "quicksand-bold",
   },
 });
 
