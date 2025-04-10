@@ -14,13 +14,12 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { Colors } from "../../constants/Colors";
 import {FontAwesome } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
-
 import { useUser } from "@/contexts/UserContext";
 
 const TRIP_TITLE_LIMIT = 20; // New limit for trip title (20 characters)
-const tripLengthCharLimit = 50; // Existing limit for trip description
+const TRIP_LENGTH_LIMIT = 50; // Existing limit for trip description
 
-//// Function to format dates in "MM/DD/YYYY" format
+// Function to format dates in "MM/DD/YYYY" format
 const formatDate = (date: Date | null) => {
   if (!date) return "MM/DD/YYYY"; // Default placeholder
   return date.toLocaleDateString("en-US", {
@@ -673,17 +672,28 @@ export default function Itinerary() {
               )}
               <View style={styles.inputContainer}>
                 <Text style={styles.inputLabel}>Enter Trip Description</Text>
-                <TextInput
-                  placeholder="Trip Description"
-                  style={[styles.input, styles.textArea]}
-                  value={newTrip.description}
-                  onChangeText={(text) =>
-                    text.length <= tripLengthCharLimit &&
-                    setNewTrip({ ...newTrip, description: text })
-                  }
-                  maxLength={tripLengthCharLimit}
-                  multiline
-                />
+                <View style={styles.inputWrapper}>
+                  <TextInput
+                    placeholder="Trip Description"
+                    style={[styles.input, styles.textArea]}
+                    value={newTrip.description}
+                    onChangeText={(text) =>
+                      text.length <= TRIP_LENGTH_LIMIT &&
+                      setNewTrip({ ...newTrip, description: text })
+                    }
+                    maxLength={TRIP_LENGTH_LIMIT}
+                    multiline
+                  />
+                  <Text style={styles.charCounterInside}>
+                    {newTrip.description.length}/{TRIP_LENGTH_LIMIT}
+                  </Text>
+                </View>
+                
+                {newTrip.description.length === TRIP_LENGTH_LIMIT && (
+                  <Text style={styles.warningText}>
+                    Maximum character limit reached
+                  </Text>
+                )}
               </View>
               <View style={styles.modalButtonContainer}>
                 <Pressable
