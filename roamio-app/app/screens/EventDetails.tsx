@@ -14,7 +14,6 @@ import {
 } from 'react-native';
 import {
     FontAwesome,
-    Entypo,
     MaterialCommunityIcons,
     Ionicons,
 } from '@expo/vector-icons';
@@ -50,7 +49,7 @@ interface InfoItemProps {
 
 const InfoItem = ({ icon, text, showEditButton, onEditPress }: InfoItemProps) => (
     <View style={styles.infoItem}>
-        <View style={{ width: 30, alignItems: "center", justifyContent: "center" }}>
+        <View style={styles.iconContainer}>
             {icon}
         </View>
         <Text style={styles.infoText}>{text}</Text>
@@ -395,7 +394,7 @@ const EventDetails = () => {
                     onEditPress={handleEditTime}
                 />
                 <InfoItem
-                    icon={<MaterialCommunityIcons name="timer-outline" size={20} color={Colors.coral} />}
+                    icon={<MaterialCommunityIcons name="timer-outline" size={22} color={Colors.coral} />}
                     text={formattedDuration}
                 />
                 {date && (
@@ -519,15 +518,18 @@ const styles = StyleSheet.create({
         marginBottom: 30,
         backgroundColor: Colors.palestPink,
         borderRadius: 12,
-        borderWidth: 1,
-        borderColor: Colors.peachySalmon,
         padding: 10,
     },
     infoItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginVertical: 4,
-        paddingVertical: 6,
+        marginVertical: 2,
+        paddingVertical: 4,
+    },
+    iconContainer: {
+        width: 30,
+        alignItems: "center",
+        justifyContent: "center",
     },
     infoText: {
         marginLeft: 12,
@@ -537,8 +539,8 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     editButton: {
-        width: 36,
-        height: 36,
+        width: 33,
+        height: 33,
         borderRadius: "50%",
         backgroundColor: Colors.palePink,
         justifyContent: "center",
@@ -663,8 +665,6 @@ const styles = StyleSheet.create({
     pickerContainer: {
         position: "absolute",
         backgroundColor: Colors.white,
-        borderWidth: 1,
-        borderColor: Colors.grey,
         borderRadius: 10,
         zIndex: 20,
         top: "100%",

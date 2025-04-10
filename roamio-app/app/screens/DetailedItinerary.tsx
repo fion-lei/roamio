@@ -38,6 +38,8 @@ const DetailedItinerary = () => {
   const [isEditingTime, setIsEditingTime] = useState(false);
   const [editedStartTime, setEditedStartTime] = useState<Date | null>(null);
   const [editedEndTime, setEditedEndTime] = useState<Date | null>(null);
+  const [showStartTimePicker, setShowStartTimePicker] = useState(false);
+  const [showEndTimePicker, setShowEndTimePicker] = useState(false);
   
   // Helper: Format a time string (HH:MM, 24-hour) into AM/PM format.
   const formatTimeToAMPM = (time: string): string => {
@@ -45,6 +47,37 @@ const DetailedItinerary = () => {
     const ampm = hours >= 12 ? "PM" : "AM";
     const displayHour = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
     return `${displayHour}:${minutes.toString().padStart(2, "0")} ${ampm}`;
+  };
+
+  // Check if a time range overlaps with any existing events
+  const hasTimeOverlap = (startTime: string, endTime: string, currentEventId: string): boolean => {
+    // Convert times to minutes for easier comparison
+    const [startHour, startMin] = startTime.split(":").map(Number);
+    const [endHour, endMin] = endTime.split(":").map(Number);
+    const startMinutes = startHour * 60 + startMin;
+    const endMinutes = endHour * 60 + endMin;
+    
+    // Check against all other events
+    return itineraryItems.some(event => {
+      // Skip the current event being edited
+      if (event.eventId === currentEventId) return false;
+      
+      // Get event's end time
+      const eventEndTime = calculateEndTime(event.time, event.duration);
+      
+      // Convert event times to minutes
+      const [eventStartHour, eventStartMin] = event.time.split(":").map(Number);
+      const [eventEndHour, eventEndMin] = eventEndTime.split(":").map(Number);
+      const eventStartMinutes = eventStartHour * 60 + eventStartMin;
+      const eventEndMinutes = eventEndHour * 60 + eventEndMin;
+      
+      // Check for overlap
+      return (
+        (startMinutes >= eventStartMinutes && startMinutes < eventEndMinutes) ||
+        (endMinutes > eventStartMinutes && endMinutes <= eventEndMinutes) ||
+        (startMinutes <= eventStartMinutes && endMinutes >= eventEndMinutes)
+      );
+    });
   };
 
   // Helper: Calculate the end time from a given start time (in HH:MM) and duration in hours.
@@ -80,6 +113,134 @@ const DetailedItinerary = () => {
     };
   };
 
+  // Format time function for the modal
+  const formatTime = (date: Date | null) => {
+    if (!date) return "--:-- AM";
+    return date.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true
+    });
+  };
+
+  // Function to handle time changes in the picker
+  const handleTimeChange = (event: any, selectedDate?: Date, type?: string) => {
+    if (event.type === "dismissed") {
+      switch (type) {
+        case "startTime": 
+          setShowStartTimePicker(false); 
+          break;
+        case "endTime": 
+          setShowEndTimePicker(false); 
+          break;
+      }
+      return;
+    }
+    
+    if (selectedDate) {
+      switch (type) {
+        case "startTime": 
+          setEditedStartTime(selectedDate); 
+          setShowStartTimePicker(false); 
+          break;
+        case "endTime": 
+          setEditedEndTime(selectedDate); 
+          setShowEndTimePicker(false); 
+          break;
+      }
+    }
+  };
+
+  // Function to save the time changes
+  const handleSaveTime = async () => {
+    if (!editedStartTime || !editedEndTime) {
+      Alert.alert("Error", "Please select both start and end times");
+      return;
+    }
+
+    if (editedEndTime <= editedStartTime) {
+      Alert.alert("Please try again", "End time must be after start time");
+      return;
+    }
+
+    // Format the times for the API in AM/PM format
+    const formatTimeForAPI = (date: Date) => {
+      return date.toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true
+      });
+    };
+
+    // Format the times for display (12-hour format)
+    const newStartTime = formatTimeForAPI(editedStartTime);
+    const newEndTime = formatTimeForAPI(editedEndTime);
+
+    // Calculate the new duration in hours
+    const startMs = editedStartTime.getTime();
+    const endMs = editedEndTime.getTime();
+    const durationHours = (endMs - startMs) / (1000 * 60 * 60);
+
+    try {
+      setEventModalVisible(false);
+      
+      // Check if eventId exists
+      if (!selectedEvent?.eventId) {
+        Alert.alert("Error", "Event ID not found");
+        return;
+      }
+
+      // Create the update payload
+      const updateData = {
+        start_time: newStartTime,
+        end_time: newEndTime
+      };
+
+      // Call the API to update the event
+      const response = await fetch(`http://10.0.2.2:3000/events/${selectedEvent.eventId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updateData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update event time');
+      }
+
+      // Convert time objects to format that component can use
+      const formatTimesForComponent = (date: Date) => {
+        const hours = date.getHours();
+        const minutes = date.getMinutes();
+        return `${hours}:${minutes.toString().padStart(2, '0')}`;
+      };
+      
+      // Update the event in the local state
+      setItineraryItems((currentItems) =>
+        currentItems.map((item) =>
+          item.eventId === selectedEvent.eventId
+            ? {
+                ...item,
+                time: formatTimesForComponent(editedStartTime),
+                duration: durationHours
+              }
+            : item
+        )
+      );
+
+      // Show success message
+      Alert.alert(
+        "Success", 
+        "Event time has been updated.",
+      );
+    } catch (error) {
+      console.error('Error updating event time:', error);
+      Alert.alert("Error", "Failed to update event time.");
+    }
+  };
+
   // Render the content for an event block.
   const renderEventContent = (item: any) => (
     <View style={styles.eventContent}>
@@ -97,6 +258,17 @@ const DetailedItinerary = () => {
               size={20}
               color={Colors.coral}
               style={{ marginLeft: 20, marginBottom: 15 }}
+              onPress={() => {
+                setSelectedEvent(item);
+                // Initialize editedStartTime from item's time (assume "HH:MM" format)
+                const [startHour, startMin] = item.time.split(":").map(Number);
+                setEditedStartTime(new Date(new Date().setHours(startHour, startMin, 0, 0)));
+                // Calculate the end time using your existing helper then initialize editedEndTime
+                const endTimeStr = calculateEndTime(item.time, item.duration); // e.g. "HH:MM"
+                const [endHour, endMin] = endTimeStr.split(":").map(Number);
+                setEditedEndTime(new Date(new Date().setHours(endHour, endMin, 0, 0)));
+                setEventModalVisible(true);
+              }}
             />
           ) : (
             "⋯"
@@ -540,64 +712,58 @@ const DetailedItinerary = () => {
               <Text style={styles.modalSubtitle}>
                 {`Current Time: ${formatTimeToAMPM(selectedEvent.time)}`}
               </Text>
-              {isEditingTime && (
-                <DateTimePicker
-                  value={
-                    // Convert the event's current time (assumed "HH:MM") to a Date object on today's date.
-                    new Date(
-                      new Date().setHours(
-                        parseInt(selectedEvent.time.split(":")[0], 10),
-                        parseInt(selectedEvent.time.split(":")[1], 10)
-                      )
-                    )
-                  }
-                  mode="time"
-                  display="spinner"
-                  onChange={async (event, date) => {
-                    // Check if the user pressed "cancel", then no updates 
-                    if (event.type === "dismissed") {
-                      setIsEditingTime(false);
-                      setEventModalVisible(false);
-                      setSelectedEvent(null);
-                      return;
-                    }
-                    
-                    if (date) {
-                      try {
-                        const newTime = `${date.getHours()}:${date
-                          .getMinutes()
-                          .toString()
-                          .padStart(2, "0")}`;
-                        const response = await fetch(
-                          `http://10.0.2.2:3000/events/${selectedEvent.eventId}`,
-                          {
-                            method: "PUT",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ time: newTime }),
-                          }
-                        );
-                        if (response.ok) {
-                          setItineraryItems((currentItems) =>
-                            currentItems.map((ev) =>
-                              ev.eventId === selectedEvent.eventId
-                                ? { ...ev, time: newTime }
-                                : ev
-                            )
-                          );
-                          Alert.alert("Success", "Event time updated.");
-                        } else {
-                          Alert.alert("Error", "Failed to update event time.");
-                        }
-                      } catch (error) {
-                        console.error(error);
-                      }
-                    }
-                    setIsEditingTime(false);
-                    setEventModalVisible(false);
-                    setSelectedEvent(null);
-                  }}
-                />
-              )}
+              
+              {/* Time Selection Section */}
+              <View style={styles.timeContainer}>
+                <View style={styles.timeInputContainer}>
+                  <Text style={styles.inputLabel}>Start Time</Text>
+                  <Pressable 
+                    style={styles.selectFieldContainer}
+                    onPress={() => setShowStartTimePicker(true)}
+                  >
+                    <Text style={styles.selectText}>
+                      {formatTime(editedStartTime)}
+                    </Text>
+                    <FontAwesome name="clock-o" size={14} style={styles.timeIcon} />
+                  </Pressable>
+                  
+                  {showStartTimePicker && (
+                    <View style={styles.pickerContainer}>
+                      <DateTimePicker
+                        value={editedStartTime || new Date()}
+                        mode="time"
+                        display="spinner"
+                        onChange={(event, date) => handleTimeChange(event, date, "startTime")}
+                      />
+                    </View>
+                  )}
+                </View>
+                
+                <View style={styles.timeInputContainer}>
+                  <Text style={styles.inputLabel}>End Time</Text>
+                  <Pressable 
+                    style={styles.selectFieldContainer}
+                    onPress={() => setShowEndTimePicker(true)}
+                  >
+                    <Text style={styles.selectText}>
+                      {formatTime(editedEndTime)}
+                    </Text>
+                    <FontAwesome name="clock-o" size={14} style={styles.timeIcon} />
+                  </Pressable>
+                  
+                  {showEndTimePicker && (
+                    <View style={styles.pickerContainer}>
+                      <DateTimePicker
+                        value={editedEndTime || new Date()}
+                        mode="time"
+                        display="spinner"
+                        onChange={(event, date) => handleTimeChange(event, date, "endTime")}
+                      />
+                    </View>
+                  )}
+                </View>
+              </View>
+              
               <View style={styles.modalButtonContainer}>
                 <Pressable
                   style={[styles.button, styles.modalButton]}
@@ -647,23 +813,18 @@ const DetailedItinerary = () => {
                 >
                   <Text style={styles.buttonText}>Remove Event</Text>
                 </Pressable>
-                {!isEditingTime && (
-                  <Pressable
-                    style={[styles.button, styles.modalButton]}
-                    onPress={() => {
-                      setIsEditingTime(true);
-                    }}
-                  >
-                    <Text style={styles.buttonText}>Change Time</Text>
-                  </Pressable>
-                )}
+                <Pressable
+                  style={[styles.button, styles.modalButton]}
+                  onPress={handleSaveTime}
+                >
+                  <Text style={styles.buttonText}>Save Time</Text>
+                </Pressable>
               </View>
               <Pressable
                 style={styles.cancelButton}
                 onPress={() => {
                   setEventModalVisible(false);
                   setSelectedEvent(null);
-                  setIsEditingTime(false);
                 }}
               >
                 <Text style={styles.buttonText}>Cancel</Text>
@@ -961,6 +1122,52 @@ const styles = StyleSheet.create({
     color: Colors.white,
     fontSize: 16,
     fontFamily: "quicksand-bold",
+  },
+  timeContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 15,
+    width: "100%",
+  },
+  timeInputContainer: {
+    width: "48%",
+    position: "relative",
+  },
+  inputLabel: {
+    fontSize: 16,
+    fontFamily: "quicksand-semibold",
+    marginBottom: 5,
+    color: Colors.primary,
+  },
+  selectFieldContainer: {
+    borderWidth: 1,
+    borderColor: Colors.grey,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 12,
+    justifyContent: "center",
+    flexDirection: "row",
+  },
+  selectText: {
+    fontSize: 16,
+    fontFamily: "quicksand-medium",
+    flex: 1,
+    color: Colors.primary,
+  },
+  timeIcon: {
+    position: "absolute",
+    right: 10,
+    top: 18,
+    color: Colors.coral,
+  },
+  pickerContainer: {
+    position: "absolute",
+    backgroundColor: Colors.white,
+    borderRadius: 10,
+    zIndex: 20,
+    top: "100%",
+    marginTop: 2,
+    width: "100%",
   },
 });
 
