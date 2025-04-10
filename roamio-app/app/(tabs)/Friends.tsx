@@ -15,7 +15,7 @@ import { Feather, FontAwesome } from "@expo/vector-icons";
 import { useFonts } from "expo-font";
 import { Colors } from "@/constants/Colors";
 import { useUser } from "@/contexts/UserContext";
-import { useNavigation, useRouter, useLocalSearchParams } from "expo-router";
+import { useRouter } from "expo-router";
 import { TouchableWithoutFeedback } from "react-native";
 
 const SERVER_IP = "http://10.0.2.2:3000"; // Replace with your actual backend address
@@ -34,7 +34,6 @@ export default function FriendsScreen() {
     "default" | "A-Z" | "Z-A" | "Favorites"
   >("default");
   const [showDropdown, setShowDropdown] = useState(false);
-  const [showAddModal, setShowAddModal] = useState(false);
   const [unshareModalVisible, setUnshareModalVisible] = useState(false);
   const [selectedItinerary, setSelectedItinerary] = useState<Itinerary | null>(
     null
@@ -48,8 +47,7 @@ export default function FriendsScreen() {
   const [emailSearch, setEmailSearch] = useState("");
   const [showFriendRequestModal, setShowFriendRequestModal] = useState(false);
   const [activeTripTab, setActiveTripTab] = useState<"my" | "shared">("my");
-  // const navigation = useNavigation<NavigationProp>();
-  const navigation = useNavigation();
+  
   const router = useRouter();
   // Trips State
   const [trips, setTrips] = useState<Itinerary[]>([]);
@@ -1130,6 +1128,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.coral,
     borderRadius: 10,
+    backgroundColor: Colors.palestPink,
   },
 
   requestUnshareText: {
