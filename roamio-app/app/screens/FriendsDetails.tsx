@@ -144,7 +144,7 @@ const DetailScreen = () => {
           (trip: Itinerary) => {
             if (!trip.end_date) return false;
             const endDate = parseDate(trip.end_date);
-            return endDate >= today && trip.user_email !== email_friend;
+            return endDate >= today && trip.user_email !== email_friend && !trip.shared_with?.includes(email_friend);
           }
         );
         console.log("filtered itineraries:", filteredItineraries);
