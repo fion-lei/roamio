@@ -21,11 +21,6 @@ Project Group:
 - JavaScript
 - TypeScript
 
-##### Frameworks:
-- Tailwind CSS
-- Bootstrap CSS
-- NativeWind CSS
-
 #### Developer Tools
 - Android Studio
 - Visual Studio Code
