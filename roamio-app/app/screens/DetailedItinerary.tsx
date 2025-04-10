@@ -13,7 +13,7 @@ import {
 import { Colors } from "@/constants/Colors";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { FontAwesome } from "@expo/vector-icons";
-import { useNavigation, useRouter, useLocalSearchParams } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { useUser } from "@/contexts/UserContext";
 import { useFocusEffect } from "@react-navigation/native";
 
@@ -24,18 +24,15 @@ const DetailedItinerary = () => {
   const params = useLocalSearchParams();
   const itineraryId = params.id as string;
   const itineraryTitle = (params.title as string) || "Itinerary";
-  const navigation = useNavigation();
   const router = useRouter();
   const { user } = useUser();
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [eventModalVisible, setEventModalVisible] = useState(false);
-  const [eventTimePickerVisible, setEventTimePickerVisible] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [availableDates, setAvailableDates] = useState<string[]>([]);
   const [selectedDate, setSelectedDate] = useState("");
   const [itineraryItems, setItineraryItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isEditingTime, setIsEditingTime] = useState(false);
   const [editedStartTime, setEditedStartTime] = useState<Date | null>(null);
   const [editedEndTime, setEditedEndTime] = useState<Date | null>(null);
   const [showStartTimePicker, setShowStartTimePicker] = useState(false);
@@ -48,9 +45,7 @@ const DetailedItinerary = () => {
     const displayHour = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
     return `${displayHour}:${minutes.toString().padStart(2, "0")} ${ampm}`;
   };
-
-
-
+  
   // Helper: Calculate the end time from a given start time (in HH:MM) and duration in hours.
   const calculateEndTime = (
     startTime: string,
@@ -64,23 +59,43 @@ const DetailedItinerary = () => {
     return `${endHours}:${endMinutes.toString().padStart(2, "0")}`;
   };
 
+  // Helper function to check if two events overlap
+  const eventsOverlap = (event1: any, event2: any) => {
+    const [hours1, minutes1] = event1.time.split(":").map(Number);
+    const [hours2, minutes2] = event2.time.split(":").map(Number);
+    
+    const event1Start = hours1 * 60 + minutes1;
+    const event1End = event1Start + (event1.duration * 60);
+    const event2Start = hours2 * 60 + minutes2;
+    const event2End = event2Start + (event2.duration * 60);
+
+    return (event1Start < event2End && event1End > event2Start);
+  };
+
+  // Helper function to check if an event is part of any overlap
+  const hasOverlap = (currentEvent: any, allEvents: any[]) => {
+    return allEvents.some(event => 
+      event.eventId !== currentEvent.eventId && eventsOverlap(currentEvent, event)
+    );
+  };
+
   // Helper: Return a style object that positions an event block based on its start time and duration.
-  const getEventStyle = (time: string, duration: number) => {
+  const getEventStyle = (time: string, duration: number, isOverlapping: boolean) => {
     const [hours, minutes] = time.split(":").map(Number);
     const topPosition = (hours + minutes / 60) * pixelsForHour;
-    
-    // Ensure a minimum height for events less than 1 hour
-    const minHeight = 50; // Minimum height in pixels
-    const calculatedHeight = duration * pixelsForHour;
-    const height = Math.max(calculatedHeight, minHeight);
+    const height = Math.max(duration * pixelsForHour, 50);
     
     return {
       position: "absolute" as const,
       top: topPosition,
-      left: 70, // leave space for time markers
+      left: 70,
       right: 10,
-      height: height,
-      minWidth: 150, // Ensure minimum width for content visibility
+      height,
+      minWidth: 150,
+      borderWidth: 2,
+      borderColor: isOverlapping ? Colors.coral : Colors.palePink,
+      backgroundColor: Colors.palestPink,
+      opacity: 0.85,
     };
   };
 
@@ -231,11 +246,9 @@ const DetailedItinerary = () => {
               style={{ marginLeft: 20, marginBottom: 15 }}
               onPress={() => {
                 setSelectedEvent(item);
-                // Initialize editedStartTime from item's time (assume "HH:MM" format)
                 const [startHour, startMin] = item.time.split(":").map(Number);
                 setEditedStartTime(new Date(new Date().setHours(startHour, startMin, 0, 0)));
-                // Calculate the end time using your existing helper then initialize editedEndTime
-                const endTimeStr = calculateEndTime(item.time, item.duration); // e.g. "HH:MM"
+                const endTimeStr = calculateEndTime(item.time, item.duration);
                 const [endHour, endMin] = endTimeStr.split(":").map(Number);
                 setEditedEndTime(new Date(new Date().setHours(endHour, endMin, 0, 0)));
                 setEventModalVisible(true);
@@ -623,53 +636,50 @@ const DetailedItinerary = () => {
                 </Text>
               </View>
             ) : (
-              itineraryItems.map((item, index) => (
-                <Pressable
-                  key={index}
-                  style={[
-                    styles.eventBubble,
-                    getEventStyle(item.time, item.duration),
-                  ]}
-                  onPress={() => {
-                    if (isEditMode) {
-                      setSelectedEvent(item);
-                      // Initialize editedStartTime from item's time (assume "HH:MM" format)
-                      const [startHour, startMin] = item.time.split(":").map(Number);
-                      setEditedStartTime(new Date(new Date().setHours(startHour, startMin, 0, 0)));
-                      // Calculate the end time using your existing helper then initialize editedEndTime
-                      const endTimeStr = calculateEndTime(item.time, item.duration); // e.g. "HH:MM"
-                      const [endHour, endMin] = endTimeStr.split(":").map(Number);
-                      setEditedEndTime(new Date(new Date().setHours(endHour, endMin, 0, 0)));
-                      setEventModalVisible(true);
-                    } else {
-                      // Navigate normally
-                      router.push({
-                        pathname: "/screens/EventDetails",
-                        params: {
-                          activity: item.activity,
-                          time: item.time,
-                          duration: item.duration,
-                          description: item.description || "",
-                          address: item.address || "",
-                          contact: item.contact || "",
-                          hours: item.hours || "",
-                          price: item.price || "",
-                          rating: item.rating || "",
-                          ratingCount: item.ratingCount || "",
-                          image: item.imagePath || "",
-                          eventId: item.eventId || "",
-                          tags:
-                            item.tags ? (Array.isArray(item.tags) ? item.tags.join(",") : item.tags) : "",
-                        },
-                      });
-                    }
-                  }}
-                  
-                  // Remove any disabled prop if present for edit mode
-                >
-                  {renderEventContent(item)}
-                </Pressable>
-              ))
+              itineraryItems.map((item, index) => {
+                const isOverlapping = hasOverlap(item, itineraryItems);
+                return (
+                  <Pressable
+                    key={index}
+                    style={[
+                      styles.eventBubble,
+                      getEventStyle(item.time, item.duration, isOverlapping),
+                    ]}
+                    onPress={() => {
+                      if (isEditMode) {
+                        setSelectedEvent(item);
+                        const [startHour, startMin] = item.time.split(":").map(Number);
+                        setEditedStartTime(new Date(new Date().setHours(startHour, startMin, 0, 0)));
+                        const endTimeStr = calculateEndTime(item.time, item.duration);
+                        const [endHour, endMin] = endTimeStr.split(":").map(Number);
+                        setEditedEndTime(new Date(new Date().setHours(endHour, endMin, 0, 0)));
+                        setEventModalVisible(true);
+                      } else {
+                        router.push({
+                          pathname: "/screens/EventDetails",
+                          params: {
+                            activity: item.activity,
+                            time: item.time,
+                            duration: item.duration,
+                            description: item.description || "",
+                            address: item.address || "",
+                            contact: item.contact || "",
+                            hours: item.hours || "",
+                            price: item.price || "",
+                            rating: item.rating || "",
+                            ratingCount: item.ratingCount || "",
+                            image: item.imagePath || "",
+                            eventId: item.eventId || "",
+                            tags: item.tags ? (Array.isArray(item.tags) ? item.tags.join(",") : item.tags) : "",
+                          },
+                        });
+                      }
+                    }}
+                  >
+                    {renderEventContent(item)}
+                  </Pressable>
+                );
+              })
             )}
           </View>
         </View>
@@ -960,20 +970,18 @@ const styles = StyleSheet.create({
     borderBottomColor: "lightgrey",
   },
   timeText: {
-    fontSize: 14,
-    fontFamily: "quicksand-semibold",
-    color: Colors.grey,
+    fontSize: 12,
+    fontFamily: "quicksand-regular",
+    color: Colors.primary,
+    marginTop: 2,
   },
   eventsContainer: {
     flex: 1,
     marginLeft: 20,
   },
   eventBubble: {
-    backgroundColor: Colors.palestPink,
     borderRadius: 8,
     padding: 10,
-    borderWidth: 2,
-    borderColor: Colors.palePink,
     overflow: "hidden",
   },
   eventContent: {

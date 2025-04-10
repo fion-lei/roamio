@@ -1,24 +1,25 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, Image, StyleSheet, SafeAreaView, Pressable, ScrollView, Modal, Alert, } from "react-native";
+import { View, Text, Image, StyleSheet, SafeAreaView, Pressable, ScrollView, Modal, Alert } from "react-native";
 import { Colors } from "@/constants/Colors";
 import { FontAwesome } from "@expo/vector-icons";
 import { useLocalSearchParams } from "expo-router";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useUser } from "@/contexts/UserContext";
 import { useRouter } from "expo-router";
-// Gets the appropriate image filename based on activity [ADD MORE LATER]
-const getImageForActivity = (title: string): string => {
-  // Map activity titles to specific images
-  const activityImageMap: Record<string, string> = {
-    "Elgin Hill": "camp.png",
-    "OEB Breakfast Co.": "food.png",
-  };
-  
-  // Returns the mapped image or default image if no match found (brand logo)
-  return activityImageMap[title] || "logo_coral.png"; 
-};
 
 export default function AddItinerary() {
+  
+  // Gets the appropriate image filename based on activity [ADD MORE LATER]
+  const getImageForActivity = (title: string): string => {
+    // Map activity titles to specific images
+    const activityImageMap: Record<string, string> = {
+      "Elgin Hill": "camp.png",
+      "OEB Breakfast Co.": "food.png",
+    };
+    
+    // Returns the mapped image or default image if no match found (brand logo)
+    return activityImageMap[title] || "logo_coral.png"; 
+  };
   
   // Get the user context
   const { user } = useUser();
@@ -258,13 +259,34 @@ export default function AddItinerary() {
       );
 
       if (hasTimeConflict) {
+        // Warning message for time conflicts for overlapping events 
         Alert.alert(
-          "Error",
-          "This selected time slot overlaps with another event in your itinerary. Please choose a different time."
+          "Warning",
+          "This selected time slot overlaps with another event in your itinerary. Would you like to add it anyway?",
+          [
+            {
+              text: "Cancel",
+              style: "cancel"
+            },
+            {
+              text: "Add Anyway",
+              onPress: () => proceedWithAddingEvent(itineraryId)
+            }
+          ]
         );
         return;
       }
+      
+      // If no conflicts detected, proceed with adding the event
+      proceedWithAddingEvent(itineraryId);
+    } catch (error) {
+      Alert.alert("Error", "Failed to add event.");
+    }
+  };
 
+  // Helper function to proceed with adding the event
+  const proceedWithAddingEvent = async (itineraryId: string) => {
+    try {
       // Prepare the event data with properly formatted dates and times
       const eventData = {
         event_id: Date.now().toString(),
