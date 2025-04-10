@@ -1,10 +1,10 @@
 import React, { useState } from "react"; 
 import { View, Text, Image, TextInput, SafeAreaView, StyleSheet, Pressable, ScrollView } from "react-native"; // Images reference: https://undraw.co/
 import { Colors } from "@/constants/Colors"; 
-import { FontAwesome } from "@expo/vector-icons"; // For the search and category icons **for now**: https://oblador.github.io/react-native-vector-icons/
+import { FontAwesome } from "@expo/vector-icons"; // For the search and category icons: https://oblador.github.io/react-native-vector-icons/
 import { useRouter } from "expo-router";
 
-export default function Home() {
+export default function Discover() {
 
 // Define data types used 
 type CategoryId = "outdoors" | "hotspot" | "dining" | "culture" | "local";
@@ -36,9 +36,6 @@ interface ActivityCard {
   ratingCount: number; 
 };
 
-// Holds all activity categories 
-// Muted pastel color palette for category icons - follows darker background lighter icon color convention
-// Consider more vibrant palette instead? 
 const activityCategories: ActivityCategory[] = [
   { 
     id: "outdoors", 
@@ -78,7 +75,6 @@ const activityCategories: ActivityCategory[] = [
 ];
 
 // Holds all activity cards 
-// Add more cards for filtering through all different categories
 const activityCards: ActivityCard[] = [ 
   { 
     id: "elgin", 
@@ -343,7 +339,7 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    color: Colors.grey,
+    color: "#333",
     fontSize: 16, 
     fontFamily: "quicksand-semibold", 
   },
@@ -358,7 +354,7 @@ const styles = StyleSheet.create({
     color: Colors.grey, 
   },
   header: {
-    fontSize: 28,  
+    fontSize: 26,  
     fontFamily: "quicksand-bold",
     color: Colors.primary,
   },

@@ -50,11 +50,13 @@ interface InfoItemProps {
 
 const InfoItem = ({ icon, text, showEditButton, onEditPress }: InfoItemProps) => (
     <View style={styles.infoItem}>
-        {icon}
+        <View style={{ width: 30, alignItems: "center", justifyContent: "center" }}>
+            {icon}
+        </View>
         <Text style={styles.infoText}>{text}</Text>
         {showEditButton && (
             <TouchableOpacity onPress={onEditPress} style={styles.editButton}>
-                <FontAwesome name="pencil" size={16} color={Colors.coral} />
+                <FontAwesome name="pencil" size={20} color={Colors.coral} />
             </TouchableOpacity>
         )}
     </View>
@@ -133,7 +135,7 @@ const EventDetails = () => {
     const route = useRoute();
     const navigation = useNavigation();
     const router = useRouter();
-    // Get all parameters from the route
+    // Get displayed parameters from the route
     const { 
         activity,
         time, 
@@ -143,13 +145,10 @@ const EventDetails = () => {
         contact, 
         hours, 
         price, 
-        rating, 
-        ratingCount,
         image,
         eventId,
-        tags,
         isMultiDay,
-        date
+        date,
     } = route.params as RouteParams; 
 
     // for editing time of event
@@ -190,6 +189,11 @@ const EventDetails = () => {
             
             // build the details string with available information
             let details = `Time: ${formatTimeToAMPM(displayStartTime)} - ${formatTimeToAMPM(displayEndTime)}`;
+            
+            // Add contact information 
+            if (contact) {
+                details += `\nContact: ${contact}`;
+            }
             
             // Add address
             if (address) {
@@ -344,22 +348,30 @@ const EventDetails = () => {
         }
     };
 
-    // Format duration to include one decimal place if it's not a whole number
-    const formattedDuration = Number.isInteger(displayDuration) ? 
-        `${displayDuration} hour(s)` : 
-        `${displayDuration} hour(s)`;
-
-    // Handle image source (very basic, doesn't take into account if other activities are added)
-    const getImageSource = () => {
-        // Simple mapping of activities to images
-        if (activity === "Elgin Hill") {
-            return require('../../assets/images/camp.png');
-        } else if (activity === "OEB Breakfast Co.") {
-            return require('../../assets/images/food.png');
-        }
+    // Format duration to display in hours and minutes format
+    const formatDuration = (hours: number) => {
+        const wholeHours = Math.floor(hours);
+        const minutes = Math.round((hours - wholeHours) * 60);
         
-        // Default fallback image
-        return require('../../assets/images/logo_coral.png');
+        if (wholeHours === 0) {
+            return `${minutes} minute${minutes !== 1 ? 's' : ''}`;
+        } else if (minutes === 0) {
+            return `${wholeHours} hour${wholeHours !== 1 ? 's' : ''}`;
+        } else {
+            return `${wholeHours} hour${wholeHours !== 1 ? 's' : ''} ${minutes} minute${minutes !== 1 ? 's' : ''}`;
+        }
+    };
+    // Display formatted duration 
+    const formattedDuration = formatDuration(displayDuration);
+
+    // Handle image source mapped to activity name 
+    const getImageSource = () => {
+        const activityImages: Record<string, any> = {
+            "Elgin Hill": require("@/assets/images/camp.png"), 
+            "OEB Breakfast Co.": require("@/assets/images/food.png"), 
+        };
+        
+        return activityImages[activity] || require("@/assets/images/logo_coral.png");
     };
 
     return (
@@ -386,20 +398,25 @@ const EventDetails = () => {
                     icon={<MaterialCommunityIcons name="timer-outline" size={20} color={Colors.coral} />}
                     text={formattedDuration}
                 />
-                {address && (
-                    <InfoItem
-                        icon={<FontAwesome name="map-pin" size={20} color={Colors.coral} />}
-                        text={address}
-                    />
-                )}
                 {date && (
                     <InfoItem
                         icon={<FontAwesome name="calendar" size={20} color={Colors.coral} />}
                         text={date}
                     />
                 )}
+                {contact && (
+                    <InfoItem
+                        icon={<FontAwesome name="phone" size={20} color={Colors.coral} />}
+                        text={contact}
+                    />
+                )}
+                {address && (
+                    <InfoItem
+                        icon={<FontAwesome name="map-pin" size={20} color={Colors.coral} />}
+                        text={address}
+                    />
+                )}
             </View>
-
 
             {description && (
                 <View style={styles.descriptionContainer}>
@@ -500,43 +517,65 @@ const styles = StyleSheet.create({
     },
     infoList: {
         marginBottom: 30,
+        backgroundColor: Colors.palestPink,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: Colors.peachySalmon,
+        padding: 10,
     },
     infoItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 8,
+        marginVertical: 4,
+        paddingVertical: 6,
     },
     infoText: {
-        marginLeft: 10,
+        marginLeft: 12,
         fontSize: 18,
         fontFamily: 'quicksand-semibold',
         color: Colors.primary,
         flex: 1,
     },
     editButton: {
-        marginRight: 160,
+        width: 36,
+        height: 36,
+        borderRadius: "50%",
+        backgroundColor: Colors.palePink,
+        justifyContent: "center",
+        alignItems: "center",
+        shadowColor: Colors.primary,
+        shadowOffset: { width: 0, height: 0.5 },
+        shadowOpacity: 0.10,
+        shadowRadius: 0.8,
+        elevation: 1,
+        marginHorizontal: 8, 
     },
+    
     descriptionContainer: {
-        marginTop: 20,
+        marginTop: 22,
         marginBottom: 30,
+        backgroundColor: Colors.palestPink,
+        borderRadius: 12,
+        padding: 16,
     },
     descriptionHeader: {
         fontSize: 22,
         fontFamily: 'quicksand-bold',
         color: Colors.primary,
-        marginBottom: 10,
+        marginBottom: 12,
     },
     descriptionText: {
         fontSize: 18,
         fontFamily: 'quicksand-regular',
         color: Colors.primary,
+        lineHeight: 24,
     },
     shareCard: {
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: Colors.palePink,
         borderRadius: 12,
-        padding: 12,
+        padding: 16,
         marginTop: 30,
         marginBottom: 40,
     },
@@ -547,7 +586,7 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.white,
         justifyContent: 'center',
         alignItems: 'center',
-        marginRight: 10,
+        marginRight: 12,
     },
     avatar: {
         alignSelf: 'center',
@@ -567,7 +606,7 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: "rgba(52, 52, 52, 0.8)",
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
     },
     modalView: {
         width: "90%",
@@ -618,7 +657,7 @@ const styles = StyleSheet.create({
     timeIcon: {
         position: "absolute",
         right: 10,
-        top: 12,
+        top: 18,
         color: Colors.coral,
     },
     pickerContainer: {

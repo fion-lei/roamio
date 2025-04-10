@@ -15,7 +15,6 @@ import {
 import {
   FontAwesome,
   Entypo,
-  MaterialCommunityIcons,
   Feather,
   Ionicons,
 } from "@expo/vector-icons";
@@ -38,7 +37,7 @@ interface InfoItemProps {
 
 const InfoItem = ({ icon, text }: InfoItemProps) => (
   <View style={styles.infoItem}>
-    {icon}
+    <View style={styles.infoContainer}>{icon}</View>
     <Text style={styles.infoText}>{text}</Text>
   </View>
 );
@@ -390,7 +389,9 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   infoItem: { flexDirection: "row", alignItems: "center", marginBottom: 10 },
-  infoText: { marginLeft: 10, fontSize: 16, fontFamily: "quicksand-regular" },
+  // Wrap everything in container to align icons and text 
+  infoContainer: { width: 24, alignItems: "center" },
+  infoText: { marginLeft: 10, fontSize: 16, fontFamily: "quicksand-regular", lineHeight: 20, },
   sendCard: {
     flexDirection: "row",
     alignItems: "center",

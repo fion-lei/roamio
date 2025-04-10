@@ -1,5 +1,5 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import Trip from "./Trip";
+import Discover from "./Discover";
 import Itinerary from "./Itinerary";
 import Friends from "./Friends";
 import { FontAwesome } from "@expo/vector-icons";
@@ -38,11 +38,11 @@ export default function TabLayout() {
     >
       <Tab.Screen
         name="Discover"
-        component={Trip}
+        component={Discover}
         options={{
           title: "Discover",
           tabBarIcon: ({ color, size }) => (
-            <FontAwesome name="map-pin" color={color} size={size} />
+            <FontAwesome name="map" color={color} size={size} />
           ),
         }}
       />

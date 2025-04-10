@@ -368,7 +368,7 @@ export default function FriendsScreen() {
           style={styles.searchIcon}
         />
         <TextInput
-          placeholder="Search Friends"
+          placeholder="Search Friends..."
           value={searchText}
           onChangeText={setSearchText}
           style={styles.searchInput}
@@ -389,7 +389,7 @@ export default function FriendsScreen() {
             <FontAwesome name="filter" size={20} color="#d9534f" />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => setShowFriendRequestModal(true)}>
-            <FontAwesome name="user-plus" size={24} color="#333" />
+            <FontAwesome name="user-plus" size={24} color={Colors.coral} />
           </TouchableOpacity>
         </View>
       </View>
@@ -884,7 +884,7 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    color: Colors.grey,
+    color: "#333",
     fontSize: 16,
     fontFamily: "quicksand-semibold",
   },
@@ -976,7 +976,8 @@ const styles = StyleSheet.create({
   },
   toggleText: {
     fontFamily: "quicksand-bold",
-    fontSize: 14,
+    fontSize: 16,
+    color: Colors.primary,
   },
   cancelButton: {
     marginTop: 10,
@@ -991,7 +992,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0,0,0,0.5)",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalContent: {
     backgroundColor: "#fff",
@@ -1001,7 +1002,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   modalItem: { paddingVertical: 12, paddingHorizontal: 20 },
-  modalText: { fontSize: 16, fontFamily: "quicksand-regular" },
+  modalText: {
+    fontSize: 16,
+    fontFamily: "quicksand-regular",
+    color: Colors.primary,
+  },
   modalTitle: { fontSize: 20, fontFamily: "quicksand-bold", marginBottom: 15 },
   modalInput: {
     borderWidth: 1,
@@ -1051,16 +1056,26 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   friendName: {
-    fontSize: 14,
+    fontSize: 16,
     fontFamily: "quicksand-semibold",
+    color: Colors.primary,
   },
   friendAccess: {
-    fontSize: 14,
+    fontSize: 16,
     color: Colors.peachySalmon,
     fontFamily: "quicksand-semibold",
   },
-  friendPhone: { color: "#888", marginTop: 2, fontFamily: "quicksand-regular" },
-  menuDots: { fontSize: 20, color: "#888", paddingLeft: 10 },
+  friendPhone: {
+    color: "#333",
+    marginTop: 2,
+    fontFamily: "quicksand-regular",
+    fontSize: 16,
+  },
+  menuDots: {
+    fontSize: 22,
+    color: "#333",
+    paddingLeft: 10,
+  },
   tripCard: {
     width: 180,
     height: 180,
@@ -1121,7 +1136,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontFamily: "quicksand-semibold",
     fontSize: 16,
-    color: "#333",
+    color: Colors.primary,
     padding: 10,
   },
 
@@ -1152,7 +1167,7 @@ const styles = StyleSheet.create({
   segmentButtonText: {
     fontFamily: "quicksand-regular",
     fontSize: 16,
-    color: Colors.grey,
+    color: "#333",
   },
   segmentButtonTextActive: {
     fontFamily: "quicksand-bold",
@@ -1166,7 +1181,7 @@ const modalStyles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0,0,0,0.5)",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalContent: {
     backgroundColor: "#fff",
@@ -1207,7 +1222,7 @@ const modalStyles = StyleSheet.create({
   modalTabText: {
     fontSize: 16,
     fontFamily: "quicksand-bold",
-    color: "#888",
+    color: "#333",
   },
   modalTabTextActive: {
     color: Colors.coral,
@@ -1234,7 +1249,8 @@ const modalStyles = StyleSheet.create({
   },
   toggleText: {
     fontFamily: "quicksand-bold",
-    fontSize: 14,
+    fontSize: 16,
+    color: Colors.primary,
   },
   phoneInputRow: {
     flexDirection: "row",

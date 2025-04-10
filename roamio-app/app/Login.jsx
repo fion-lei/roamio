@@ -56,7 +56,7 @@ export default function Login() {
         Alert.alert("Success", "Login successful!");
         // Update global user state with the email and any other data returned from backend.
         setUser({ email, ...result.user });
-        router.replace("../(tabs)/Trip");
+        router.replace("../(tabs)/Discover");
       } else {
         Alert.alert("Login Failed", result.error || "An error occurred during login.");
       }

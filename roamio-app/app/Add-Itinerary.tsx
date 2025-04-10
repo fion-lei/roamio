@@ -6,7 +6,7 @@ import { useLocalSearchParams } from "expo-router";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useUser } from "@/contexts/UserContext";
 import { useRouter } from "expo-router";
-// Gets the appropriate image filename based on activity
+// Gets the appropriate image filename based on activity [ADD MORE LATER]
 const getImageForActivity = (title: string): string => {
   // Map activity titles to specific images
   const activityImageMap: Record<string, string> = {
@@ -14,8 +14,8 @@ const getImageForActivity = (title: string): string => {
     "OEB Breakfast Co.": "food.png",
   };
   
-  // Returns the mapped image 
-  return activityImageMap[title];
+  // Returns the mapped image or default image if no match found (brand logo)
+  return activityImageMap[title] || "logo_coral.png"; 
 };
 
 export default function AddItinerary() {
@@ -50,6 +50,8 @@ export default function AddItinerary() {
   const [selectedItinerary, setSelectedItinerary] = useState("--Itinerary Name--");
   const [showItineraryDropdown, setShowItineraryDropdown] = useState(false);
   const [itineraryOptions, setItineraryOptions] = useState<string[]>([]);
+  const [itineraryDateRanges, setItineraryDateRanges] = useState<Record<string, { startDate: Date, endDate: Date }>>({});
+  const [selectedItineraryDateRange, setSelectedItineraryDateRange] = useState<{ startDate: Date, endDate: Date } | null>(null);
 
   // Date/time states 
   const [startDate, setStartDate] = useState<Date | null>(null);
@@ -91,35 +93,53 @@ export default function AddItinerary() {
       if (response.ok && data.itineraries && data.itineraries.length > 0) {
         const options = data.itineraries.map((itinerary: any) => itinerary.trip_title);
         setItineraryOptions(options);
+        
+        // Store date ranges for each itinerary
+        const dateRanges: Record<string, { startDate: Date, endDate: Date }> = {};
+        data.itineraries.forEach((itinerary: any) => {
+          if (itinerary.start_date && itinerary.end_date) {
+            const [startMonth, startDay, startYear] = itinerary.start_date.split('/').map(Number);
+            const [endMonth, endDay, endYear] = itinerary.end_date.split('/').map(Number);
+            
+            dateRanges[itinerary.trip_title] = {
+              startDate: new Date(startYear, startMonth - 1, startDay),
+              endDate: new Date(endYear, endMonth - 1, endDay)
+            };
+          }
+        });
+        setItineraryDateRanges(dateRanges);
       } else {
         // No active itineraries found 
         setItineraryOptions([]);
+        setItineraryDateRanges({});
         Alert.alert("No Active Trips", "You don't have any currently active trips to add to. Please create a new trip first."); 
       }
     } catch (error) {
       setItineraryOptions([]);
+      setItineraryDateRanges({});
       Alert.alert("Error", "Failed to load your active itineraries.");
     }
   };
 
-  // Formats date with default placeholder
+  // Formats date with default placeholder "MM/DD/YYYY" 
   const formatDate = (date: Date | null) => {
     if (!date) return "MM/DD/YYYY";
-    return date.toLocaleDateString("en-US", {
-      month: "2-digit",
-      day: "2-digit",
-      year: "numeric"
-    });
+    // Format date to match the expected format in DetailedItinerary
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    const year = date.getFullYear();
+    return `${month}/${day}/${year}`;
   };
 
-  // Formats time with default placeholder
+  // Formats time with default placeholder "--:-- (MST)" 
   const formatTime = (date: Date | null) => {
     if (!date) return "--:-- (MST)";
-    return date.toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true
-    }) + " " + "(MST)";
+    // Format time to match the expected format in DetailedItinerary
+    const hours = date.getHours();
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const displayHours = hours % 12 || 12;
+    return `${displayHours}:${minutes} ${ampm} (MST)`;
   };
 
   // Reset all selections to default
@@ -134,6 +154,7 @@ export default function AddItinerary() {
     setEndDate(null);
     setStartTime(null);
     setEndTime(null);
+    setSelectedItineraryDateRange(null);
   };
 
   // Handles date/time changes, if picker is cancelled then no updates 
@@ -208,13 +229,13 @@ export default function AddItinerary() {
         return;
       }
       
+      // Fetch the selected itinerary data
       const response = await fetch(`http://10.0.2.2:3000/active-itineraries?email=${encodeURIComponent(user.email)}`);
       const data = await response.json();
       
       if (!response.ok) {
         Alert.alert("Error", data.error || "Failed to get active itineraries");
         return;
-        router.back(); // Go back to the previous screen if error occurs
       }
       
       const selectedItineraryObj = data.itineraries.find((it: any) => it.trip_title === selectedItinerary);
@@ -227,9 +248,24 @@ export default function AddItinerary() {
       // Convert itinerary_id to string to ensure consistent type
       const itineraryId = String(selectedItineraryObj.itinerary_id);
 
-      // Add validation check for events not overlapping with existing events in select itinerary? 
+      // Check for time conflicts with existing events
+      const hasTimeConflict = await checkForTimeConflicts(
+        itineraryId,
+        startDate,
+        endDate,
+        startTime,
+        endTime
+      );
 
-      // Prepare the event data
+      if (hasTimeConflict) {
+        Alert.alert(
+          "Error",
+          "This selected time slot overlaps with another event in your itinerary. Please choose a different time."
+        );
+        return;
+      }
+
+      // Prepare the event data with properly formatted dates and times
       const eventData = {
         event_id: Date.now().toString(),
         itinerary_id: itineraryId,
@@ -266,28 +302,132 @@ export default function AddItinerary() {
         return;
       }
       
-      // Verify the event was added by checking the count
-      try {
-        const countResponse = await fetch(`http://10.0.2.2:3000/event-counts/${itineraryId}`);
-        await countResponse.json();
-      } catch (countError) {
-        Alert.alert("Error", "Failed to verify addition of event.");
-      }
-      
       Alert.alert(
         "Success!",
         `${activity.title} has been added to: ${selectedItinerary}`,
-        [{
-          text: "Ok", 
-          onPress: () => {
-            setIsModalVisible(false);
-            resetSelections();
+        [
+          {
+            text: "Cancel",
+            onPress: () => {
+              setIsModalVisible(false);
+              resetSelections();
+            },
+            style: "cancel"
+          },
+          {
+            // Fast way for user to view itineraries if they choose so after adding an event 
+            text: "View Trips",
+            onPress: () => {
+              setIsModalVisible(false);
+              resetSelections();
+              router.push("/(tabs)/Itinerary");
+            }
           }
-        }]
+        ]
       );
-      router.back(); // Go back to the previous screen after adding the event
     } catch (error) {
       Alert.alert("Error", "Failed to add event.");
+    }
+  };
+
+  // Checks for time overlapping with existing events 
+  const checkForTimeConflicts = async (
+    itineraryId: string,
+    startDate: Date,
+    endDate: Date,
+    startTime: Date,
+    endTime: Date
+  ): Promise<boolean> => {
+    try {
+      // Fetch all events for this itinerary
+      const response = await fetch(`http://10.0.2.2:3000/events/${itineraryId}`);
+      if (!response.ok) {
+        console.error("Failed to fetch events for conflict check");
+        return false; // Assume no conflict if we can't check
+      }
+
+      const data = await response.json();
+      const events = data.events || [];
+
+      if (events.length === 0) {
+        return false; // No events, so no conflicts
+      }
+
+      // Convert the new event's start and end times to Date objects
+      const newEventStart = new Date(
+        startDate.getFullYear(),
+        startDate.getMonth(),
+        startDate.getDate(),
+        startTime.getHours(),
+        startTime.getMinutes()
+      );
+
+      const newEventEnd = new Date(
+        endDate.getFullYear(),
+        endDate.getMonth(),
+        endDate.getDate(),
+        endTime.getHours(),
+        endTime.getMinutes()
+      );
+
+      // Check each existing event for conflicts
+      for (const event of events) {
+        // Skip events that don't have start/end times
+        if (!event.start_date || !event.start_time || !event.end_date || !event.end_time) {
+          continue;
+        }
+
+        // Parse the existing event's dates and times
+        const [startMonth, startDay, startYear] = event.start_date.split('/').map(Number);
+        const [endMonth, endDay, endYear] = event.end_date.split('/').map(Number);
+        
+        // Parse the time strings (format: "HH:MM AM/PM (MST)")
+        const startTimeMatch = event.start_time.match(/(\d+):(\d+)\s*(AM|PM)/i);
+        const endTimeMatch = event.end_time.match(/(\d+):(\d+)\s*(AM|PM)/i);
+        
+        if (!startTimeMatch || !endTimeMatch) {
+          continue; // Skip if time format is unexpected
+        }
+        
+        // Convert to 24-hour format
+        let startHours = parseInt(startTimeMatch[1]);
+        const startMinutes = parseInt(startTimeMatch[2]);
+        const startAmPm = startTimeMatch[3].toUpperCase();
+        
+        let endHours = parseInt(endTimeMatch[1]);
+        const endMinutes = parseInt(endTimeMatch[2]);
+        const endAmPm = endTimeMatch[3].toUpperCase();
+        
+        // Convert to 24-hour format
+        if (startAmPm === 'PM' && startHours < 12) {
+          startHours += 12;
+        } else if (startAmPm === 'AM' && startHours === 12) {
+          startHours = 0;
+        }
+        
+        if (endAmPm === 'PM' && endHours < 12) {
+          endHours += 12;
+        } else if (endAmPm === 'AM' && endHours === 12) {
+          endHours = 0;
+        }
+        
+        // Create Date objects for the existing event
+        const existingEventStart = new Date(startYear, startMonth - 1, startDay, startHours, startMinutes);
+        const existingEventEnd = new Date(endYear, endMonth - 1, endDay, endHours, endMinutes);
+        
+        // Check for overlap conditions 
+        if (
+          (newEventStart >= existingEventStart && newEventStart < existingEventEnd) ||
+          (newEventEnd > existingEventStart && newEventEnd <= existingEventEnd) ||
+          (newEventStart <= existingEventStart && newEventEnd >= existingEventEnd)
+        ) {
+          return true; // Overlap found 
+        }
+      }
+      
+      return false; // No overlaps found
+    } catch (error) {
+      return false;
     }
   };
 
@@ -381,6 +521,11 @@ export default function AddItinerary() {
                         onPress={() => {
                           setSelectedItinerary(option);
                           setShowItineraryDropdown(false);
+                          // Set the date range for the selected itinerary
+                          setSelectedItineraryDateRange(itineraryDateRanges[option] || null);
+                          // Reset date selections when changing itinerary
+                          setStartDate(null);
+                          setEndDate(null);
                         }}
                       >
                         <Text style={styles.dropdownOptionText}>{option}</Text>
@@ -412,8 +557,9 @@ export default function AddItinerary() {
                       mode="date"
                       display="spinner"
                       onChange={(event, date) => handleDateChange(event, date, "startDate")}
-                      // Minimum date for start date selection set to today's date 
-                      minimumDate={new Date()}
+                      // Restrict date selection to be within the selected itinerary's date range
+                      minimumDate={selectedItineraryDateRange ? selectedItineraryDateRange.startDate : new Date()}
+                      maximumDate={selectedItineraryDateRange ? selectedItineraryDateRange.endDate : undefined}
                     />
                   </View>
                 )}
@@ -438,8 +584,9 @@ export default function AddItinerary() {
                       mode="date"
                       display="spinner"
                       onChange={(event, date) => handleDateChange(event, date, "endDate")}
-                       // Minimum date for end date selection should start only from start date's minimum date set 
-                      minimumDate={startDate || new Date()}
+                      // Restrict date selection to start at minimum start date of the selected itinerary 
+                      minimumDate={startDate || (selectedItineraryDateRange ? selectedItineraryDateRange.startDate : new Date())}
+                      maximumDate={selectedItineraryDateRange ? selectedItineraryDateRange.endDate : undefined}
                     />
                   </View>
                 )}
@@ -633,7 +780,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0,0,0,0.5)",
+    backgroundColor: "rgba(52, 52, 52, 0.8)",
   },
   modalView: {
     width: "90%",

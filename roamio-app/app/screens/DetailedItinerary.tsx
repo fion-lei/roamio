@@ -64,13 +64,19 @@ const DetailedItinerary = () => {
   const getEventStyle = (time: string, duration: number) => {
     const [hours, minutes] = time.split(":").map(Number);
     const topPosition = (hours + minutes / 60) * pixelsForHour;
-    const height = duration * pixelsForHour;
+    
+    // Ensure a minimum height for events less than 1 hour
+    const minHeight = 50; // Minimum height in pixels
+    const calculatedHeight = duration * pixelsForHour;
+    const height = Math.max(calculatedHeight, minHeight);
+    
     return {
       position: "absolute" as const,
       top: topPosition,
       left: 70, // leave space for time markers
       right: 10,
       height: height,
+      minWidth: 150, // Ensure minimum width for content visibility
     };
   };
 
@@ -78,8 +84,8 @@ const DetailedItinerary = () => {
   const renderEventContent = (item: any) => (
     <View style={styles.eventContent}>
       <View style={styles.eventTextContainer}>
-        <Text style={styles.activityText}>{item.activity}</Text>
-        <Text style={styles.locationText}>
+        <Text style={styles.activityText} numberOfLines={1}>{item.activity}</Text>
+        <Text style={styles.locationText} numberOfLines={1}>
           {item.address || "No location provided"}
         </Text>
       </View>
@@ -372,9 +378,16 @@ const DetailedItinerary = () => {
     <SafeAreaView style={styles.mainContainer}>
       {/* Top Header and Weekly Calendar */}
       <View style={styles.headerContainer}>
-        <FontAwesome name="map-pin" size={18} color={Colors.primary} />
+        <View style={styles.headerLeftSection}>
+          <View style={styles.mapPinContainer}>
+            <FontAwesome name="map-pin" size={18} color={Colors.coral} />
+          </View>
+        </View>
         <Text style={styles.itineraryTitle}>{itineraryTitle}</Text>
-        <Pressable onPress={() => setIsEditMode(!isEditMode)}>
+        <Pressable 
+          onPress={() => setIsEditMode(!isEditMode)}
+          style={styles.editButton}
+        >
           <Text style={styles.editButtonText}>
             {isEditMode ? "Done" : "Edit"}
           </Text>
@@ -463,7 +476,7 @@ const DetailedItinerary = () => {
             ) : itineraryItems.length === 0 ? (
               <View style={styles.noEventsContainer}>
                 <Text style={styles.noEventsText}>
-                  No events scheduled for this day.
+                  No events scheduled today.
                 </Text>
               </View>
             ) : (
@@ -541,6 +554,14 @@ const DetailedItinerary = () => {
                   mode="time"
                   display="spinner"
                   onChange={async (event, date) => {
+                    // Check if the user pressed "cancel", then no updates 
+                    if (event.type === "dismissed") {
+                      setIsEditingTime(false);
+                      setEventModalVisible(false);
+                      setSelectedEvent(null);
+                      return;
+                    }
+                    
                     if (date) {
                       try {
                         const newTime = `${date.getHours()}:${date
@@ -669,15 +690,45 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
+  headerLeftSection: {
+    width: 60,
+    alignItems: "flex-start",
+  },
+  mapPinContainer: {
+    width: 35,
+    height: 35,
+    borderRadius: "50%",
+    backgroundColor: Colors.palePink,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.20,
+    shadowRadius: 1.41,
+    elevation: 2,
+  },
   itineraryTitle: {
     fontSize: 24,
     fontFamily: "quicksand-bold",
     color: Colors.primary,
+    flex: 1,
+    textAlign: "center",
+  },
+  editButton: {
+    padding: 4,
+    justifyContent: "center",
+    alignItems: "center",
+    width: 60, // Fixed width for the button container
+    borderWidth: 1,
+    borderColor: Colors.peachySalmon,
+    borderRadius: 10, 
   },
   editButtonText: {
     fontSize: 16,
     fontFamily: "quicksand-semibold",
     color: Colors.coral,
+    width: 50, 
+    textAlign: "center", 
   },
   monthYearContainer: {
     alignItems: "center",
@@ -728,25 +779,29 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     paddingVertical: 5,
     paddingHorizontal: 20,
+    marginTop: 3,
   },
   timeHeaderCell: {
-    width: 70,
+    width: 80,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: Colors.palePink,
-    borderRadius: 10,
+    borderRadius: 8,
+    paddingVertical: 5,
+    paddingHorizontal: 8,
   },
   eventHeaderCell: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: Colors.palePink,
-    borderRadius: 10,
+    borderRadius: 8,
     marginLeft: 10,
-    marginRight: 5,
+    paddingHorizontal: 15,
+    paddingVertical: 5,
   },
   headerText: {
-    fontSize: 16,
+    fontSize: 15,
     fontFamily: "quicksand-semibold",
     color: Colors.primary,
   },
@@ -787,26 +842,34 @@ const styles = StyleSheet.create({
     padding: 10,
     borderWidth: 2,
     borderColor: Colors.palePink,
+    overflow: "hidden",
   },
   eventContent: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     flex: 1,
+    minHeight: 30,
   },
   eventTextContainer: {
     flex: 1,
+    marginRight: 5,
   },
   activityText: {
-    fontSize: 16,
+    fontSize: 14,
     fontFamily: "quicksand-bold",
     color: Colors.primary,
   },
-  durationText: {
-    fontSize: 13,
+  locationText: {
+    fontSize: 12,
     fontFamily: "quicksand-regular",
     color: Colors.primary,
-    marginTop: 4,
+    marginTop: 2,
+  },
+  dotsContainer: {
+    paddingHorizontal: 5,
+    justifyContent: "center",
+    alignItems: "center",
   },
   deleteButton: {
     padding: 8,
@@ -823,11 +886,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  dotsContainer: {
-    paddingHorizontal: 10,
-    justifyContent: "center",
-    alignItems: "center",
-  },
   noEventsContainer: {
     alignItems: "center",
     marginTop: 100,
@@ -837,17 +895,12 @@ const styles = StyleSheet.create({
     fontFamily: "quicksand-semibold",
     color: Colors.grey,
     textAlign: "center",
+    marginLeft: 60, 
   },
   menuDots: {
     fontSize: 20,
-    color: "#888",
+    color: "#333",
     paddingLeft: 10,
-  },
-  locationText: {
-    fontSize: 13,
-    fontFamily: "quicksand-regular",
-    color: Colors.primary,
-    marginTop: 4,
   },
   modalOverlay: {
     flex: 1,
