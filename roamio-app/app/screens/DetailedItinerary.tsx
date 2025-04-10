@@ -49,36 +49,7 @@ const DetailedItinerary = () => {
     return `${displayHour}:${minutes.toString().padStart(2, "0")} ${ampm}`;
   };
 
-  // Check if a time range overlaps with any existing events
-  const hasTimeOverlap = (startTime: string, endTime: string, currentEventId: string): boolean => {
-    // Convert times to minutes for easier comparison
-    const [startHour, startMin] = startTime.split(":").map(Number);
-    const [endHour, endMin] = endTime.split(":").map(Number);
-    const startMinutes = startHour * 60 + startMin;
-    const endMinutes = endHour * 60 + endMin;
-    
-    // Check against all other events
-    return itineraryItems.some(event => {
-      // Skip the current event being edited
-      if (event.eventId === currentEventId) return false;
-      
-      // Get event's end time
-      const eventEndTime = calculateEndTime(event.time, event.duration);
-      
-      // Convert event times to minutes
-      const [eventStartHour, eventStartMin] = event.time.split(":").map(Number);
-      const [eventEndHour, eventEndMin] = eventEndTime.split(":").map(Number);
-      const eventStartMinutes = eventStartHour * 60 + eventStartMin;
-      const eventEndMinutes = eventEndHour * 60 + eventEndMin;
-      
-      // Check for overlap
-      return (
-        (startMinutes >= eventStartMinutes && startMinutes < eventEndMinutes) ||
-        (endMinutes > eventStartMinutes && endMinutes <= eventEndMinutes) ||
-        (startMinutes <= eventStartMinutes && endMinutes >= eventEndMinutes)
-      );
-    });
-  };
+
 
   // Helper: Calculate the end time from a given start time (in HH:MM) and duration in hours.
   const calculateEndTime = (
@@ -770,7 +741,7 @@ const DetailedItinerary = () => {
                   onPress={() => {
                     Alert.alert(
                       "Confirm Removal",
-                      "Are you sure you want to remove this event?",
+                      "Are you sure you want to remove this event? This action cannot be undone.",
                       [
                         {
                           text: "Cancel",
@@ -811,13 +782,13 @@ const DetailedItinerary = () => {
                     );
                   }}
                 >
-                  <Text style={styles.buttonText}>Remove Event</Text>
+                  <Text style={styles.buttonText}>Remove</Text>
                 </Pressable>
                 <Pressable
                   style={[styles.button, styles.modalButton]}
                   onPress={handleSaveTime}
                 >
-                  <Text style={styles.buttonText}>Save Time</Text>
+                  <Text style={styles.buttonText}>Save</Text>
                 </Pressable>
               </View>
               <Pressable
@@ -1097,15 +1068,25 @@ const styles = StyleSheet.create({
   },
   modalButtonContainer: {
     flexDirection: "row",
-    justifyContent: "space-around",
+    justifyContent: "space-between",
     width: "100%",
     marginBottom: 20,
   },
   button: {
     borderRadius: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    marginHorizontal: 5,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    marginHorizontal: 8,
+    flex: 1,
+    alignItems: "center",
+    height: 40,
+    justifyContent: "center",
+  },
+  buttonText: {
+    color: Colors.white,
+    fontSize: 16,
+    fontFamily: "quicksand-bold",
+    textAlign: "center",
   },
   modalButton: {
     backgroundColor: Colors.coral,
@@ -1117,11 +1098,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     width: "100%",
     alignItems: "center",
-  },
-  buttonText: {
-    color: Colors.white,
-    fontSize: 16,
-    fontFamily: "quicksand-bold",
   },
   timeContainer: {
     flexDirection: "row",
