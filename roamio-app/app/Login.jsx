@@ -428,7 +428,7 @@ const styles = StyleSheet.create({
   snackbarText: {
     color: Colors.coral,
     fontFamily: "quicksand-bold",
-    fontSize: 14,
+    fontSize: 15,
   },
   passwordRegexText: {
     color: Colors.grey,

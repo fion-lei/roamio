@@ -13,6 +13,7 @@ import { Colors } from "@/constants/Colors";
 import { FontAwesome } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useUser } from "@/contexts/UserContext";
+import { Snackbar } from "react-native-paper";
 
 export default function SignUp() {
   const router = useRouter();
@@ -24,24 +25,30 @@ export default function SignUp() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordRequirements, setShowPasswordRequirements] = useState(false);
+  // State for Snackbar
+  const [snackVisible, setSnackVisible] = useState(false);
+  const [snackMessage, setSnackMessage] = useState("");
 
   const handleSignUp = async () => {
     // General error check
     if (!email || !password || !confirmPassword) {
-      Alert.alert("Error", "Please fill in all fields.");
+      setSnackMessage("Please fill in all fields.");
+      setSnackVisible(true);
       return;
     }
 
     // Email format validation using regex
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      Alert.alert("Error", "Enter a valid email address.");
+      setSnackMessage("Enter a valid email address.");
+      setSnackVisible(true);
       return;
     }
 
     // Password validation
     if (password !== confirmPassword) {
-      Alert.alert("Error", "Passwords do not match.");
+      setSnackMessage("Passwords do not match.");
+      setSnackVisible(true);  
       return;
     }
 
@@ -146,6 +153,17 @@ export default function SignUp() {
           <FontAwesome name="arrow-right" size={18} color="white" style={styles.arrowIcon} />
         </Pressable>
       </View>
+      <Snackbar
+        visible={snackVisible}
+        onDismiss={() => setSnackVisible(false)}
+        duration={3000}
+        wrapperStyle={styles.snackbarWrapper}
+        style={styles.snackbar}
+      >
+        <Text style={styles.snackbarText}>
+          {snackMessage}
+        </Text>
+      </Snackbar>
     </SafeAreaView>
   );
 }
@@ -231,5 +249,21 @@ const styles = StyleSheet.create({
     fontFamily: "quicksand-semibold",
     textAlign: "left",
     paddingHorizontal: 5,
+  },
+  snackbarWrapper: {
+    position: "absolute",
+    justifyContent: "center",
+    alignItems: "center",
+    bottom: "2%",
+  },
+  snackbar: {
+    width: "90%",
+    backgroundColor: Colors.white,
+    borderRadius: 10,
+  },
+  snackbarText: {
+    color: Colors.coral,
+    fontFamily: "quicksand-bold",
+    fontSize: 15,
   },
 });

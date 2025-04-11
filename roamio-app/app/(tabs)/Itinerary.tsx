@@ -57,6 +57,9 @@ export default function Itinerary() {
   // State for Snackbar
   const [snackVisible, setSnackVisible] = useState(false);
   const [snackMessage, setSnackMessage] = useState("");
+  // Determine if there are any itineraries
+  const hasItineraries =
+    ongoingTrips.length > 0 || upcomingTrips.length > 0 || pastTrips.length > 0;
 
   const [newTrip, setNewTrip] = useState<{
     title: string;
@@ -328,249 +331,271 @@ export default function Itinerary() {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          {/* Ongoing Trips */}
-          {ongoingTrips.length > 0 && (
+          {hasItineraries ? (
             <>
-              <Text style={[styles.sectionTitle, styles.ongoingTitle]}>
-                Ongoing Trips
-              </Text>
-              {ongoingTrips.map((item) => (
-                <View key={item.id} style={[styles.box, styles.ongoingBox]}>
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        gap: 10,
-                      }}
-                    >
-                      <FontAwesome
-                        name="map-pin"
-                        size={18}
-                        color={Colors.primary}
-                      />
-                      <Text style={styles.title}>{item.title}</Text>
-                    </View>
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        gap: 8,
-                      }}
-                    >
-                      {item.shared_with &&
-                        item.shared_with.trim() !== "" &&
-                        item.shared_with.trim() !== "[]" && (
-                          <View style={styles.sharedBadge}>
-                            <Text style={styles.sharedBadgeText}>Shared</Text>
-                          </View>
-                        )}
-                      <Pressable onPress={() => handleDeleteItinerary(item.id)}>
-                        <FontAwesome
-                          name="minus-circle"
-                          size={22}
-                          color={Colors.coral}
-                        />
+              {/* Ongoing Trips */}
+              {ongoingTrips.length > 0 && (
+                <>
+                  <Text style={[styles.sectionTitle, styles.ongoingTitle]}>
+                    Ongoing Trips
+                  </Text>
+                  {ongoingTrips.map((item) => (
+                    <View key={item.id} style={[styles.box, styles.ongoingBox]}>
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                        }}
+                      >
+                        <View
+                          style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            gap: 10,
+                          }}
+                        >
+                          <FontAwesome
+                            name="map-pin"
+                            size={18}
+                            color={Colors.primary}
+                          />
+                          <Text style={styles.title}>{item.title}</Text>
+                        </View>
+                        <View
+                          style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            gap: 8,
+                          }}
+                        >
+                          {item.shared_with &&
+                            item.shared_with.trim() !== "" &&
+                            item.shared_with.trim() !== "[]" && (
+                              <View style={styles.sharedBadge}>
+                                <Text style={styles.sharedBadgeText}>
+                                  Shared
+                                </Text>
+                              </View>
+                            )}
+                          <Pressable
+                            onPress={() => handleDeleteItinerary(item.id)}
+                          >
+                            <FontAwesome
+                              name="minus-circle"
+                              size={22}
+                              color={Colors.coral}
+                            />
+                          </Pressable>
+                        </View>
+                      </View>
+                      <Text style={styles.date}>
+                        {`${formatDate(item.fromDate)} - ${formatDate(
+                          item.toDate
+                        )}`}
+                      </Text>
+                      <Text style={styles.description}>{item.description}</Text>
+                      {getEventCount(item.id) > 0 ? (
+                        <View style={styles.eventCountContainer}>
+                          <FontAwesome
+                            name="check-square-o"
+                            size={16}
+                            color={Colors.coral}
+                            style={{ top: 2 }}
+                          />
+                          <Text style={styles.eventCountText}>
+                            {formatEventCountText(item.id)}
+                          </Text>
+                        </View>
+                      ) : (
+                        <Text style={styles.emptyEventText}>
+                          {formatEventCountText(item.id)}
+                        </Text>
+                      )}
+                      <Pressable
+                        style={styles.viewButtonOngoing}
+                        onPress={() =>
+                          router.push({
+                            pathname: "/screens/DetailedItinerary",
+                            params: {
+                              id: item.id,
+                              title: item.title,
+                              date: `${formatDate(
+                                item.fromDate
+                              )} - ${formatDate(item.toDate)}`,
+                            },
+                          })
+                        }
+                      >
+                        <Text style={styles.buttonText}>View Details</Text>
                       </Pressable>
                     </View>
-                  </View>
-                  <Text style={styles.date}>
-                    {`${formatDate(item.fromDate)} - ${formatDate(
-                      item.toDate
-                    )}`}
-                  </Text>
-                  <Text style={styles.description}>{item.description}</Text>
-                  {getEventCount(item.id) > 0 ? (
-                    <View style={styles.eventCountContainer}>
-                      <FontAwesome
-                        name="check-square-o"
-                        size={16}
-                        color={Colors.coral}
-                        style={{ top: 2 }}
-                      />
-                      <Text style={styles.eventCountText}>
-                        {formatEventCountText(item.id)}
-                      </Text>
-                    </View>
-                  ) : (
-                    <Text style={styles.emptyEventText}>
-                      {formatEventCountText(item.id)}
-                    </Text>
-                  )}
-                  <Pressable
-                    style={styles.viewButtonOngoing}
-                    onPress={() =>
-                      router.push({
-                        pathname: "/screens/DetailedItinerary",
-                        params: {
-                          id: item.id,
-                          title: item.title,
-                          date: `${formatDate(item.fromDate)} - ${formatDate(
-                            item.toDate
-                          )}`,
-                        },
-                      })
-                    }
-                  >
-                    <Text style={styles.buttonText}>View Details</Text>
-                  </Pressable>
-                </View>
-              ))}
-            </>
-          )}
+                  ))}
+                </>
+              )}
 
-          {/* Upcoming Trips */}
-          {upcomingTrips.length > 0 && (
-            <>
-              <Text style={[styles.sectionTitle, styles.upcomingTitle]}>
-                Upcoming Trips
-              </Text>
-              {upcomingTrips.map((item) => (
-                <View key={item.id} style={[styles.box, styles.upcomingBox]}>
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                    }}
-                  >
+              {/* Upcoming Trips */}
+              {upcomingTrips.length > 0 && (
+                <>
+                  <Text style={[styles.sectionTitle, styles.upcomingTitle]}>
+                    Upcoming Trips
+                  </Text>
+                  {upcomingTrips.map((item) => (
                     <View
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        gap: 10,
-                      }}
+                      key={item.id}
+                      style={[styles.box, styles.upcomingBox]}
                     >
-                      <FontAwesome
-                        name="map-pin"
-                        size={18}
-                        color={Colors.primary}
-                      />
-                      <Text style={styles.title}>{item.title}</Text>
-                    </View>
-                    <Pressable onPress={() => handleDeleteItinerary(item.id)}>
-                      <FontAwesome
-                        name="minus-circle"
-                        size={22}
-                        color={Colors.coral}
-                      />
-                    </Pressable>
-                  </View>
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                        }}
+                      >
+                        <View
+                          style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            gap: 10,
+                          }}
+                        >
+                          <FontAwesome
+                            name="map-pin"
+                            size={18}
+                            color={Colors.primary}
+                          />
+                          <Text style={styles.title}>{item.title}</Text>
+                        </View>
+                        <Pressable
+                          onPress={() => handleDeleteItinerary(item.id)}
+                        >
+                          <FontAwesome
+                            name="minus-circle"
+                            size={22}
+                            color={Colors.coral}
+                          />
+                        </Pressable>
+                      </View>
 
-                  <Text style={styles.date}>
-                    {`${formatDate(item.fromDate)} - ${formatDate(
-                      item.toDate
-                    )}`}
-                  </Text>
-                  <Text style={styles.description}>{item.description}</Text>
-                  {getEventCount(item.id) > 0 ? (
-                    <View style={styles.eventCountContainer}>
-                      <FontAwesome
-                        name="check-square-o"
-                        size={16}
-                        color={Colors.coral}
-                        styles={{ top: 2 }}
-                      />
-                      <Text style={styles.eventCountText}>
-                        {formatEventCountText(item.id)}
+                      <Text style={styles.date}>
+                        {`${formatDate(item.fromDate)} - ${formatDate(
+                          item.toDate
+                        )}`}
                       </Text>
+                      <Text style={styles.description}>{item.description}</Text>
+                      {getEventCount(item.id) > 0 ? (
+                        <View style={styles.eventCountContainer}>
+                          <FontAwesome
+                            name="check-square-o"
+                            size={16}
+                            color={Colors.coral}
+                            styles={{ top: 2 }}
+                          />
+                          <Text style={styles.eventCountText}>
+                            {formatEventCountText(item.id)}
+                          </Text>
+                        </View>
+                      ) : (
+                        <Text style={styles.emptyEventText}>
+                          {formatEventCountText(item.id)}
+                        </Text>
+                      )}
+                      <Pressable
+                        style={styles.viewButtonUpcoming}
+                        onPress={() =>
+                          router.push({
+                            pathname: "/screens/DetailedItinerary",
+                            params: {
+                              id: item.id,
+                              title: item.title,
+                              date: `${formatDate(
+                                item.fromDate
+                              )} - ${formatDate(item.toDate)}`,
+                            },
+                          })
+                        }
+                      >
+                        <Text style={styles.buttonText}>View Details</Text>
+                      </Pressable>
                     </View>
-                  ) : (
-                    <Text style={styles.emptyEventText}>
-                      {formatEventCountText(item.id)}
-                    </Text>
-                  )}
-                  <Pressable
-                    style={styles.viewButtonUpcoming}
-                    onPress={() =>
-                      router.push({
-                        pathname: "/screens/DetailedItinerary",
-                        params: {
-                          id: item.id,
-                          title: item.title,
-                          date: `${formatDate(item.fromDate)} - ${formatDate(
-                            item.toDate
-                          )}`,
-                        },
-                      })
-                    }
-                  >
-                    <Text style={styles.buttonText}>View Details</Text>
-                  </Pressable>
-                </View>
-              ))}
-            </>
-          )}
+                  ))}
+                </>
+              )}
 
-          {/* Past Trips */}
-          {pastTrips.length > 0 && (
-            <>
-              <Text style={[styles.sectionTitle, styles.pastTitle]}>
-                Past Trips
-              </Text>
-              {pastTrips.map((item) => (
-                <View key={item.id} style={[styles.box, styles.pastBox]}>
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        gap: 10,
-                      }}
-                    >
-                      <FontAwesome
-                        name="map-pin"
-                        size={18}
-                        color={Colors.primary}
-                      />
-                      <Text style={styles.title}>{item.title}</Text>
-                    </View>
-                    <Pressable onPress={() => handleDeleteItinerary(item.id)}>
-                      <FontAwesome
-                        name="minus-circle"
-                        size={22}
-                        color={Colors.coral}
-                      />
-                    </Pressable>
-                  </View>
-                  <Text style={styles.date}>
-                    {`${formatDate(item.fromDate)} - ${formatDate(
-                      item.toDate
-                    )}`}
+              {/* Past Trips */}
+              {pastTrips.length > 0 && (
+                <>
+                  <Text style={[styles.sectionTitle, styles.pastTitle]}>
+                    Past Trips
                   </Text>
-                  <Text style={styles.description}>{item.description}</Text>
-                  <Pressable
-                    style={styles.viewButtonPast}
-                    onPress={() =>
-                      router.push({
-                        pathname: "/screens/DetailedItinerary",
-                        params: {
-                          id: item.id,
-                          title: item.title,
-                          date: `${formatDate(item.fromDate)} - ${formatDate(
-                            item.toDate
-                          )}`,
-                        },
-                      })
-                    }
-                  >
-                    <Text style={styles.buttonText}>View Details</Text>
-                  </Pressable>
-                </View>
-              ))}
+                  {pastTrips.map((item) => (
+                    <View key={item.id} style={[styles.box, styles.pastBox]}>
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                        }}
+                      >
+                        <View
+                          style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            gap: 10,
+                          }}
+                        >
+                          <FontAwesome
+                            name="map-pin"
+                            size={18}
+                            color={Colors.primary}
+                          />
+                          <Text style={styles.title}>{item.title}</Text>
+                        </View>
+                        <Pressable
+                          onPress={() => handleDeleteItinerary(item.id)}
+                        >
+                          <FontAwesome
+                            name="minus-circle"
+                            size={22}
+                            color={Colors.coral}
+                          />
+                        </Pressable>
+                      </View>
+                      <Text style={styles.date}>
+                        {`${formatDate(item.fromDate)} - ${formatDate(
+                          item.toDate
+                        )}`}
+                      </Text>
+                      <Text style={styles.description}>{item.description}</Text>
+                      <Pressable
+                        style={styles.viewButtonPast}
+                        onPress={() =>
+                          router.push({
+                            pathname: "/screens/DetailedItinerary",
+                            params: {
+                              id: item.id,
+                              title: item.title,
+                              date: `${formatDate(
+                                item.fromDate
+                              )} - ${formatDate(item.toDate)}`,
+                            },
+                          })
+                        }
+                      >
+                        <Text style={styles.buttonText}>View Details</Text>
+                      </Pressable>
+                    </View>
+                  ))}
+                </>
+              )}
             </>
+          ) : (
+            <View style={styles.emptyItineraryContainer}>
+              <Text style={styles.emptyItineraryText}>
+                You have not created any trip itineraries yet. Tap the plus
+                button to add a new trip.
+              </Text>
+            </View>
           )}
         </ScrollView>
 
@@ -699,9 +724,7 @@ export default function Itinerary() {
             wrapperStyle={styles.snackbarWrapper}
             style={styles.snackbar}
           >
-            <Text style={styles.snackbarText}>
-              {snackMessage}
-            </Text>
+            <Text style={styles.snackbarText}>{snackMessage}</Text>
           </Snackbar>
         </Modal>
       </View>
@@ -1034,6 +1057,19 @@ const styles = StyleSheet.create({
   snackbarText: {
     color: Colors.white,
     fontFamily: "quicksand-bold",
-    fontSize: 14,
+    fontSize: 15,
   },
+  emptyItineraryContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 40,
+  },
+  emptyItineraryText: {
+    fontSize: 16,
+    fontFamily: "quicksand-bold",
+    color: Colors.grey,
+    textAlign: "center",
+  },
+  
 });

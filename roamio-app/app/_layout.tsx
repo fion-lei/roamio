@@ -107,50 +107,51 @@ export default function RootLayout() {
             }}
           />
           <Stack.Screen
-          name="Profile"
-          options={{
-            headerTitle: "",
-            headerRight: () => (
-              <Pressable onPress={() => router.push("./settings/Settings")}>
-                <FontAwesome
-                  name="gear"
-                  size={24}
-                  color={Colors.coral}
-                  style={{ marginRight: 15 }}
-                />
-              </Pressable>
-            ),
-          }}
+            name="Profile"
+            options={{
+              headerTitle: "",
+              headerRight: () => (
+                <Pressable onPress={() => router.push("./settings/Settings")}>
+                  <FontAwesome
+                    name="gear"
+                    size={24}
+                    color={Colors.coral}
+                    style={{ marginRight: 15 }}
+                  />
+                </Pressable>
+              ),
+            }}
           />
           <Stack.Screen
-          name = "settings/Settings"
-          options={{
-            headerTitle: "",
-            headerRight: () => (
+            name="settings/Settings"
+            options={{
+              headerTitle: "",
+              headerRight: () => (
                 <Pressable
-                onPress={() => {
-                  Alert.alert(
-                    "Sign Out",
-                    "Are you sure you want to sign out?",
-                    [
-                      { text: "Cancel", style: "cancel" },
-                      { text: "OK", onPress: () => router.push("../Intro") }
-                    ]
-                  );
-                  }
-                }
+                  onPress={() => {
+                    Alert.alert(
+                      "Sign Out",
+                      "Are you sure you want to sign out?",
+                      [
+                        { text: "Cancel", style: "cancel" },
+                        {
+                          text: "OK",
+                          onPress: () => router.replace("../Intro"),
+                        },
+                      ]
+                    );
+                  }}
                 >
-                <FontAwesome
-                  name="sign-out"
-                  size={24}
-                  color={Colors.coral}
-                  style={{ marginRight: 15 }}
-                />
+                  <FontAwesome
+                    name="sign-out"
+                    size={24}
+                    color={Colors.coral}
+                    style={{ marginRight: 15 }}
+                  />
                 </Pressable>
-            ),
-          }}
+              ),
+            }}
           />
-
         </Stack>
       </ThemeProvider>
     </UserProvider>

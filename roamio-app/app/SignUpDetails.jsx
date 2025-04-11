@@ -41,20 +41,23 @@ export default function SignUpDetails() {
   const handleContinue = async () => {
     // Validate required fields
     if (!firstName || !lastName) {
-      Alert.alert("Error", "Please fill in all required fields.");
+      setSnackMessage("Please fill in all required fields.");
+      setSnackVisible(true);
       return;
     }
 
     // Validate that names don't contain numbers (allows letters and spaces)
     const nameRegex = /^[A-Za-z\s]+$/;
     if (!nameRegex.test(firstName) || !nameRegex.test(lastName)) {
-      Alert.alert("Error", "Names can only contain letters and spaces.");
+      setSnackMessage("Names can only contain letters and spaces.");
+      setSnackVisible(true);
       return;
     }
 
     // Validate phone number field is not empty
     if (!phoneNumber) {
-      Alert.alert("Error", "Please enter a phone number.");
+      setSnackMessage("Please enter a phone number.");
+      setSnackVisible(true);
       return;
     }
 
@@ -92,11 +95,11 @@ export default function SignUpDetails() {
           phone_number: phoneNumber,
           traveller_type: travellerType || "",
         }));
-          // Update global user state with new details
+        // Update global user state with new details
         setTimeout(() => {
-        router.replace("../(tabs)/Trip");
+          router.replace("../(tabs)/Trip");
         }, 2000); // Delay for Snackbar to show
-   
+
       } else {
         Alert.alert("Update Failed", result.error || "An error occurred while updating details.");
       }
@@ -111,39 +114,85 @@ export default function SignUpDetails() {
       <View style={styles.signUpContainer}>
         <Text style={styles.signUpTitle}>Sign Up Details</Text>
 
-        {/* First Name */}
+        {/* First Name
         <View style={styles.inputContainer}>
           <TextInput
+
             placeholder="First Name"
             style={styles.input}
             value={firstName}
             onChangeText={setFirstName}
           />
+        </View> */}
+        <View style={styles.inputFieldContainer}>
+          <Text style={styles.fieldLabel}>
+            First Name <Text style={styles.required}>*</Text>
+          </Text>
+          <View style={styles.inputContainer}>
+            <TextInput
+              placeholder="Enter your first name"
+              style={styles.input}
+              value={firstName}
+              onChangeText={setFirstName}
+            />
+          </View>
         </View>
-
         {/* Last Name */}
-        <View style={styles.inputContainer}>
-          <TextInput
-            placeholder="Last Name"
-            style={styles.input}
-            value={lastName}
-            onChangeText={setLastName}
-          />
+
+        <View style={styles.inputFieldContainer}>
+          <Text style={styles.fieldLabel}>
+            Last Name <Text style={styles.required}>*</Text>
+          </Text>
+          <View style={styles.inputContainer}>
+            <TextInput
+              placeholder="Enter your last name" style={styles.input}
+              value={lastName}
+              onChangeText={setLastName}
+            />
+          </View>
         </View>
 
         {/* Phone Number */}
-        <View style={styles.inputContainer}>
-          <TextInput
-            placeholder="Phone Number (XXX-XXX-XXXX)"
-            style={styles.input}
-            keyboardType="phone-pad"
-            value={phoneNumber}
-            onChangeText={setPhoneNumber}
-          />
-          <FontAwesome name="phone" size={20} color={Colors.coral} style={styles.icon} />
+        <View style={styles.inputFieldContainer}>
+          <Text style={styles.fieldLabel}>
+            Phone Number <Text style={styles.required}>*</Text>
+          </Text>
+          <View style={styles.inputContainer}>
+            <TextInput
+              placeholder="XXX-XXX-XXXX"
+              style={styles.input}
+              keyboardType="phone-pad"
+              value={phoneNumber}
+              onChangeText={setPhoneNumber}
+            />
+            <FontAwesome name="phone" size={20} color={Colors.coral} style={styles.icon} />
+          </View>
         </View>
 
+
         {/* Traveller Type Dropdown */}
+        <View style={styles.inputFieldContainer}>
+          <Text style={styles.fieldLabel}>
+            Traveller Type <Text style={styles.required}>*</Text>
+          </Text>
+          <View style={styles.pickerContainer}>
+            <Dropdown
+              data={travellerOptions}
+              labelField="label"
+              valueField="value"
+              placeholder="Select Traveller Type"
+              value={travellerType}
+              onChange={(item) => setTravellerType(item.value)}
+              style={styles.dropdown}
+              selectedTextStyle={styles.selectedText}
+              placeholderStyle={styles.placeholderText}
+              itemTextStyle={styles.itemText}
+              dropdownStyle={styles.dropdownStyle}
+              dropdownPosition="top"
+            />
+          </View>
+        </View>
+{/* 
         <View style={styles.pickerContainer}>
           <Dropdown
             data={travellerOptions}
@@ -159,7 +208,7 @@ export default function SignUpDetails() {
             dropdownStyle={styles.dropdownStyle}
             dropdownPosition="top"
           />
-        </View>
+        </View> */}
 
         {/* Invisible Spacer */}
         <View style={styles.bottomSpacer} />
@@ -169,16 +218,18 @@ export default function SignUpDetails() {
           <Text style={styles.buttonText}>Continue</Text>
           <FontAwesome name="arrow-right" size={18} color="white" style={styles.arrowIcon} />
         </Pressable>
-        {/* Snackbar Component */}
-        <Snackbar
-          visible={snackVisible}
-          onDismiss={() => setSnackVisible(false)}
-          duration={2000}
-          style={styles.snackbar}
-        >
-          {snackMessage}
-        </Snackbar>
       </View>
+      <Snackbar
+        visible={snackVisible}
+        onDismiss={() => setSnackVisible(false)}
+        duration={3000}
+        wrapperStyle={styles.snackbarWrapper}
+        style={styles.snackbar}
+      >
+        <Text style={styles.snackbarText}>
+          {snackMessage}
+        </Text>
+      </Snackbar>
     </SafeAreaView>
   );
 }
@@ -205,6 +256,20 @@ const styles = StyleSheet.create({
     color: Colors.coral,
     alignSelf: "flex-start",
     marginBottom: 15,
+  },
+  inputFieldContainer: {
+    width: "100%",
+  },
+  fieldLabel: {
+    fontSize: 16,
+    fontFamily: "quicksand-semibold",
+    color: Colors.black,
+    marginBottom: 5,
+    marginLeft: 5,
+  },
+  required: {
+    color: "red",
+    fontFamily: "quicksand-bold",
   },
   inputContainer: {
     width: "100%",
@@ -285,8 +350,21 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     color: Colors.coral,
   },
-  snackbar: {
-    backgroundColor: Colors.coral,
+  snackbarWrapper: {
+    position: "absolute",
+    justifyContent: "top",
+    alignItems: "center",
+    top: "2%",
 
+  },
+  snackbar: {
+    width: "90%",
+    backgroundColor: Colors.white,
+    borderRadius: 10,
+  },
+  snackbarText: {
+    color: Colors.coral,
+    fontFamily: "quicksand-bold",
+    fontSize: 15,
   },
 });
