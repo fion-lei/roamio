@@ -704,6 +704,14 @@ export default function FriendsScreen() {
               </Pressable>
             </View>
           )}
+          ListEmptyComponent={
+            <View style={styles.noFriendsContainer}>
+              <Text style={styles.noFriendsText}>
+                {/* Context dependent text depending on search */}
+                {searchText ? "No friends found." : "No friends have been added yet."}
+              </Text>
+            </View>
+          }
         />
       </View>
       {/* Segmented Control for Trips */}
@@ -890,6 +898,19 @@ const styles = StyleSheet.create({
   searchIcon: {
     marginRight: 10,
   },
+  noFriendsContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 50,
+    paddingHorizontal: 20,
+  },
+  noFriendsText: {
+    fontSize: 16,
+    fontFamily: "quicksand-semibold",
+    color: Colors.grey,
+    textAlign: "center",
+  },
   headerRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -963,7 +984,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   emptyMessage: {
-    color: "#FF4444",
+    color: Colors.grey,
     fontFamily: "quicksand-semibold",
     fontSize: 16,
     marginHorizontal: 10,

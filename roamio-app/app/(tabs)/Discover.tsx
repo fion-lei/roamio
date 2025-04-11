@@ -420,7 +420,7 @@ const activityCards: ActivityCard[] = [
         ) : (
           // In the case search does not yield activity results 
           <View style={styles.invalidSearchContainer}>
-            <Text style={styles.invalidSearchText}>No activities found...</Text>
+            <Text style={styles.invalidSearchText}>No activities found.</Text>
           </View>
         )}
       </ScrollView>
