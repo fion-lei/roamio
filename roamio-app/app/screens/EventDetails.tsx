@@ -369,7 +369,7 @@ const EventDetails = () => {
             "Crossroads Market": require("@/assets/images/farmers.png"),
             "TELUS Spark": require("@/assets/images/space.png"),
             "Calaway Park": require("@/assets/images/rides.png"),
-            "Commonwealth Bar": require("@/assets/images/beer.png"),
+            "GRETA Bar": require("@/assets/images/beer.png"),
             "Studio Bell": require("@/assets/images/music.png"),
         };
         // Or return default image (brand logo) if no activity image found

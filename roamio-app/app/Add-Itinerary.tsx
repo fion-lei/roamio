@@ -21,7 +21,7 @@ export default function AddItinerary() {
       "Crossroads Market": "farmers.png",
       "TELUS Spark": "space.png",
       "Calaway Park": "rides.png",
-      "Commonwealth Bar": "beer.png",
+      "GRETA Bar": "beer.png",
       "Studio Bell": "music.png",
     };
     
