@@ -263,7 +263,24 @@ app.get('/active-itineraries', async (req, res) => {
     // Filter itineraries to include only those belonging to the specified email that are either ongoing or upcoming 
     // (end date >= today)
     const filtered = itineraries.filter(it => {
-      if (it.user_email !== email) return false;
+      if (it.user_email !== email) {
+        // Parse shared_with to check the user's access type
+        let sharedEmails = [];
+        let accessType = null;
+        if (it.shared_with && it.shared_with.trim() !== '') {
+          try {
+        const sharedArray = JSON.parse(it.shared_with);
+        const sharedEntry = sharedArray.find(item => item.email === email);
+        if (sharedEntry) {
+          accessType = sharedEntry.access; // e.g., 'viewer' or 'editor'
+        }
+          } catch (error) {
+        console.error("Error parsing shared_with field:", error);
+          }
+        }
+        // If the user is not the owner and is only a viewer, filter out past itineraries
+        if (accessType === 'viewer') return false;
+      }
 
       // Parse the end date from MM/DD/YYYY format
       if (!it.end_date) return true; // If no end date, include it

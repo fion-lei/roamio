@@ -97,7 +97,7 @@ export default function SignUpDetails() {
         }));
         // Update global user state with new details
         setTimeout(() => {
-          router.replace("../(tabs)/Trip");
+          router.push("../(tabs)/Discover");
         }, 2000); // Delay for Snackbar to show
 
       } else {
@@ -171,9 +171,9 @@ export default function SignUpDetails() {
 
 
         {/* Traveller Type Dropdown */}
-        <View style={styles.inputFieldContainer}>
+
           <Text style={styles.fieldLabel}>
-            Traveller Type <Text style={styles.required}>*</Text>
+            Traveller Type
           </Text>
           <View style={styles.pickerContainer}>
             <Dropdown
@@ -191,7 +191,7 @@ export default function SignUpDetails() {
               dropdownPosition="top"
             />
           </View>
-        </View>
+
 {/* 
         <View style={styles.pickerContainer}>
           <Dropdown

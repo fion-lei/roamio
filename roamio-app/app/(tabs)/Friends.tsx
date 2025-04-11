@@ -502,10 +502,7 @@ export default function FriendsScreen() {
                     {searchType === "phone" ? (
                       <View style={modalStyles.phoneInputRow}>
                         <TextInput
-                          style={[
-                            modalStyles.modalInput,
-                            { flex: 1, fontSize: 20 },
-                          ]}
+                          style={modalStyles.modalInput}
                           value={phoneNumber}
                           onChangeText={setPhoneNumber}
                           placeholder="--- --- ---"
@@ -810,6 +807,7 @@ export default function FriendsScreen() {
                   source={require("../../assets/images/avatar1.png")}
                   style={styles.tripImage}
                 />
+
                 <View
                   style={{
                     alignSelf: "center",
@@ -818,28 +816,17 @@ export default function FriendsScreen() {
                     paddingVertical: 6,
                     borderRadius: 20,
                     marginBottom: 5,
-                    width: "90%",
+                    shadowColor: "#000",
+                    shadowOpacity: 0.05,
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowRadius: 3,
+                    elevation: 2,
                   }}
                 >
                   <Text style={styles.friendTripName}>{item.trip_title}</Text>
                 </View>
                 <Text style={styles.friendName}>{displayName}</Text>
-                <View
-                  style={{
-                    alignSelf: "center",
-                    backgroundColor:
-                      friendAccess === "Owner"
-                        ? "red"
-                        : friendAccess === "Viewer"
-                        ? "orange"
-                        : "green",
-                    paddingHorizontal: 8,
-                    paddingVertical: 2,
-                    borderRadius: 12,
-                  }}
-                >
-                  <Text style={[styles.friendAccess]}>{friendAccess}</Text>
-                </View>
+                <Text style={styles.friendAccess}>{friendAccess}</Text>
 
                 {isOwner ? (
                   // Owner: Unshare button to open modal for selective removal
@@ -1088,12 +1075,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: "quicksand-semibold",
     color: Colors.primary,
-    marginBottom: 4,
   },
   friendAccess: {
-    fontSize: 13,
-    color: "#fff",
-    fontFamily: "quicksand-bold",
+    fontSize: 16,
+    color: Colors.peachySalmon,
+    fontFamily: "quicksand-semibold",
   },
   friendPhone: {
     color: "#333",
@@ -1108,7 +1094,7 @@ const styles = StyleSheet.create({
   },
   tripCard: {
     width: 180,
-    height: 190,
+    height: 180,
     borderRadius: 16,
     padding: 10,
     alignItems: "center",
@@ -1130,7 +1116,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "black",
     fontFamily: "quicksand-semibold",
-    textAlign: "center",
   },
   requestItem: {
     marginBottom: 10,
@@ -1308,7 +1293,6 @@ const modalStyles = StyleSheet.create({
   phoneInputRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 10,
     width: "100%",
   },
   modalInput: {
@@ -1316,7 +1300,7 @@ const modalStyles = StyleSheet.create({
     borderColor: "#ccc",
     borderRadius: 8,
     padding: 10,
-    marginBottom: 10,
+    marginBottom: 20,
     width: "100%",
     fontFamily: "quicksand-regular",
   },

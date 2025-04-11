@@ -433,6 +433,8 @@ const styles = StyleSheet.create({
     flex: 1, 
     backgroundColor: Colors.white, 
     paddingHorizontal: 16, 
+    paddingBottom: 80,
+    flexGrow: 1,
   },
   searchContainer: {
     width: "100%",  

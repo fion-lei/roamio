@@ -18,7 +18,7 @@ import { useUser } from "@/contexts/UserContext";
 import { Snackbar } from "react-native-paper";
 
 const TRIP_TITLE_LIMIT = 20; // New limit for trip title (20 characters)
-const TRIP_LENGTH_LIMIT = 50; // Existing limit for trip description (50 characters)
+const TRIP_LENGTH_LIMIT = 500; // Existing limit for trip description (100 characters)
 
 // Function to format dates in "MM/DD/YYYY" format
 const formatDate = (date: Date | null) => {
