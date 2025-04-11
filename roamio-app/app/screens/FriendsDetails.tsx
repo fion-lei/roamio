@@ -227,7 +227,7 @@ const DetailScreen = () => {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={true}>
       <Image
         source={require("../../assets/images/friend-illustrations.jpg")}
         style={styles.image}
@@ -377,7 +377,7 @@ const DetailScreen = () => {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    flex: 1,
+    flexGrow: 1,
     backgroundColor: "#fffff",
   },
   image: { width: "100%", height: 200, borderRadius: 16, marginBottom: 20 },
@@ -424,6 +424,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.palestPink,
     borderRadius: 12,
     padding: 16,
+    flexGrow: 1,
   },
   bioHeader: {
     flexDirection: "row",
@@ -441,6 +442,8 @@ const styles = StyleSheet.create({
     fontFamily: "quicksand-regular",
     color: Colors.primary,
     lineHeight: 22,
+    flexWrap: 'wrap',
+    flexShrink: 1,
   },
   sendCard: {
     flexDirection: "row",
