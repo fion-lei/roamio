@@ -24,6 +24,7 @@ const DetailedItinerary = () => {
   const params = useLocalSearchParams();
   const itineraryId = params.id as string;
   const itineraryTitle = (params.title as string) || "Itinerary";
+  const userRole = params.userRole as string;
   const router = useRouter();
   const { user } = useUser();
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
@@ -37,7 +38,7 @@ const DetailedItinerary = () => {
   const [editedEndTime, setEditedEndTime] = useState<Date | null>(null);
   const [showStartTimePicker, setShowStartTimePicker] = useState(false);
   const [showEndTimePicker, setShowEndTimePicker] = useState(false);
-  
+
   // Helper: Format a time string (HH:MM, 24-hour) into AM/PM format.
   const formatTimeToAMPM = (time: string): string => {
     const [hours, minutes] = time.split(":").map(Number);
@@ -45,7 +46,7 @@ const DetailedItinerary = () => {
     const displayHour = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
     return `${displayHour}:${minutes.toString().padStart(2, "0")} ${ampm}`;
   };
-  
+
   // Helper: Calculate the end time from a given start time (in HH:MM) and duration in hours.
   const calculateEndTime = (
     startTime: string,
@@ -63,28 +64,34 @@ const DetailedItinerary = () => {
   const eventsOverlap = (event1: any, event2: any) => {
     const [hours1, minutes1] = event1.time.split(":").map(Number);
     const [hours2, minutes2] = event2.time.split(":").map(Number);
-    
-    const event1Start = hours1 * 60 + minutes1;
-    const event1End = event1Start + (event1.duration * 60);
-    const event2Start = hours2 * 60 + minutes2;
-    const event2End = event2Start + (event2.duration * 60);
 
-    return (event1Start < event2End && event1End > event2Start);
+    const event1Start = hours1 * 60 + minutes1;
+    const event1End = event1Start + event1.duration * 60;
+    const event2Start = hours2 * 60 + minutes2;
+    const event2End = event2Start + event2.duration * 60;
+
+    return event1Start < event2End && event1End > event2Start;
   };
 
   // Helper function to check if an event is part of any overlap
   const hasOverlap = (currentEvent: any, allEvents: any[]) => {
-    return allEvents.some(event => 
-      event.eventId !== currentEvent.eventId && eventsOverlap(currentEvent, event)
+    return allEvents.some(
+      (event) =>
+        event.eventId !== currentEvent.eventId &&
+        eventsOverlap(currentEvent, event)
     );
   };
 
   // Helper: Return a style object that positions an event block based on its start time and duration.
-  const getEventStyle = (time: string, duration: number, isOverlapping: boolean) => {
+  const getEventStyle = (
+    time: string,
+    duration: number,
+    isOverlapping: boolean
+  ) => {
     const [hours, minutes] = time.split(":").map(Number);
     const topPosition = (hours + minutes / 60) * pixelsForHour;
     const height = Math.max(duration * pixelsForHour, 50);
-    
+
     return {
       position: "absolute" as const,
       top: topPosition,
@@ -105,7 +112,7 @@ const DetailedItinerary = () => {
     return date.toLocaleTimeString("en-US", {
       hour: "numeric",
       minute: "2-digit",
-      hour12: true
+      hour12: true,
     });
   };
 
@@ -113,25 +120,25 @@ const DetailedItinerary = () => {
   const handleTimeChange = (event: any, selectedDate?: Date, type?: string) => {
     if (event.type === "dismissed") {
       switch (type) {
-        case "startTime": 
-          setShowStartTimePicker(false); 
+        case "startTime":
+          setShowStartTimePicker(false);
           break;
-        case "endTime": 
-          setShowEndTimePicker(false); 
+        case "endTime":
+          setShowEndTimePicker(false);
           break;
       }
       return;
     }
-    
+
     if (selectedDate) {
       switch (type) {
-        case "startTime": 
-          setEditedStartTime(selectedDate); 
-          setShowStartTimePicker(false); 
+        case "startTime":
+          setEditedStartTime(selectedDate);
+          setShowStartTimePicker(false);
           break;
-        case "endTime": 
-          setEditedEndTime(selectedDate); 
-          setShowEndTimePicker(false); 
+        case "endTime":
+          setEditedEndTime(selectedDate);
+          setShowEndTimePicker(false);
           break;
       }
     }
@@ -154,7 +161,7 @@ const DetailedItinerary = () => {
       return date.toLocaleTimeString("en-US", {
         hour: "numeric",
         minute: "2-digit",
-        hour12: true
+        hour12: true,
       });
     };
 
@@ -169,7 +176,7 @@ const DetailedItinerary = () => {
 
     try {
       setEventModalVisible(false);
-      
+
       // Check if eventId exists
       if (!selectedEvent?.eventId) {
         Alert.alert("Error", "Event ID not found");
@@ -179,30 +186,33 @@ const DetailedItinerary = () => {
       // Create the update payload
       const updateData = {
         start_time: newStartTime,
-        end_time: newEndTime
+        end_time: newEndTime,
       };
 
       // Call the API to update the event
-      const response = await fetch(`http://10.0.2.2:3000/events/${selectedEvent.eventId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updateData),
-      });
+      const response = await fetch(
+        `http://10.0.2.2:3000/events/${selectedEvent.eventId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(updateData),
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to update event time');
+        throw new Error(errorData.error || "Failed to update event time");
       }
 
       // Convert time objects to format that component can use
       const formatTimesForComponent = (date: Date) => {
         const hours = date.getHours();
         const minutes = date.getMinutes();
-        return `${hours}:${minutes.toString().padStart(2, '0')}`;
+        return `${hours}:${minutes.toString().padStart(2, "0")}`;
       };
-      
+
       // Update the event in the local state
       setItineraryItems((currentItems) =>
         currentItems.map((item) =>
@@ -210,19 +220,16 @@ const DetailedItinerary = () => {
             ? {
                 ...item,
                 time: formatTimesForComponent(editedStartTime),
-                duration: durationHours
+                duration: durationHours,
               }
             : item
         )
       );
 
       // Show success message
-      Alert.alert(
-        "Success", 
-        "Event time has been updated.",
-      );
+      Alert.alert("Success", "Event time has been updated.");
     } catch (error) {
-      console.error('Error updating event time:', error);
+      console.error("Error updating event time:", error);
       Alert.alert("Error", "Failed to update event time.");
     }
   };
@@ -231,7 +238,9 @@ const DetailedItinerary = () => {
   const renderEventContent = (item: any) => (
     <View style={styles.eventContent}>
       <View style={styles.eventTextContainer}>
-        <Text style={styles.activityText} numberOfLines={1}>{item.activity}</Text>
+        <Text style={styles.activityText} numberOfLines={1}>
+          {item.activity}
+        </Text>
         <Text style={styles.locationText} numberOfLines={1}>
           {item.address || "No location provided"}
         </Text>
@@ -247,10 +256,14 @@ const DetailedItinerary = () => {
               onPress={() => {
                 setSelectedEvent(item);
                 const [startHour, startMin] = item.time.split(":").map(Number);
-                setEditedStartTime(new Date(new Date().setHours(startHour, startMin, 0, 0)));
+                setEditedStartTime(
+                  new Date(new Date().setHours(startHour, startMin, 0, 0))
+                );
                 const endTimeStr = calculateEndTime(item.time, item.duration);
                 const [endHour, endMin] = endTimeStr.split(":").map(Number);
-                setEditedEndTime(new Date(new Date().setHours(endHour, endMin, 0, 0)));
+                setEditedEndTime(
+                  new Date(new Date().setHours(endHour, endMin, 0, 0))
+                );
                 setEventModalVisible(true);
               }}
             />
@@ -472,13 +485,25 @@ const DetailedItinerary = () => {
 
   useEffect(() => {
     fetchItineraryDates();
-  }, [itineraryId]);
-
-  useEffect(() => {
+    if (userRole === "viewer") {
+      setIsEditMode(false);
+    }
     if (selectedDate) {
       fetchItineraryItems(selectedDate);
     }
-  }, [selectedDate, itineraryId]);
+  }, [itineraryId, userRole, selectedDate]);
+  //   useEffect(() => {
+  //   fetchItineraryDates();
+  //   if (userRole === "viewer") {
+  //     setIsEditMode(false);
+  //   }
+  // }, [itineraryId, userRole]);
+
+  // useEffect(() => {
+  //   if (selectedDate) {
+  //     fetchItineraryItems(selectedDate);
+  //   }
+  // }, [selectedDate, itineraryId]);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -531,7 +556,7 @@ const DetailedItinerary = () => {
   };
 
   return (
-    <SafeAreaView style={styles.mainContainer}>
+    <SafeAreaView style={styles.safeContainer}>
       {/* Top Header and Weekly Calendar */}
       <View style={styles.headerContainer}>
         <View style={styles.headerLeftSection}>
@@ -540,14 +565,21 @@ const DetailedItinerary = () => {
           </View>
         </View>
         <Text style={styles.itineraryTitle}>{itineraryTitle}</Text>
-        <Pressable 
-          onPress={() => setIsEditMode(!isEditMode)}
-          style={styles.editButton}
-        >
-          <Text style={styles.editButtonText}>
-            {isEditMode ? "Done" : "Edit"}
-          </Text>
-        </Pressable>
+        <View style={styles.editButtonContainer}>
+          {userRole !== "viewer" ? (
+            <Pressable
+              onPress={() => setIsEditMode(!isEditMode)}
+              style={styles.editButton}
+            >
+              <Text style={styles.editButtonText}>
+                {isEditMode ? "Done" : "Edit"}
+              </Text>
+            </Pressable>
+          ) : (
+            // Invisible placeholder to maintain layout consistency
+            <View style={styles.editButtonPlaceholder} />
+          )}
+        </View>
       </View>
       <View
         style={{
@@ -648,11 +680,24 @@ const DetailedItinerary = () => {
                     onPress={() => {
                       if (isEditMode) {
                         setSelectedEvent(item);
-                        const [startHour, startMin] = item.time.split(":").map(Number);
-                        setEditedStartTime(new Date(new Date().setHours(startHour, startMin, 0, 0)));
-                        const endTimeStr = calculateEndTime(item.time, item.duration);
-                        const [endHour, endMin] = endTimeStr.split(":").map(Number);
-                        setEditedEndTime(new Date(new Date().setHours(endHour, endMin, 0, 0)));
+                        const [startHour, startMin] = item.time
+                          .split(":")
+                          .map(Number);
+                        setEditedStartTime(
+                          new Date(
+                            new Date().setHours(startHour, startMin, 0, 0)
+                          )
+                        );
+                        const endTimeStr = calculateEndTime(
+                          item.time,
+                          item.duration
+                        );
+                        const [endHour, endMin] = endTimeStr
+                          .split(":")
+                          .map(Number);
+                        setEditedEndTime(
+                          new Date(new Date().setHours(endHour, endMin, 0, 0))
+                        );
                         setEventModalVisible(true);
                       } else {
                         router.push({
@@ -670,7 +715,11 @@ const DetailedItinerary = () => {
                             ratingCount: item.ratingCount || "",
                             image: item.imagePath || "",
                             eventId: item.eventId || "",
-                            tags: item.tags ? (Array.isArray(item.tags) ? item.tags.join(",") : item.tags) : "",
+                            tags: item.tags
+                              ? Array.isArray(item.tags)
+                                ? item.tags.join(",")
+                                : item.tags
+                              : "",
                           },
                         });
                       }
@@ -693,58 +742,70 @@ const DetailedItinerary = () => {
               <Text style={styles.modalSubtitle}>
                 {`Current Time: ${formatTimeToAMPM(selectedEvent.time)}`}
               </Text>
-              
+
               {/* Time Selection Section */}
               <View style={styles.timeContainer}>
                 <View style={styles.timeInputContainer}>
                   <Text style={styles.inputLabel}>Start Time</Text>
-                  <Pressable 
+                  <Pressable
                     style={styles.selectFieldContainer}
                     onPress={() => setShowStartTimePicker(true)}
                   >
                     <Text style={styles.selectText}>
                       {formatTime(editedStartTime)}
                     </Text>
-                    <FontAwesome name="clock-o" size={14} style={styles.timeIcon} />
+                    <FontAwesome
+                      name="clock-o"
+                      size={14}
+                      style={styles.timeIcon}
+                    />
                   </Pressable>
-                  
+
                   {showStartTimePicker && (
                     <View style={styles.pickerContainer}>
                       <DateTimePicker
                         value={editedStartTime || new Date()}
                         mode="time"
                         display="spinner"
-                        onChange={(event, date) => handleTimeChange(event, date, "startTime")}
+                        onChange={(event, date) =>
+                          handleTimeChange(event, date, "startTime")
+                        }
                       />
                     </View>
                   )}
                 </View>
-                
+
                 <View style={styles.timeInputContainer}>
                   <Text style={styles.inputLabel}>End Time</Text>
-                  <Pressable 
+                  <Pressable
                     style={styles.selectFieldContainer}
                     onPress={() => setShowEndTimePicker(true)}
                   >
                     <Text style={styles.selectText}>
                       {formatTime(editedEndTime)}
                     </Text>
-                    <FontAwesome name="clock-o" size={14} style={styles.timeIcon} />
+                    <FontAwesome
+                      name="clock-o"
+                      size={14}
+                      style={styles.timeIcon}
+                    />
                   </Pressable>
-                  
+
                   {showEndTimePicker && (
                     <View style={styles.pickerContainer}>
                       <DateTimePicker
                         value={editedEndTime || new Date()}
                         mode="time"
                         display="spinner"
-                        onChange={(event, date) => handleTimeChange(event, date, "endTime")}
+                        onChange={(event, date) =>
+                          handleTimeChange(event, date, "endTime")
+                        }
                       />
                     </View>
                   )}
                 </View>
               </View>
-              
+
               <View style={styles.modalButtonContainer}>
                 <Pressable
                   style={[styles.button, styles.modalButton]}
@@ -819,7 +880,7 @@ const DetailedItinerary = () => {
 };
 
 const styles = StyleSheet.create({
-  mainContainer: {
+  safeContainer: {
     flex: 1,
     backgroundColor: Colors.white,
   },
@@ -845,7 +906,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     shadowColor: Colors.primary,
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.20,
+    shadowOpacity: 0.2,
     shadowRadius: 1.41,
     elevation: 2,
   },
@@ -856,21 +917,27 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: "center",
   },
-  editButton: {
-    padding: 4,
+  editButtonContainer: {
+    flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
+  },
+  editButtonPlaceholder: {
+    width: 60, // Fixed width for the button container
+  },
+  editButton: {
+    padding: 4,
     width: 60, // Fixed width for the button container
     borderWidth: 1,
     borderColor: Colors.peachySalmon,
-    borderRadius: 10, 
+    borderRadius: 10,
   },
   editButtonText: {
     fontSize: 16,
     fontFamily: "quicksand-semibold",
     color: Colors.coral,
-    width: 50, 
-    textAlign: "center", 
+    width: 50,
+    textAlign: "center",
   },
   monthYearContainer: {
     alignItems: "center",
@@ -1035,7 +1102,7 @@ const styles = StyleSheet.create({
     fontFamily: "quicksand-semibold",
     color: Colors.grey,
     textAlign: "center",
-    marginLeft: 60, 
+    marginLeft: 60,
   },
   menuDots: {
     fontSize: 20,
