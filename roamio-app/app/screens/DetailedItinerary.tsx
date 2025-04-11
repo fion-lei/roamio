@@ -38,6 +38,28 @@ const DetailedItinerary = () => {
   const [editedEndTime, setEditedEndTime] = useState<Date | null>(null);
   const [showStartTimePicker, setShowStartTimePicker] = useState(false);
   const [showEndTimePicker, setShowEndTimePicker] = useState(false);
+  const [allItineraryItems, setAllItineraryItems] = useState<any[]>([]);
+
+  const dailyEventCount = allItineraryItems.reduce((acc, event) => {
+    if (event.start_date) {
+      let dateKey = event.start_date.trim(); // Ensure no extra spaces
+  
+      // Handle non-standard date formats (e.g., MM/DD/YYYY)
+      if (dateKey.includes("/")) {
+        const [month, day, year] = dateKey.split("/").map(Number);
+        dateKey = new Date(year, month - 1, day).toLocaleDateString("en-US", {
+          month: "long",
+          day: "numeric",
+          year: "numeric",
+        });
+      }
+  
+      acc[dateKey] = (acc[dateKey] || 0) + 1;
+    } else {
+      console.log(`Event ID: ${event.eventId} does not have a start_date`);
+    }
+    return acc;
+  }, {} as Record<string, number>);
 
   // Helper: Format a time string (HH:MM, 24-hour) into AM/PM format.
   const formatTimeToAMPM = (time: string): string => {
@@ -341,6 +363,7 @@ const DetailedItinerary = () => {
       }
       const data = await response.json();
       const events = data.events || [];
+      setAllItineraryItems(events);
       if (events.length === 0) {
         setItineraryItems([]);
         setLoading(false);
@@ -466,6 +489,8 @@ const DetailedItinerary = () => {
           duration: duration,
           imagePath: event.image_path,
           tags: event.tags,
+          start_date: event.start_date,
+          end_date: event.end_date,
         };
       });
       // Sort events by start time.
@@ -478,32 +503,24 @@ const DetailedItinerary = () => {
     } catch (error) {
       console.error("Error fetching itinerary items:", error);
       setItineraryItems([]);
+      setAllItineraryItems([]); 
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
+    useEffect(() => {
     fetchItineraryDates();
     if (userRole === "viewer") {
       setIsEditMode(false);
     }
+  }, [itineraryId, userRole]);
+
+  useEffect(() => {
     if (selectedDate) {
       fetchItineraryItems(selectedDate);
     }
-  }, [itineraryId, userRole, selectedDate]);
-  //   useEffect(() => {
-  //   fetchItineraryDates();
-  //   if (userRole === "viewer") {
-  //     setIsEditMode(false);
-  //   }
-  // }, [itineraryId, userRole]);
-
-  // useEffect(() => {
-  //   if (selectedDate) {
-  //     fetchItineraryItems(selectedDate);
-  //   }
-  // }, [selectedDate, itineraryId]);
+  }, [selectedDate, itineraryId]);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -556,7 +573,7 @@ const DetailedItinerary = () => {
   };
 
   return (
-    <SafeAreaView style={styles.safeContainer}>
+    <SafeAreaView style={styles.mainContainer}>
       {/* Top Header and Weekly Calendar */}
       <View style={styles.headerContainer}>
         <View style={styles.headerLeftSection}>
@@ -601,12 +618,14 @@ const DetailedItinerary = () => {
             {availableDates.map((date, index) => {
               const { dayName, dayNumber } = getDayInfo(date);
               const isSelected = date === selectedDate;
+              const eventCount = dailyEventCount[date] || 0;
               return (
                 <Pressable key={index} onPress={() => setSelectedDate(date)}>
                   <View
                     style={[
                       styles.calendarDateItem,
                       isSelected && styles.selectedCalendarDateItem,
+
                     ]}
                   >
                     <Text
@@ -625,6 +644,14 @@ const DetailedItinerary = () => {
                     >
                       {dayNumber}
                     </Text>
+                    {eventCount > 0 && (
+                      <View style={styles.eventIndicator}>
+                        <View style={styles.dot} />
+                        <Text style={styles.eventCounter}>{eventCount}</Text>
+                      </View>
+
+                    )
+                    }
                   </View>
                 </Pressable>
               );
@@ -703,7 +730,6 @@ const DetailedItinerary = () => {
                         router.push({
                           pathname: "/screens/EventDetails",
                           params: {
-                            userRole: userRole,
                             activity: item.activity,
                             time: item.time,
                             duration: item.duration,
@@ -881,7 +907,7 @@ const DetailedItinerary = () => {
 };
 
 const styles = StyleSheet.create({
-  safeContainer: {
+  mainContainer: {
     flex: 1,
     backgroundColor: Colors.white,
   },
@@ -959,7 +985,7 @@ const styles = StyleSheet.create({
   },
   calendarDateItem: {
     width: 60, // Fixed width
-    height: 60, // Fixed height
+    height: 70, // Fixed height
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 8,
@@ -971,7 +997,7 @@ const styles = StyleSheet.create({
   },
   calendarDayName: {
     fontSize: 12,
-    fontFamily: "quicksand-semibold",
+    fontFamily: "quicksand-bold",
     color: Colors.grey,
   },
   calendarDayNumber: {
@@ -984,6 +1010,24 @@ const styles = StyleSheet.create({
   },
   selectedCalendarDayNumber: {
     color: Colors.white,
+  },
+  eventIndicator: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    position: 'relative',
+    alignItems: 'center',
+  },
+  dot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: Colors.coral,
+    marginRight: 4,
+  },
+  eventCounter: {
+    fontSize: 11,
+    fontFamily: "quicksand-bold",
+    color: Colors.coral,
   },
   timelineHeader: {
     flexDirection: "row",
