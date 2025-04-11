@@ -18,9 +18,9 @@ import { useUser } from "@/contexts/UserContext";
 import { Snackbar } from "react-native-paper";
 
 const TRIP_TITLE_LIMIT = 20; // New limit for trip title (20 characters)
-const tripLengthCharLimit = 50; // Existing limit for trip description
+const TRIP_LENGTH_LIMIT = 50; // Existing limit for trip description (50 characters)
 
-//// Function to format dates in "MM/DD/YYYY" format
+// Function to format dates in "MM/DD/YYYY" format
 const formatDate = (date: Date | null) => {
   if (!date) return "MM/DD/YYYY"; // Default placeholder
   return date.toLocaleDateString("en-US", {
@@ -75,6 +75,18 @@ export default function Itinerary() {
   const parseDate = (dateStr: string) => {
     const [month, day, year] = dateStr.split("/");
     return new Date(Number(year), Number(month) - 1, Number(day));
+  };
+
+  // Resets trip state on "cancel"
+  const resetTripState = () => {
+    setNewTrip({
+      title: "",
+      fromDate: null,
+      toDate: null,
+      description: "",
+    });
+    setShowFromDatePicker(false);
+    setShowToDatePicker(false);
   };
 
   // Fetch itineraries from backend
@@ -255,12 +267,7 @@ export default function Itinerary() {
         }
 
         setModalVisible(false);
-        setNewTrip({
-          title: "",
-          fromDate: null,
-          toDate: null,
-          description: "",
-        });
+        resetTripState();
       } else {
         Alert.alert("Error", result.error || "Failed to add trip.");
       }
@@ -358,7 +365,7 @@ export default function Itinerary() {
                           <FontAwesome
                             name="map-pin"
                             size={18}
-                            color={Colors.primary}
+                            color={Colors.coral}
                           />
                           <Text style={styles.title}>{item.title}</Text>
                         </View>
@@ -462,7 +469,7 @@ export default function Itinerary() {
                           <FontAwesome
                             name="map-pin"
                             size={18}
-                            color={Colors.primary}
+                            color={Colors.coral}
                           />
                           <Text style={styles.title}>{item.title}</Text>
                         </View>
@@ -547,7 +554,7 @@ export default function Itinerary() {
                           <FontAwesome
                             name="map-pin"
                             size={18}
-                            color={Colors.primary}
+                            color={Colors.coral}
                           />
                           <Text style={styles.title}>{item.title}</Text>
                         </View>
@@ -603,7 +610,7 @@ export default function Itinerary() {
         <Modal visible={modalVisible} animationType="fade" transparent={true}>
           <View style={styles.modalOverlay}>
             <View style={styles.modalView}>
-              <Text style={styles.modalTitle}>Add New Trip</Text>
+              <Text style={styles.modalTitle}>Create New Trip</Text>
               <View style={styles.inputContainer}>
                 <Text style={styles.inputLabel}>Enter Trip Name</Text>
                 <View style={styles.inputWrapper}>
@@ -632,7 +639,6 @@ export default function Itinerary() {
               <View style={styles.dateContainer}>
                 <View style={styles.dateInputContainer}>
                   {/* Start Date Picker */}
-
                   <Text style={styles.inputLabel}>Start Date</Text>
                   <Pressable
                     style={styles.selectFieldContainer}
@@ -643,6 +649,7 @@ export default function Itinerary() {
                         ? formatDate(newTrip.fromDate)
                         : "MM/DD/YYYY"}
                     </Text>
+                    <FontAwesome name="calendar-o" style={styles.dateTimeIcon} />
                   </Pressable>
                 </View>
 
@@ -658,6 +665,7 @@ export default function Itinerary() {
                         ? formatDate(newTrip.toDate)
                         : "MM/DD/YYYY"}
                     </Text>
+                    <FontAwesome name="calendar-o" style={styles.dateTimeIcon} />
                   </Pressable>
                 </View>
               </View>
@@ -689,22 +697,36 @@ export default function Itinerary() {
               )}
               <View style={styles.inputContainer}>
                 <Text style={styles.inputLabel}>Enter Trip Description</Text>
-                <TextInput
-                  placeholder="Trip Description"
-                  style={[styles.input, styles.textArea]}
-                  value={newTrip.description}
-                  onChangeText={(text) =>
-                    text.length <= tripLengthCharLimit &&
-                    setNewTrip({ ...newTrip, description: text })
-                  }
-                  maxLength={tripLengthCharLimit}
-                  multiline
-                />
+                <View style={styles.inputWrapper}>
+                  <TextInput
+                    placeholder="Trip Description"
+                    style={[styles.input, styles.textArea]}
+                    value={newTrip.description}
+                    onChangeText={(text) =>
+                      text.length <= TRIP_LENGTH_LIMIT &&
+                      setNewTrip({ ...newTrip, description: text })
+                    }
+                    maxLength={TRIP_LENGTH_LIMIT}
+                    multiline
+                  />
+                  <Text style={styles.charCounterInside}>
+                    {newTrip.description.length}/{TRIP_LENGTH_LIMIT}
+                  </Text>
+                </View>
+                
+                {newTrip.description.length === TRIP_LENGTH_LIMIT && (
+                  <Text style={styles.warningText}>
+                    Maximum character limit reached
+                  </Text>
+                )}
               </View>
               <View style={styles.modalButtonContainer}>
                 <Pressable
                   style={[styles.button, styles.cancelButton]}
-                  onPress={() => setModalVisible(false)}
+                  onPress={() => {
+                    setModalVisible(false);
+                    resetTripState();
+                  }}
                 >
                   <Text style={styles.buttonText}>Cancel</Text>
                 </Pressable>
@@ -778,6 +800,12 @@ const styles = StyleSheet.create({
     marginTop: 5,
     marginBottom: 5,
     fontFamily: "quicksand-semibold",
+  },
+  dateTimeIcon: {
+    position: "absolute",
+    right: 10,
+    top: 18,
+    color: Colors.peachySalmon,
   },
   dateView: {
     flexDirection: "row",
@@ -863,6 +891,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 12,
     justifyContent: "center",
+    flexDirection: "row",
   },
   dateContainer: {
     flexDirection: "row",
@@ -890,6 +919,7 @@ const styles = StyleSheet.create({
   dateText: {
     fontSize: 16,
     fontFamily: "quicksand-medium",
+    flex: 1,
   },
   pickerContainer: {
     alignItems: "center",

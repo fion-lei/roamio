@@ -3,7 +3,7 @@
 
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import Trip from "../(tabs)/Trip";
+import Discover from "../(tabs)/Discover";
 import { FontAwesome } from "@expo/vector-icons";
 // import FriendsStackNavigator from "../navigation/FriendsStackNavigator";
 import Itinerary from "../(tabs)/Itinerary";
@@ -22,10 +22,10 @@ export default function TabNavigator() {
     >
       <Tab.Screen
         name="Discover"
-        component={Trip}
+        component={Discover}
         options={{
           tabBarIcon: ({ color, size }) => (
-            <FontAwesome name="map-pin" color={color} size={size} />
+            <FontAwesome name="map" color={color} size={size} />
           ),
         }}
       />

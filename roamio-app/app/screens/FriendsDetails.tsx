@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { useRoute } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { useUser } from "@/contexts/UserContext";
 
@@ -9,13 +9,12 @@ import {
   Image,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
+  Pressable,
   Alert,
 } from "react-native";
 import {
   FontAwesome,
   Entypo,
-  MaterialCommunityIcons,
   Feather,
   Ionicons,
 } from "@expo/vector-icons";
@@ -38,7 +37,7 @@ interface InfoItemProps {
 
 const InfoItem = ({ icon, text }: InfoItemProps) => (
   <View style={styles.infoItem}>
-    {icon}
+    <View style={styles.infoContainer}>{icon}</View>
     <Text style={styles.infoText}>{text}</Text>
   </View>
 );
@@ -49,7 +48,6 @@ const DetailScreen = () => {
   const { name, phone, avatar, email_friend, first_name, traveller_type, bio } =
     route.params as RouteParams;
   const { user } = useUser();
-  const navigation = useNavigation();
   const [sent, setSent] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedItinerary, setSelectedItinerary] = useState<any | null>(null);
@@ -57,7 +55,6 @@ const DetailScreen = () => {
     "viewer"
   );
   const [itineraries, setItineraries] = useState<any[]>([]);
-  const [trips, setTrips] = useState<Itinerary[]>([]);
 
   const SERVER_IP = "http://10.0.2.2:3000";
   const currentUserEmail = user.email;
@@ -242,7 +239,7 @@ const DetailScreen = () => {
           alignItems: "center", 
           }}>
           <Text style={styles.title}>{name}</Text>
-          <TouchableOpacity onPress={handleToggleFavorite}>
+          <Pressable onPress={handleToggleFavorite}>
             {favorited ? (
               <FontAwesome
                 name="star"
@@ -258,30 +255,30 @@ const DetailScreen = () => {
                 style={{ marginLeft: 20, marginBottom: 15 }}
               />
             )}
-          </TouchableOpacity>
+          </Pressable>
         </View>
 
         <View style={{ alignItems: "flex-end" }}>
-          <TouchableOpacity
+          <Pressable
             style={styles.unfriendButton}
             onPress={handleUnfriend}
           >
             <Text style={styles.unfriendText}>Unfriend</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </View>
 
       <View style={styles.infoList}>
-        <InfoItem icon={<Entypo name="phone" size={20} />} text={phone} />
+        <InfoItem icon={<Entypo name="phone" size={20} color={Colors.coral} />} text={phone} />
         <InfoItem
-          icon={<Feather name="mail" size={20} />}
+          icon={<Feather name="mail" size={20} color={Colors.coral} />}
           text={email_friend}
         />
         <InfoItem
-          icon={<FontAwesome name="plane" size={20} />}
+          icon={<FontAwesome name="plane" size={20} color={Colors.coral} />}
           text={traveller_type}
         />
-        <InfoItem icon={<FontAwesome name="bars" size={20} />} text={bio} />
+        <InfoItem icon={<FontAwesome name="bars" size={20} color={Colors.coral} />} text={bio} />
       </View>
 
       <View style={styles.sendCard}>
@@ -289,18 +286,18 @@ const DetailScreen = () => {
         <View style={styles.musicInfo}>
           <Text style={styles.musicTitle}>Share Itinerary</Text>
         </View>
-        <TouchableOpacity onPress={() => setModalVisible(true)}>
+        <Pressable onPress={() => setModalVisible(true)}>
           {sent ? (
-            <Ionicons name="checkmark" size={24} style={styles.sendIcon} />
+            <Ionicons name="checkmark" size={22} color={Colors.coral} style={styles.sendIcon} />
           ) : (
             <Ionicons
               name="send"
-              size={24}
-              color="black"
+              size={22}
+              color={Colors.coral}
               style={styles.sendIcon}
             />
           )}
-        </TouchableOpacity>
+        </Pressable>
       </View>
 
       {modalVisible && (
@@ -309,7 +306,7 @@ const DetailScreen = () => {
             <Text style={styles.modalTitle}>Share Itinerary</Text>
 
             {itineraries.map((itinerary) => (
-              <TouchableOpacity
+              <Pressable
                 key={itinerary.itinerary_id}
                 onPress={() => setSelectedItinerary(itinerary)}
                 style={[
@@ -319,11 +316,11 @@ const DetailScreen = () => {
                 ]}
               >
                 <Text style={styles.itineraryText}>{itinerary.trip_title}</Text>
-              </TouchableOpacity>
+              </Pressable>
             ))}
 
             <View style={styles.accessButtons}>
-              <TouchableOpacity
+              <Pressable
                 onPress={() => setAccessType("viewer")}
                 style={[
                   styles.accessButton,
@@ -331,8 +328,8 @@ const DetailScreen = () => {
                 ]}
               >
                 <Text style={styles.accessText}>Viewer</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
+              </Pressable>
+              <Pressable
                 onPress={() => setAccessType("trip-mate")}
                 style={[
                   styles.accessButton,
@@ -340,14 +337,14 @@ const DetailScreen = () => {
                 ]}
               >
                 <Text style={styles.accessText}>Trip-mate</Text>
-              </TouchableOpacity>
+              </Pressable>
             </View>
 
-            <TouchableOpacity style={styles.shareButton} onPress={handleSend}>
+            <Pressable style={styles.shareButton} onPress={handleSend}>
               <Text style={styles.shareButtonText}>Share</Text>
-            </TouchableOpacity>
+            </Pressable>
 
-            <TouchableOpacity
+            <Pressable
               onPress={() => setModalVisible(false)}
               style={{ marginTop: 10 }}
             >
@@ -360,7 +357,7 @@ const DetailScreen = () => {
               >
                 Cancel
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </View>
       )}
@@ -388,19 +385,50 @@ const styles = StyleSheet.create({
   },
   infoList: {
     marginBottom: 32,
+    backgroundColor: Colors.palestPink,
+    borderRadius: 12,
+    padding: 10,
   },
-  infoItem: { flexDirection: "row", alignItems: "center", marginBottom: 10 },
-  infoText: { marginLeft: 10, fontSize: 16, fontFamily: "quicksand-regular" },
+  infoItem: { 
+    flexDirection: "row", 
+    alignItems: "center", 
+    marginBottom: 10,
+    paddingVertical: 4,
+  },
+  infoContainer: { 
+    width: 30, 
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  infoText: { 
+    marginLeft: 12, 
+    fontSize: 18, 
+    fontFamily: "quicksand-semibold", 
+    color: Colors.primary,
+    flex: 1,
+  },
   sendCard: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#fff0f0",
+    backgroundColor: Colors.palePink,
     borderRadius: 12,
-    padding: 12,
+    padding: 16,
+    marginTop: 30,
+    marginBottom: 40,
   },
-  avatar: { width: 40, height: 40, borderRadius: 20, marginRight: 10 },
+  avatar: { 
+    width: 40, 
+    height: 40, 
+    borderRadius: 20, 
+    marginRight: 12,
+    backgroundColor: Colors.white,
+  },
   musicInfo: { flex: 1 },
-  musicTitle: { fontSize: 18, fontFamily: "quicksand-bold" },
+  musicTitle: { 
+    fontSize: 18, 
+    fontFamily: "quicksand-bold", 
+    color: Colors.coral, 
+    marginLeft: 8,},
   itineraryText: { fontFamily: "quicksand-semibold", fontSize: 16 },
   unfriendButton: {
     alignSelf: "flex-end",
@@ -420,7 +448,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: "quicksand-semibold",
   },
-  sendIcon: { marginHorizontal: 10 },
+  sendIcon: { 
+    marginHorizontal: 10,
+    marginTop: 4,
+  },
   modalOverlay: {
     position: "absolute",
     top: 0,
@@ -467,7 +498,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   shareButtonText: {
-    color: "white",
+    color: Colors.white,
     textAlign: "center",
     fontFamily: "quicksand-bold",
   },

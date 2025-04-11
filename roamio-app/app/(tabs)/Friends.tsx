@@ -7,7 +7,7 @@ import {
   StyleSheet,
   FlatList,
   Image,
-  TouchableOpacity,
+  Pressable,
   Modal,
   Alert,
   SafeAreaView,
@@ -16,7 +16,7 @@ import { Feather, FontAwesome } from "@expo/vector-icons";
 import { useFonts } from "expo-font";
 import { Colors } from "@/constants/Colors";
 import { useUser } from "@/contexts/UserContext";
-import { useNavigation, useRouter, useLocalSearchParams } from "expo-router";
+import { useRouter } from "expo-router";
 import { TouchableWithoutFeedback } from "react-native";
 import { Snackbar } from "react-native-paper";
 const SERVER_IP = "http://10.0.2.2:3000"; // Replace with your actual backend address
@@ -35,7 +35,6 @@ export default function FriendsScreen() {
     "default" | "A-Z" | "Z-A" | "Favorites"
   >("default");
   const [showDropdown, setShowDropdown] = useState(false);
-  const [showAddModal, setShowAddModal] = useState(false);
   const [unshareModalVisible, setUnshareModalVisible] = useState(false);
   const [selectedItinerary, setSelectedItinerary] = useState<Itinerary | null>(
     null
@@ -48,9 +47,9 @@ export default function FriendsScreen() {
   const [emailSearch, setEmailSearch] = useState("");
   const [showFriendRequestModal, setShowFriendRequestModal] = useState(false);
   const [activeTripTab, setActiveTripTab] = useState<"my" | "shared">("my");
-  // const navigation = useNavigation<NavigationProp>();
-  const navigation = useNavigation();
+  
   const router = useRouter();
+  
   // Trips State
   const [trips, setTrips] = useState<Itinerary[]>([]);
   // For prototyping, we define the current user email.
@@ -377,374 +376,373 @@ export default function FriendsScreen() {
           />
         </View>
 
-        {/* Header Row */}
-        <View style={styles.headerRow}>
-          <Text style={styles.sectionTitle}>Your Friends</Text>
-          <View style={{ flexDirection: "row", gap: 10, alignItems: "center" }}>
-            <TouchableOpacity
-              onPress={() => setShowDropdown(true)}
-              style={styles.dropdownToggleMini}
-            >
-              <Text style={styles.dropdownText}>
-                {filterType === "default" ? "Filter" : filterType}
-              </Text>
-              <FontAwesome name="filter" size={20} color="#d9534f" />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => setShowFriendRequestModal(true)}>
-              <FontAwesome name="user-plus" size={24} color="#333" />
-            </TouchableOpacity>
-          </View>
+      {/* Header Row */}
+      <View style={styles.headerRow}>
+        <Text style={styles.sectionTitle}>Your Friends</Text>
+        <View style={{ flexDirection: "row", gap: 10, alignItems: "center" }}>
+          <Pressable
+            onPress={() => setShowDropdown(true)}
+            style={styles.dropdownToggleMini}
+          >
+            <Text style={styles.dropdownText}>
+              {filterType === "default" ? "Filter" : filterType}
+            </Text>
+            <FontAwesome name="filter" size={20} color="#d9534f" />
+          </Pressable>
+          <Pressable 
+            onPress={() => setShowFriendRequestModal(true)}
+          >
+            <FontAwesome name="user-plus" size={26} color={Colors.peachySalmon} />
+          </Pressable>
         </View>
+      </View>
 
-        {/* Filter Dropdown Modal */}
-        <Modal visible={showDropdown} transparent animationType="fade">
-          <TouchableOpacity
-            style={styles.modalOverlay}
-            onPress={() => setShowDropdown(false)}
-            activeOpacity={1}
-          >
-            <View style={styles.modalContent}>
-              {["Favorites", "A-Z", "Z-A"].map((option) => (
-                <TouchableOpacity
-                  key={option}
-                  onPress={() => {
-                    if (option === "A-Z") setFilterType("A-Z");
-                    else if (option === "Z-A") setFilterType("Z-A");
-                    else setFilterType("Favorites");
-                    setShowDropdown(false);
-                  }}
-                  style={styles.modalItem}
-                >
-                  <Text style={styles.modalText}>{option}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </TouchableOpacity>
-        </Modal>
-
-        <Modal
-          visible={showFriendRequestModal}
-          transparent
-          animationType="fade"
-          onRequestClose={() => setShowFriendRequestModal(false)}
+      {/* Filter Dropdown Modal */}
+      <Modal visible={showDropdown} transparent animationType="fade">
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setShowDropdown(false)}
         >
-          <TouchableOpacity
-            style={modalStyles.modalOverlay}
-            activeOpacity={1}
-            onPress={() => setShowFriendRequestModal(false)}
-          >
-            <TouchableWithoutFeedback>
-              <View style={[modalStyles.modalContent]}>
-                {/* Modal Tab Header */}
-                <View style={modalStyles.modalTabContainer}>
-                  <TouchableOpacity
+          <View style={styles.modalContent}>
+            {["Favorites", "A-Z", "Z-A"].map((option) => (
+              <Pressable
+                key={option}
+                onPress={() => {
+                  if (option === "A-Z") setFilterType("A-Z");
+                  else if (option === "Z-A") setFilterType("Z-A");
+                  else setFilterType("Favorites");
+                  setShowDropdown(false);
+                }}
+                style={styles.modalItem}
+              >
+                <Text style={styles.modalText}>{option}</Text>
+              </Pressable>
+            ))}
+          </View>
+        </Pressable>
+      </Modal>
+
+      <Modal
+        visible={showFriendRequestModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowFriendRequestModal(false)}
+      >
+        <Pressable
+          style={modalStyles.modalOverlay}
+          onPress={() => setShowFriendRequestModal(false)}
+        >
+          <TouchableWithoutFeedback>
+            <View style={[modalStyles.modalContent]}>
+              {/* Modal Tab Header */}
+              <View style={modalStyles.modalTabContainer}>
+                <Pressable
+                  style={[
+                    modalStyles.modalTabButton,
+                    friendModalTab === "add" && modalStyles.modalTabActive,
+                  ]}
+                  onPress={() => setFriendModalTab("add")}
+                >
+                  <Text
                     style={[
-                      modalStyles.modalTabButton,
-                      friendModalTab === "add" && modalStyles.modalTabActive,
+                      modalStyles.modalTabText,
+                      friendModalTab === "add" &&
+                        modalStyles.modalTabTextActive,
                     ]}
-                    onPress={() => setFriendModalTab("add")}
                   >
-                    <Text
-                      style={[
-                        modalStyles.modalTabText,
-                        friendModalTab === "add" &&
-                          modalStyles.modalTabTextActive,
-                      ]}
-                    >
-                      Add Friend
-                    </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
+                    Add Friend
+                  </Text>
+                </Pressable>
+                <Pressable
+                  style={[
+                    modalStyles.modalTabButton,
+                    friendModalTab === "requests" && modalStyles.modalTabActive,
+                  ]}
+                  onPress={() => setFriendModalTab("requests")}
+                >
+                  <Text
                     style={[
-                      modalStyles.modalTabButton,
+                      modalStyles.modalTabText,
                       friendModalTab === "requests" &&
-                        modalStyles.modalTabActive,
+                        modalStyles.modalTabTextActive,
                     ]}
-                    onPress={() => setFriendModalTab("requests")}
                   >
-                    <Text
-                      style={[
-                        modalStyles.modalTabText,
-                        friendModalTab === "requests" &&
-                          modalStyles.modalTabTextActive,
-                      ]}
-                    >
-                      Friend Requests
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-
-                {friendModalTab === "add" ? (
-                  <>
-                    <View style={modalStyles.toggleContainer}>
-                      <TouchableOpacity
-                        style={[
-                          modalStyles.toggleButton,
-                          searchType === "phone" &&
-                            modalStyles.toggleButtonActive,
-                        ]}
-                        onPress={() => setSearchType("phone")}
-                      >
-                        <Text style={modalStyles.toggleText}>Phone</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        style={[
-                          modalStyles.toggleButton,
-                          searchType === "email" &&
-                            modalStyles.toggleButtonActive,
-                        ]}
-                        onPress={() => setSearchType("email")}
-                      >
-                        <Text style={modalStyles.toggleText}>Email</Text>
-                      </TouchableOpacity>
-                    </View>
-                    {searchType === "phone" ? (
-                      <View style={modalStyles.phoneInputRow}>
-                        <TextInput
-                          style={[
-                            modalStyles.modalInput,
-                            { flex: 1, fontSize: 20 },
-                          ]}
-                          value={phoneNumber}
-                          onChangeText={setPhoneNumber}
-                          placeholder="--- --- ---"
-                          placeholderTextColor="#4B5563"
-                          keyboardType="phone-pad"
-                        />
-                      </View>
-                    ) : (
-                      <TextInput
-                        style={modalStyles.modalInput}
-                        value={emailSearch}
-                        onChangeText={setEmailSearch}
-                        placeholder="abc@email.com"
-                        placeholderTextColor="#4B5563"
-                        autoCapitalize="none"
-                        keyboardType="email-address"
-                      />
-                    )}
-                    <TouchableOpacity
-                      style={modalStyles.addButton}
-                      onPress={handleAddFriend}
-                    >
-                      <Text style={modalStyles.addButtonText}>
-                        Send Friend Request
-                      </Text>
-                    </TouchableOpacity>
-                  </>
-                ) : (
-                  <>
-                    {friendRequests.length === 0 ? (
-                      <Text
-                        style={{
-                          fontFamily: "quicksand-medium",
-                          marginBottom: 10,
-                        }}
-                      >
-                        No friend requests at the moment.
-                      </Text>
-                    ) : (
-                      friendRequests.map((request) => (
-                        <View key={request.id} style={modalStyles.requestItem}>
-                          <Image
-                            source={request.avatar}
-                            style={{
-                              width: 40,
-                              height: 40,
-                              borderRadius: 20,
-                              marginBottom: 5,
-                            }}
-                          />
-                          <Text
-                            style={{
-                              fontFamily: "quicksand-bold",
-                              marginBottom: 5,
-                            }}
-                          >
-                            {request.name}
-                          </Text>
-                          <View style={{ flexDirection: "row", gap: 10 }}>
-                            <TouchableOpacity
-                              style={{
-                                backgroundColor: "#ff8080",
-                                padding: 8,
-                                borderRadius: 8,
-                              }}
-                              onPress={() =>
-                                handleAcceptFriendRequest(request.id)
-                              }
-                            >
-                              <Text
-                                style={{
-                                  color: "#fff",
-                                  fontFamily: "quicksand-bold",
-                                }}
-                              >
-                                Accept
-                              </Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                              style={{
-                                backgroundColor: "#ccc",
-                                padding: 8,
-                                borderRadius: 8,
-                              }}
-                              onPress={() =>
-                                handleDeclineFriendRequest(request.id)
-                              }
-                            >
-                              <Text
-                                style={{
-                                  color: "#333",
-                                  fontFamily: "quicksand-bold",
-                                }}
-                              >
-                                Decline
-                              </Text>
-                            </TouchableOpacity>
-                          </View>
-                        </View>
-                      ))
-                    )}
-                  </>
-                )}
+                    Friend Requests
+                  </Text>
+                </Pressable>
               </View>
-            </TouchableWithoutFeedback>
-          </TouchableOpacity>
-        </Modal>
 
-        {unshareModalVisible && selectedItinerary && (
-          <Modal
-            visible={unshareModalVisible}
-            transparent
-            animationType="fade"
-            onRequestClose={() => setUnshareModalVisible(false)}
-          >
-            <View style={styles.modalOverlay}>
-              <View style={styles.modalContent}>
-                <Text style={styles.modalTitle}>Unshare Itinerary</Text>
-                <Text style={styles.modalSubtitle}>
-                  Select a friend to unshare with
-                </Text>
-                {(() => {
-                  // Parse shared_with again for the selected itinerary (or reuse from state if available)
-                  let sharedWith: SharedFriend[] = [];
-                  if (
-                    selectedItinerary.shared_with &&
-                    selectedItinerary.shared_with.trim() !== ""
-                  ) {
-                    try {
-                      sharedWith = JSON.parse(
-                        selectedItinerary.shared_with
-                      ) as SharedFriend[];
-                    } catch (error) {
-                      console.error("Error parsing shared_with:", error);
-                    }
-                  }
-                  return sharedWith.map((friend) => (
-                    <TouchableOpacity
-                      key={friend.email}
-                      style={styles.friendUnshareOption}
-                      onPress={async () => {
-                        await handleUnshare(
-                          selectedItinerary.itinerary_id,
-                          friend.email
-                        );
-                        setUnshareModalVisible(true);
+              {friendModalTab === "add" ? (
+                <>
+                  <View style={modalStyles.toggleContainer}>
+                    <Pressable
+                      style={[
+                        modalStyles.toggleButton,
+                        searchType === "phone" &&
+                          modalStyles.toggleButtonActive,
+                      ]}
+                      onPress={() => setSearchType("phone")}
+                    >
+                      <Text style={modalStyles.toggleText}>Phone</Text>
+                    </Pressable>
+                    <Pressable
+                      style={[
+                        modalStyles.toggleButton,
+                        searchType === "email" &&
+                          modalStyles.toggleButtonActive,
+                      ]}
+                      onPress={() => setSearchType("email")}
+                    >
+                      <Text style={modalStyles.toggleText}>Email</Text>
+                    </Pressable>
+                  </View>
+                  {searchType === "phone" ? (
+                    <View style={modalStyles.phoneInputRow}>
+                      <TextInput
+                        style={[
+                          modalStyles.modalInput,
+                          { flex: 1, fontSize: 20 },
+                        ]}
+                        value={phoneNumber}
+                        onChangeText={setPhoneNumber}
+                        placeholder="--- --- ---"
+                        placeholderTextColor="#4B5563"
+                        keyboardType="phone-pad"
+                      />
+                    </View>
+                  ) : (
+                    <TextInput
+                      style={modalStyles.modalInput}
+                      value={emailSearch}
+                      onChangeText={setEmailSearch}
+                      placeholder="abc@email.com"
+                      placeholderTextColor="#4B5563"
+                      autoCapitalize="none"
+                      keyboardType="email-address"
+                    />
+                  )}
+                  <Pressable
+                    style={modalStyles.addButton}
+                    onPress={handleAddFriend}
+                  >
+                    <Text style={modalStyles.addButtonText}>
+                      Send Friend Request
+                    </Text>
+                  </Pressable>
+                </>
+              ) : (
+                <>
+                  {friendRequests.length === 0 ? (
+                    <Text
+                      style={{
+                        fontFamily: "quicksand-medium",
+                        marginBottom: 10,
                       }}
                     >
-                      <Text style={styles.requestUnshareText}>
-                        {friend.friend_name}
-                      </Text>
-                    </TouchableOpacity>
-                  ));
-                })()}
-                <TouchableOpacity
-                  onPress={() => setUnshareModalVisible(false)}
-                  style={styles.cancelButton}
-                >
-                  <Text style={styles.cancelButtonText}>Cancel</Text>
-                </TouchableOpacity>
-              </View>
+                      No friend requests at the moment.
+                    </Text>
+                  ) : (
+                    friendRequests.map((request) => (
+                      <View key={request.id} style={modalStyles.requestItem}>
+                        <Image
+                          source={request.avatar}
+                          style={{
+                            width: 40,
+                            height: 40,
+                            borderRadius: 20,
+                            marginBottom: 5,
+                          }}
+                        />
+                        <Text
+                          style={{
+                            fontFamily: "quicksand-bold",
+                            marginBottom: 5,
+                          }}
+                        >
+                          {request.name}
+                        </Text>
+                        <View style={{ flexDirection: "row", gap: 10 }}>
+                          <Pressable
+                            style={{
+                              backgroundColor: "#ff8080",
+                              padding: 8,
+                              borderRadius: 8,
+                            }}
+                            onPress={() =>
+                              handleAcceptFriendRequest(request.id)
+                            }
+                          >
+                            <Text
+                              style={{
+                                color: "#fff",
+                                fontFamily: "quicksand-bold",
+                              }}
+                            >
+                              Accept
+                            </Text>
+                          </Pressable>
+                          <Pressable
+                            style={{
+                              backgroundColor: "#ccc",
+                              padding: 8,
+                              borderRadius: 8,
+                            }}
+                            onPress={() =>
+                              handleDeclineFriendRequest(request.id)
+                            }
+                          >
+                            <Text
+                              style={{
+                                color: "#333",
+                                fontFamily: "quicksand-bold",
+                              }}
+                            >
+                              Decline
+                            </Text>
+                          </Pressable>
+                        </View>
+                      </View>
+                    ))
+                  )}
+                </>
+              )}
             </View>
-          </Modal>
-        )}
+          </TouchableWithoutFeedback>
+        </Pressable>
+      </Modal>
 
-        {/* Friends List */}
-        <View style={styles.friendListContainer}>
-          <FlatList
-            data={filteredFriends}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <View style={styles.friendItem}>
-                <Image source={item.avatar} style={styles.avatar} />
-                <View style={styles.friendInfo}>
-                  <Text style={styles.friendName}>
-                    {item.name}{" "}
-                    {item.favorited && (
-                      <FontAwesome name="star" size={16} color="#FFD700" />
-                    )}
-                  </Text>
-                  <Text style={styles.friendPhone}>{item.phone}</Text>
-                </View>
-                <TouchableOpacity
-                  onPress={() =>
-                    router.push({
-                      pathname: "/screens/FriendsDetails",
-                      params: {
-                        name: item.name,
-                        phone: item.phone,
-                        email_friend: item.email_friend,
-                        avatar: item.avatar,
-                        first_name: item.first_name,
-                        owner_name: user.first_name,
-                        traveller_type: item.traveller_type,
-                        bio: item.bio,
-                      },
-                    })
+      {unshareModalVisible && selectedItinerary && (
+        <Modal
+          visible={unshareModalVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setUnshareModalVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Unshare Itinerary</Text>
+              <Text style={styles.modalSubtitle}>
+                Select a friend to unshare with
+              </Text>
+              {(() => {
+                // Parse shared_with again for the selected itinerary (or reuse from state if available)
+                let sharedWith: SharedFriend[] = [];
+                if (
+                  selectedItinerary.shared_with &&
+                  selectedItinerary.shared_with.trim() !== ""
+                ) {
+                  try {
+                    sharedWith = JSON.parse(
+                      selectedItinerary.shared_with
+                    ) as SharedFriend[];
+                  } catch (error) {
+                    console.error("Error parsing shared_with:", error);
                   }
-                >
-                  <Text style={styles.menuDots}>⋯</Text>
-                </TouchableOpacity>
+                }
+                return sharedWith.map((friend) => (
+                  <Pressable
+                    key={friend.email}
+                    style={styles.friendUnshareOption}
+                    onPress={async () => {
+                      await handleUnshare(
+                        selectedItinerary.itinerary_id,
+                        friend.email
+                      );
+                      setUnshareModalVisible(true);
+                    }}
+                  >
+                    <Text style={styles.requestUnshareText}>
+                      {friend.friend_name}
+                    </Text>
+                  </Pressable>
+                ));
+              })()}
+              <Pressable
+                onPress={() => setUnshareModalVisible(false)}
+                style={styles.cancelButton}
+              >
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </Pressable>
+            </View>
+          </View>
+        </Modal>
+      )}
+
+      {/* Friends List */}
+      <View style={styles.friendListContainer}>
+        <FlatList
+          data={filteredFriends}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <View style={styles.friendItem}>
+              <Image source={item.avatar} style={styles.avatar} />
+              <View style={styles.friendInfo}>
+                <Text style={styles.friendName}>
+                  {item.name}{" "}
+                  {item.favorited && (
+                    <FontAwesome name="star" size={16} color="#FFD700" />
+                  )}
+                </Text>
+                <Text style={styles.friendPhone}>{item.phone}</Text>
               </View>
-            )}
-          />
-        </View>
-        {/* Segmented Control for Trips */}
-        <View style={styles.segmentedControlContainer}>
-          <TouchableOpacity
+              <Pressable
+                onPress={() =>
+                  router.push({
+                    pathname: "/screens/FriendsDetails",
+                    params: {
+                      name: item.name,
+                      phone: item.phone,
+                      email_friend: item.email_friend,
+                      avatar: item.avatar,
+                      first_name: item.first_name,
+                      owner_name: user.first_name,
+                      traveller_type: item.traveller_type,
+                      bio: item.bio,
+                    },
+                  })
+                }
+              >
+                <Text style={styles.menuDots}>⋯</Text>
+              </Pressable>
+            </View>
+          )}
+        />
+      </View>
+      {/* Segmented Control for Trips */}
+      <View style={styles.segmentedControlContainer}>
+        <Pressable
+          style={[
+            styles.toggleButton,
+            activeTripTab === "my" && styles.segmentButtonActive,
+          ]}
+          onPress={() => setActiveTripTab("my")}
+        >
+          <Text
             style={[
-              styles.toggleButton,
-              activeTripTab === "my" && styles.segmentButtonActive,
+              styles.segmentButtonText,
+              activeTripTab === "my" && styles.segmentButtonTextActive,
             ]}
-            onPress={() => setActiveTripTab("my")}
           >
-            <Text
-              style={[
-                styles.segmentButtonText,
-                activeTripTab === "my" && styles.segmentButtonTextActive,
-              ]}
-            >
-              My Trips Shared
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
+            My Trips Shared
+          </Text>
+        </Pressable>
+        <Pressable
+          style={[
+            styles.toggleButton,
+            activeTripTab === "shared" && styles.segmentButtonActive,
+          ]}
+          onPress={() => setActiveTripTab("shared")}
+        >
+          <Text
             style={[
-              styles.toggleButton,
-              activeTripTab === "shared" && styles.segmentButtonActive,
+              styles.segmentButtonText,
+              activeTripTab === "shared" && styles.segmentButtonTextActive,
             ]}
-            onPress={() => setActiveTripTab("shared")}
           >
-            <Text
-              style={[
-                styles.segmentButtonText,
-                activeTripTab === "shared" && styles.segmentButtonTextActive,
-              ]}
-            >
-              Shared With Me
-            </Text>
-          </TouchableOpacity>
-        </View>
+            Shared With Me
+          </Text>
+        </Pressable>
+      </View>
 
         {/* Dynamic Trips With Friends Section */}
         <FlatList
@@ -832,7 +830,7 @@ export default function FriendsScreen() {
 
                 {isOwner ? (
                   // Owner: Unshare button to open modal for selective removal
-                  <TouchableOpacity
+                  <Pressable
                     style={styles.unshareButton}
                     onPress={() => {
                       setSelectedItinerary(item);
@@ -840,15 +838,15 @@ export default function FriendsScreen() {
                     }}
                   >
                     <FontAwesome name="trash-o" size={20} color="red" />
-                  </TouchableOpacity>
+                  </Pressable>
                 ) : (
                   // Non-owner: Unadd button to remove self
-                  <TouchableOpacity
+                  <Pressable
                     style={styles.unaddButton}
                     onPress={() => handleUnadd(item.itinerary_id)}
                   >
                     <Feather name="x-circle" size={20} color="red" />
-                  </TouchableOpacity>
+                  </Pressable>
                 )}
               </View>
             );
@@ -903,7 +901,7 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    color: Colors.grey,
+    color: "#333",
     fontSize: 16,
     fontFamily: "quicksand-semibold",
   },
@@ -969,7 +967,6 @@ const styles = StyleSheet.create({
     color: "#d9534f",
     fontSize: 16,
     fontFamily: "quicksand-semibold",
-    // marginRight: 5,
   },
   toggleContainer: {
     flexDirection: "row",
@@ -995,7 +992,8 @@ const styles = StyleSheet.create({
   },
   toggleText: {
     fontFamily: "quicksand-bold",
-    fontSize: 14,
+    fontSize: 16,
+    color: Colors.primary,
   },
   cancelButton: {
     marginTop: 10,
@@ -1010,7 +1008,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0,0,0,0.5)",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalContent: {
     backgroundColor: "#fff",
@@ -1020,7 +1018,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   modalItem: { paddingVertical: 12, paddingHorizontal: 20 },
-  modalText: { fontSize: 16, fontFamily: "quicksand-regular" },
+  modalText: {
+    fontSize: 16,
+    fontFamily: "quicksand-regular",
+    color: Colors.primary,
+  },
   modalTitle: { fontSize: 20, fontFamily: "quicksand-bold", marginBottom: 15 },
   modalInput: {
     borderWidth: 1,
@@ -1070,16 +1072,26 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   friendName: {
-    fontSize: 14,
+    fontSize: 16,
     fontFamily: "quicksand-semibold",
+    color: Colors.primary,
   },
   friendAccess: {
-    fontSize: 14,
+    fontSize: 16,
     color: Colors.peachySalmon,
     fontFamily: "quicksand-semibold",
   },
-  friendPhone: { color: "#888", marginTop: 2, fontFamily: "quicksand-regular" },
-  menuDots: { fontSize: 20, color: "#888", paddingLeft: 10 },
+  friendPhone: {
+    color: "#333",
+    marginTop: 2,
+    fontFamily: "quicksand-regular",
+    fontSize: 16,
+  },
+  menuDots: {
+    fontSize: 22,
+    color: "#333",
+    paddingLeft: 10,
+  },
   tripCard: {
     width: 180,
     height: 180,
@@ -1134,13 +1146,19 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.coral,
     borderRadius: 10,
+    backgroundColor: Colors.palestPink,
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 1.41,
+    elevation: 1,
   },
 
   requestUnshareText: {
     textAlign: "center",
     fontFamily: "quicksand-semibold",
     fontSize: 16,
-    color: "#333",
+    color: Colors.primary,
     padding: 10,
   },
 
@@ -1171,7 +1189,7 @@ const styles = StyleSheet.create({
   segmentButtonText: {
     fontFamily: "quicksand-regular",
     fontSize: 16,
-    color: Colors.grey,
+    color: "#333",
   },
   segmentButtonTextActive: {
     fontFamily: "quicksand-bold",
@@ -1202,7 +1220,7 @@ const modalStyles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0,0,0,0.5)",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalContent: {
     backgroundColor: "#fff",
@@ -1226,7 +1244,6 @@ const modalStyles = StyleSheet.create({
   modalTabContainer: {
     flexDirection: "row",
     justifyContent: "space-around",
-    // padding: 10,
     marginBottom: 20,
     width: "100%",
   },
@@ -1243,7 +1260,7 @@ const modalStyles = StyleSheet.create({
   modalTabText: {
     fontSize: 16,
     fontFamily: "quicksand-bold",
-    color: "#888",
+    color: "#333",
   },
   modalTabTextActive: {
     color: Colors.coral,
@@ -1270,7 +1287,8 @@ const modalStyles = StyleSheet.create({
   },
   toggleText: {
     fontFamily: "quicksand-bold",
-    fontSize: 14,
+    fontSize: 16,
+    color: Colors.primary,
   },
   phoneInputRow: {
     flexDirection: "row",
@@ -1320,5 +1338,3 @@ const modalStyles = StyleSheet.create({
     width: "100%",
   },
 });
-
-//export default FriendsScreen;

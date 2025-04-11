@@ -65,7 +65,7 @@ export default function Login() {
         setSnackVisible(true);
         // Update global user state with the email and any other data returned from backend.
         setUser({ email, ...result.user });
-        setTimeout(() => { router.replace("../(tabs)/Trip"); }, 600); // Delay for Snackbar to show
+        setTimeout(() => { router.replace("../(tabs)/Discover"); }, 600); // Delay for Snackbar to show
 
       } else {
         setSnackMessage(result.error || "Login failed. An error occurred during login.");

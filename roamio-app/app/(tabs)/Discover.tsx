@@ -1,10 +1,10 @@
 import React, { useState } from "react"; 
 import { View, Text, Image, TextInput, SafeAreaView, StyleSheet, Pressable, ScrollView } from "react-native"; // Images reference: https://undraw.co/
 import { Colors } from "@/constants/Colors"; 
-import { FontAwesome } from "@expo/vector-icons"; // For the search and category icons **for now**: https://oblador.github.io/react-native-vector-icons/
+import { FontAwesome } from "@expo/vector-icons"; // For the search and category icons: https://oblador.github.io/react-native-vector-icons/
 import { useRouter } from "expo-router";
 
-export default function Home() {
+export default function Discover() {
 
 // Define data types used 
 type CategoryId = "outdoors" | "hotspot" | "dining" | "culture" | "local";
@@ -36,9 +36,6 @@ interface ActivityCard {
   ratingCount: number; 
 };
 
-// Holds all activity categories 
-// Muted pastel color palette for category icons - follows darker background lighter icon color convention
-// Consider more vibrant palette instead? 
 const activityCategories: ActivityCategory[] = [
   { 
     id: "outdoors", 
@@ -78,7 +75,6 @@ const activityCategories: ActivityCategory[] = [
 ];
 
 // Holds all activity cards 
-// Add more cards for filtering through all different categories
 const activityCards: ActivityCard[] = [ 
   { 
     id: "elgin", 
@@ -88,7 +84,7 @@ const activityCards: ActivityCard[] = [
     contact: "(403) - 111 - 1111", 
     description: `Elgin Hill is a park located in Calgary, Alberta, Canada. It is part of the City of Calgary's extensive network of parks, which includes notable locations such as Nose Hill Park, Poppy Plaza, Ranchlands Park, and many others. While specific details about Elgin Hill are limited, it is likely to offer recreational activities and green spaces typical of Calgary's parks, such as walking trails, picnic areas, and natural landscapes.`,
     image: require("@/assets/images/camp.png"),
-    category: ["outdoors"], 
+    category: ["outdoors", "local"], 
     tags: ["#Nature", "#Relax", "#Park", "#Pet-Friendly", "#Leisure"],
     price: "$",
     rating: 4.6,
@@ -107,6 +103,118 @@ const activityCards: ActivityCard[] = [
     tags: ["#Vegan", "#Brunch", "#CozyVibes", "#Family-Friendly", "#PhotoReady"],
     price: "$$",
     rating: 4.8,
+    ratingCount: 120, 
+  },  
+  { 
+    id: "pages", 
+    title: "Pages Bookstore", 
+    address: "1135 Kensington Road NW", 
+    hours: "Tuesday - Sunday, 10:00AM - 5:00PM", 
+    contact: "(403) - 268 - 4100", 
+    description: `Pages Bookstore is a charming independent bookshop in Kensington, Calgary featuring a curated selection of books with focus on local authors. The cozy space offers reading nooks, an in-store café, and hosts regular community events including author readings and book clubs. With knowledgeable staff and a warm atmosphere, it has become a beloved cultural hub in this vibrant neighborhood.`,
+    image: require("@/assets/images/books.png"),
+    category: ["culture", "local"], 
+    tags: ["#Literature", "#Charming", "#LocalAuthors", "#CozySpace", "#CommunityEvents"],
+    price: "$",
+    rating: 4.9,
+    ratingCount: 71, 
+  },
+  { 
+    id: "fishcreek", 
+    title: "Fish Creek Park", 
+    address: "15979 Bow Bottom Trail SE", 
+    hours: "Monday - Sunday, 5:00AM - 11:00PM", 
+    contact: "(403) - 297 - 5293", 
+    description: `Fish Creek Provincial Park is one of the largest urban parks in North America, spanning 19 km². It offers a variety of recreational activities including hiking, cycling, bird watching, and picnicking. The park features extensive trails, interpretive programs, and seasonal activities. With its diverse ecosystems, from wetlands to forests, it's a haven for wildlife and nature enthusiasts in Calgary looking for fun.`,
+    image: require("@/assets/images/hiking.png"),
+    category: ["outdoors", "local"], 
+    tags: ["#Hiking", "#Nature", "#Wildlife", "#Trails", "#Family-Friendly"],
+    price: "$",
+    rating: 4.5,
+    ratingCount: 89, 
+  },
+  { 
+    id: "analog", 
+    title: "Analog Coffee", 
+    address: "102 Mahogany Centre SE", 
+    hours: "Monday - Sunday, 11:00AM - 10:00PM", 
+    contact: "(403) - 475 - 5537", 
+    description: `Analog Coffee is a beloved specialty coffee shop in Calgary's Mahogany neighborhood. Known for its meticulously crafted beverages using ethically sourced beans, this trendy café offers a warm, minimalist atmosphere perfect for both work and socializing. Their signature pour-overs and espresso drinks are complemented by a selection of locally-made pastries and light fare.`,
+    image: require("@/assets/images/coffee.png"),
+    category: ["dining", "hotspot"], 
+    tags: ["#Vegan", "#Coffee", "#Pastries", "#Trendy", "#WorkFriendly"],
+    price: "$$$",
+    rating: 4.8,
+    ratingCount: 877, 
+  },
+  { 
+    id: "farmers", 
+    title: "Crossroads Market", 
+    address: "1803 14 Ave NE", 
+    hours: "Monday - Sunday, 9:00AM - 5:00PM", 
+    contact: "(403) - 232 - 9300", 
+    description: `Crossroads Market is Calgary's largest year-round indoor market featuring over 150 vendors. The vibrant marketplace offers fresh local produce, international foods, artisanal goods, antiques, and unique crafts. Visitors can enjoy diverse food stalls serving everything from farm-fresh ingredients to prepared ethnic cuisines. The market has become a beloved community hub where locals gather to support small businesses.`,
+    image: require("@/assets/images/farmers.png"),
+    category: ["local", "culture"], 
+    tags: ["#LocalProduce", "#FoodStalls", "#Artisanal", "#Shopping", "#Community"],
+    price: "$",
+    rating: 4.8,
+    ratingCount: 51, 
+  },
+  { 
+    id: "telus", 
+    title: "TELUS Spark", 
+    address: "220 St. George's Dr NE", 
+    hours: "Wednesday - Sunday, 10:00AM - 5:00PM", 
+    contact: "(403) - 543 - 5115", 
+    description: `TELUS Spark is Calgary's science center, offering an immersive and interactive experience for visitors of all ages. The facility features hands-on exhibits, a dome theatre, and innovative programming that makes science, technology, engineering, and mathematics accessible and engaging. With rotating exhibits, live demonstrations, and special events, TELUS Spark inspires curiosity and creativity.`,
+    image: require("@/assets/images/space.png"),
+    category: ["culture", "hotspot"], 
+    tags: ["#Science", "#Explore", "#Space", "#Educational", "#Creativity"],
+    price: "$$$",
+    rating: 4.4,
+    ratingCount: 523, 
+  },
+  { 
+    id: "calawaypark", 
+    title: "Calaway Park", 
+    address: "245033 Range Road 33", 
+    hours: "Saturday - Sunday, 10:00AM - 7:00PM", 
+    contact: "(403) - 240 - 3822", 
+    description: `Calaway Park is Western Canada's largest outdoor family amusement park featuring over 32 rides, live stage shows, and dozens of games. From thrilling roller coasters to gentle attractions for younger visitors, the park offers excitement for all ages. Enjoy delicious treats and catch entertaining performances throughout your visit. The park's festive atmosphere and variety of attractions make it a perfect destination.`,
+    image: require("@/assets/images/rides.png"),
+    category: ["outdoors", "hotspot", "culture"], 
+    tags: ["#Amusement", "#Rides", "#Family-Friendly", "#Entertainment", "#Thrills"],
+    price: "$$$",
+    rating: 4.3,
+    ratingCount: 692, 
+  },
+  { 
+    id: "greta", 
+    title: "GRETA Bar", 
+    address: "213 10 Ave SW", 
+    hours: "Monday - Friday, 9:00PM - 2:00AM", 
+    contact: "(403) - 244 - 0444", 
+    description: `GRETA Bar is a vibrant arcade-themed bar in downtown Calgary combining nostalgic gaming with modern dining. The venue features classic arcade games, pinball machines, and interactive activities alongside craft beers and creative cocktails. Known for its lively atmosphere and shareable street food menu, it's a popular hotspot for both casual outings and special events, offering a perfect blend of entertainment and nightlife.`,
+    image: require("@/assets/images/beer.png"),
+    category: ["hotspot", "dining", "culture"], 
+    tags: ["#Pub", "#NightLife", "#ComfortFood", "#Trendy", "#Chill", "#GamesNight", "#Group-Friendly"],
+    price: "$$$",
+    rating: 4.8,
+    ratingCount: 576, 
+  },
+  { 
+    id: "studio", 
+    title: "Studio Bell", 
+    address: "300-851 4 Street SE", 
+    hours: "Wednesday - Sunday, 11:00AM - 5:00PM", 
+    contact: "(403) - 770 - 1333", 
+    description: `Studio Bell is home to the National Music Centre, a landmark cultural destination dedicated to celebrating music in Canada. The architecturally stunning building houses over 2,000 rare instruments and artifacts, interactive exhibits, recording facilities, and performance spaces. Visitors can explore Canada's rich musical history and experience the power of music through innovative installations.`,
+    image: require("@/assets/images/music.png"),
+    category: ["culture", "local", "hotspot"], 
+    tags: ["#Music", "#Entertainment", "#Community", "#DateNight", "#Child-Friendly"],
+    price: "$",
+    rating: 4.6,
     ratingCount: 120, 
   },
 ]; 
@@ -343,7 +451,7 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    color: Colors.grey,
+    color: "#333",
     fontSize: 16, 
     fontFamily: "quicksand-semibold", 
   },
@@ -358,7 +466,7 @@ const styles = StyleSheet.create({
     color: Colors.grey, 
   },
   header: {
-    fontSize: 28,  
+    fontSize: 26,  
     fontFamily: "quicksand-bold",
     color: Colors.primary,
   },
@@ -457,13 +565,12 @@ const styles = StyleSheet.create({
   tripCard: {
     backgroundColor: Colors.white,
     borderRadius: 15,
-    // Box shadow generator: https://ethercreative.github.io/react-native-shadow-generator/
-    elevation: 4,
+    elevation: 6,
     overflow: "hidden",
     shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.23,
-    shadowRadius: 2.62,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
     marginBottom: 22,
   },
   cardImage: {

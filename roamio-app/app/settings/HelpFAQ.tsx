@@ -56,10 +56,10 @@ export default function HelpFAQ() {
 
         <View style={styles.faqItem}>
           <Text style={styles.question}>
-            Q: What's the difference between 'Viewer' and 'Trip Mate' when sharing itineraries?
+            Q: What's the difference between "Viewer" and "Trip Mate" when sharing itineraries?
           </Text>
           <Text style={styles.answer}>
-            A: 'Viewer' can only see your itinerary, while 'Trip Mate' can edit and add to it. Choose the option that best suits your needs.
+            A: "Viewer" can only see your itinerary, while "Trip Mate" can edit and add to it. Choose the option that best suits your needs.
           </Text>
         </View>
 
