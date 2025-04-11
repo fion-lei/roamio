@@ -376,15 +376,50 @@ export default function Itinerary() {
                             gap: 8,
                           }}
                         >
-                          {item.shared_with &&
+                          {item.user_email === user.email ? (
+                            <View
+                              style={[
+                                styles.sharedBadge,
+                                { backgroundColor: "red" },
+                              ]}
+                            >
+                              <Text
+                                style={[
+                                  styles.sharedBadgeText,
+                                  { color: "#fff" },
+                                ]}
+                              >
+                                Owner
+                              </Text>
+                            </View>
+                          ) : item.shared_with &&
                             item.shared_with.trim() !== "" &&
-                            item.shared_with.trim() !== "[]" && (
-                              <View style={styles.sharedBadge}>
-                                <Text style={styles.sharedBadgeText}>
-                                  Shared
-                                </Text>
-                              </View>
-                            )}
+                            item.shared_with.trim() !== "[]" ? (
+                            <View
+                              style={[
+                                styles.sharedBadge,
+                                item.shared_with.includes("viewer")
+                                  ? { backgroundColor: "orange" }
+                                  : item.shared_with.includes("trip-mate")
+                                  ? { backgroundColor: "green" }
+                                  : {},
+                              ]}
+                            >
+                              <Text
+                                style={[
+                                  styles.sharedBadgeText,
+                                  { color: "#fff" },
+                                ]}
+                              >
+                                {item.shared_with.includes("viewer")
+                                  ? "Viewer"
+                                  : item.shared_with.includes("trip-mate")
+                                  ? "Trip-Mate"
+                                  : "Shared"}
+                              </Text>
+                            </View>
+                          ) : null}
+
                           <Pressable
                             onPress={() => handleDeleteItinerary(item.id)}
                           >
@@ -473,15 +508,66 @@ export default function Itinerary() {
                           />
                           <Text style={styles.title}>{item.title}</Text>
                         </View>
-                        <Pressable
-                          onPress={() => handleDeleteItinerary(item.id)}
+                        <View
+                          style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            gap: 8,
+                          }}
                         >
-                          <FontAwesome
-                            name="minus-circle"
-                            size={22}
-                            color={Colors.coral}
-                          />
-                        </Pressable>
+                          {item.user_email === user.email ? (
+                            <View
+                              style={[
+                                styles.sharedBadge,
+                                { backgroundColor: "red" },
+                              ]}
+                            >
+                              <Text
+                                style={[
+                                  styles.sharedBadgeText,
+                                  { color: "#fff" },
+                                ]}
+                              >
+                                Owner
+                              </Text>
+                            </View>
+                          ) : item.shared_with &&
+                            item.shared_with.trim() !== "" &&
+                            item.shared_with.trim() !== "[]" ? (
+                            <View
+                              style={[
+                                styles.sharedBadge,
+                                item.shared_with.includes("viewer")
+                                  ? { backgroundColor: "orange" }
+                                  : item.shared_with.includes("trip-mate")
+                                  ? { backgroundColor: "green" }
+                                  : {},
+                              ]}
+                            >
+                              <Text
+                                style={[
+                                  styles.sharedBadgeText,
+                                  { color: "#fff" },
+                                ]}
+                              >
+                                {item.shared_with.includes("viewer")
+                                  ? "Viewer"
+                                  : item.shared_with.includes("trip-mate")
+                                  ? "Trip-Mate"
+                                  : "Shared"}
+                              </Text>
+                            </View>
+                          ) : null}
+                          <Pressable
+                            onPress={() => handleDeleteItinerary(item.id)}
+                          >
+                            <FontAwesome
+                              name="minus-circle"
+                              size={22}
+                              color={Colors.coral}
+                            />
+                          </Pressable>
+                        </View>
                       </View>
 
                       <Text style={styles.date}>
@@ -558,15 +644,66 @@ export default function Itinerary() {
                           />
                           <Text style={styles.title}>{item.title}</Text>
                         </View>
-                        <Pressable
-                          onPress={() => handleDeleteItinerary(item.id)}
+                        <View
+                          style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            gap: 8,
+                          }}
                         >
-                          <FontAwesome
-                            name="minus-circle"
-                            size={22}
-                            color={Colors.coral}
-                          />
-                        </Pressable>
+                          {item.user_email === user.email ? (
+                            <View
+                              style={[
+                                styles.sharedBadge,
+                                { backgroundColor: "red" },
+                              ]}
+                            >
+                              <Text
+                                style={[
+                                  styles.sharedBadgeText,
+                                  { color: "#fff" },
+                                ]}
+                              >
+                                Owner
+                              </Text>
+                            </View>
+                          ) : item.shared_with &&
+                            item.shared_with.trim() !== "" &&
+                            item.shared_with.trim() !== "[]" ? (
+                            <View
+                              style={[
+                                styles.sharedBadge,
+                                item.shared_with.includes("viewer")
+                                  ? { backgroundColor: "orange" }
+                                  : item.shared_with.includes("trip-mate")
+                                  ? { backgroundColor: "green" }
+                                  : {},
+                              ]}
+                            >
+                              <Text
+                                style={[
+                                  styles.sharedBadgeText,
+                                  { color: "#fff" },
+                                ]}
+                              >
+                                {item.shared_with.includes("viewer")
+                                  ? "Viewer"
+                                  : item.shared_with.includes("trip-mate")
+                                  ? "Trip-Mate"
+                                  : "Shared"}
+                              </Text>
+                            </View>
+                          ) : null}
+                          <Pressable
+                            onPress={() => handleDeleteItinerary(item.id)}
+                          >
+                            <FontAwesome
+                              name="minus-circle"
+                              size={22}
+                              color={Colors.coral}
+                            />
+                          </Pressable>
+                        </View>
                       </View>
                       <Text style={styles.date}>
                         {`${formatDate(item.fromDate)} - ${formatDate(
@@ -649,7 +786,10 @@ export default function Itinerary() {
                         ? formatDate(newTrip.fromDate)
                         : "MM/DD/YYYY"}
                     </Text>
-                    <FontAwesome name="calendar-o" style={styles.dateTimeIcon} />
+                    <FontAwesome
+                      name="calendar-o"
+                      style={styles.dateTimeIcon}
+                    />
                   </Pressable>
                 </View>
 
@@ -665,7 +805,10 @@ export default function Itinerary() {
                         ? formatDate(newTrip.toDate)
                         : "MM/DD/YYYY"}
                     </Text>
-                    <FontAwesome name="calendar-o" style={styles.dateTimeIcon} />
+                    <FontAwesome
+                      name="calendar-o"
+                      style={styles.dateTimeIcon}
+                    />
                   </Pressable>
                 </View>
               </View>
@@ -713,7 +856,7 @@ export default function Itinerary() {
                     {newTrip.description.length}/{TRIP_LENGTH_LIMIT}
                   </Text>
                 </View>
-                
+
                 {newTrip.description.length === TRIP_LENGTH_LIMIT && (
                   <Text style={styles.warningText}>
                     Maximum character limit reached
@@ -1034,16 +1177,15 @@ const styles = StyleSheet.create({
     color: Colors.coral,
   },
   sharedBadge: {
-    backgroundColor: "mediumseagreen", // Use your coral color
+    backgroundColor: "mediumseagreen", 
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 12,
-    marginRight: 8,
   },
   sharedBadgeText: {
     color: "#fff",
     fontSize: 13,
-    fontFamily: "quicksand-bold", // Ensure this font is loaded
+    fontFamily: "quicksand-bold",
   },
   charCounter: {
     marginLeft: 10,
@@ -1101,5 +1243,4 @@ const styles = StyleSheet.create({
     color: Colors.grey,
     textAlign: "center",
   },
-  
 });

@@ -1,4 +1,6 @@
 itinerary_id,user_email,trip_title,trip_description,start_date,end_date,destinations,shared_with
 ,,,,,,,
-1744339814628,test1@gmail.com,Test,Test,04/10/2025,05/10/2025,,"[{""email"":""test@gmail.com"",""access"":""trip-mate"",""friend_name"":""Test"",""owner_name"":""T""}]"
-1744340640558,test@gmail.com,Test 1,Test,05/10/2025,07/10/2025,,"[{""email"":""test1@gmail.com"",""access"":""viewer"",""friend_name"":""T"",""owner_name"":""Test""}]"
+1744339814628,test1@gmail.com,Test Trip Mate Current!,Test,04/10/2025,05/10/2025,,"[{""email"":""test@gmail.com"",""access"":""trip-mate"",""friend_name"":""Test"",""owner_name"":""T""}]"
+1744340640558,test@gmail.com,Test Viewer Upcoming,Test,05/10/2025,07/10/2025,,"[{""email"":""test1@gmail.com"",""access"":""viewer"",""friend_name"":""T"",""owner_name"":""Test""}]"
+1744340640559,test@gmail.com,Test Trip Mate Past,Test,02/10/2025,03/10/2025,,"[{""email"":""test1@gmail.com"",""access"":""trip-mate"",""friend_name"":""T"",""owner_name"":""Test""}]"
+1744344949474,test@gmail.com,Test Owner,Test,04/10/2025,07/10/2025,,"[{""email"":""test1@gmail.com"",""access"":""trip-mate"",""friend_name"":""T"",""owner_name"":""Test"",""owner_email"":""test@gmail.com""}]"

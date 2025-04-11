@@ -1116,6 +1116,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "black",
     fontFamily: "quicksand-semibold",
+    textAlign:"center"
   },
   requestItem: {
     marginBottom: 10,
