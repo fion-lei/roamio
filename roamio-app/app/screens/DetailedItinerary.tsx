@@ -727,6 +727,7 @@ const DetailedItinerary = () => {
                         router.push({
                           pathname: "/screens/EventDetails",
                           params: {
+                            userRole: userRole,
                             activity: item.activity,
                             time: item.time,
                             duration: item.duration,
