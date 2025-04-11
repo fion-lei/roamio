@@ -278,7 +278,16 @@ const DetailScreen = () => {
           icon={<FontAwesome name="plane" size={20} color={Colors.coral} />}
           text={traveller_type}
         />
-        <InfoItem icon={<FontAwesome name="bars" size={20} color={Colors.coral} />} text={bio} />
+      </View>
+
+      <View style={styles.bioSection}>
+        <View style={styles.bioHeader}>
+          <Text style={styles.bioTitle}>Bio</Text>
+          <View style={[styles.infoContainer, { marginTop: 2 }]}>
+            <FontAwesome name="bars" size={20} color={Colors.coral} />
+          </View>
+        </View>
+        <Text style={styles.bioText}>{bio}</Text>
       </View>
 
       <View style={styles.sendCard}>
@@ -384,10 +393,11 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   infoList: {
-    marginBottom: 32,
+    marginBottom: 24,
     backgroundColor: Colors.palestPink,
     borderRadius: 12,
-    padding: 10,
+    padding: 14,
+    paddingTop: 16,
   },
   infoItem: { 
     flexDirection: "row", 
@@ -397,15 +407,40 @@ const styles = StyleSheet.create({
   },
   infoContainer: { 
     width: 30, 
+    height: 20,
     alignItems: "center",
     justifyContent: "center",
   },
   infoText: { 
     marginLeft: 12, 
+    marginBottom: 4,
     fontSize: 18, 
     fontFamily: "quicksand-semibold", 
     color: Colors.primary,
     flex: 1,
+  },
+  bioSection: {
+    marginBottom: 24,
+    backgroundColor: Colors.palestPink,
+    borderRadius: 12,
+    padding: 16,
+  },
+  bioHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  bioTitle: {
+    fontSize: 18,
+    fontFamily: "quicksand-bold",
+    color: Colors.primary,
+    marginRight: 4, 
+  },
+  bioText: {
+    fontSize: 16,
+    fontFamily: "quicksand-regular",
+    color: Colors.primary,
+    lineHeight: 22,
   },
   sendCard: {
     flexDirection: "row",
@@ -421,7 +456,6 @@ const styles = StyleSheet.create({
     height: 40, 
     borderRadius: 20, 
     marginRight: 12,
-    backgroundColor: Colors.white,
   },
   musicInfo: { flex: 1 },
   musicTitle: { 
