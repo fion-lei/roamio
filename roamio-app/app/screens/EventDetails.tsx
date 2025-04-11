@@ -5,9 +5,8 @@ import {
     Image,
     StyleSheet,
     ScrollView,
-    TouchableOpacity,
-    Modal,
     Pressable,
+    Modal,
     TouchableWithoutFeedback,
     Alert,
     Share,
@@ -54,9 +53,9 @@ const InfoItem = ({ icon, text, showEditButton, onEditPress }: InfoItemProps) =>
         </View>
         <Text style={styles.infoText}>{text}</Text>
         {showEditButton && (
-            <TouchableOpacity onPress={onEditPress} style={styles.editButton}>
+            <Pressable onPress={onEditPress} style={styles.editButton}>
                 <FontAwesome name="pencil" size={20} color={Colors.coral} />
-            </TouchableOpacity>
+            </Pressable>
         )}
     </View>
 );
@@ -142,11 +141,7 @@ const EventDetails = () => {
         description, 
         address, 
         contact, 
-        hours, 
-        price, 
-        image,
         eventId,
-        isMultiDay,
         date,
     } = route.params as RouteParams; 
 
@@ -368,8 +363,16 @@ const EventDetails = () => {
         const activityImages: Record<string, any> = {
             "Elgin Hill": require("@/assets/images/camp.png"), 
             "OEB Breakfast Co.": require("@/assets/images/food.png"), 
+            "Pages Bookstore": require("@/assets/images/books.png"),
+            "Fish Creek Park": require("@/assets/images/hiking.png"),
+            "Analog Coffee": require("@/assets/images/coffee.png"),
+            "Crossroads Market": require("@/assets/images/farmers.png"),
+            "TELUS Spark": require("@/assets/images/space.png"),
+            "Calaway Park": require("@/assets/images/rides.png"),
+            "Commonwealth Bar": require("@/assets/images/beer.png"),
+            "Studio Bell": require("@/assets/images/music.png"),
         };
-        
+        // Or return default image (brand logo) if no activity image found
         return activityImages[activity] || require("@/assets/images/logo_coral.png");
     };
 
@@ -433,9 +436,9 @@ const EventDetails = () => {
                 <View style={styles.shareInfo}>
                     <Text style={styles.shareTitle}>Share Event</Text>
                 </View>
-                <TouchableOpacity onPress={handleShare}>
-                    <Ionicons name="share-outline" size={24} color={Colors.coral} style={styles.shareIcon} />
-                </TouchableOpacity>
+                <Pressable onPress={handleShare}>
+                    <Ionicons name="share-outline" size={26} color={Colors.coral} style={styles.shareIcon} />
+                </Pressable>
             </View>
 
             {/* Time Editing Modal */}
@@ -603,6 +606,7 @@ const styles = StyleSheet.create({
     },
     shareIcon: {
         marginHorizontal: 10,
+        color: Colors.coral, 
     },
     modalOverlay: {
         flex: 1,

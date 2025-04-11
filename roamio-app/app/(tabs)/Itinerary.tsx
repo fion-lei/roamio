@@ -17,7 +17,7 @@ import { router, useFocusEffect } from "expo-router";
 import { useUser } from "@/contexts/UserContext";
 
 const TRIP_TITLE_LIMIT = 20; // New limit for trip title (20 characters)
-const TRIP_LENGTH_LIMIT = 50; // Existing limit for trip description
+const TRIP_LENGTH_LIMIT = 50; // Existing limit for trip description (50 characters)
 
 // Function to format dates in "MM/DD/YYYY" format
 const formatDate = (date: Date | null) => {

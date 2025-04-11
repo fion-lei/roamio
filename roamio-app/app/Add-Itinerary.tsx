@@ -9,12 +9,20 @@ import { useRouter } from "expo-router";
 
 export default function AddItinerary() {
   
-  // Gets the appropriate image filename based on activity [ADD MORE LATER]
+  // Gets the appropriate image filename based on activity
   const getImageForActivity = (title: string): string => {
     // Map activity titles to specific images
     const activityImageMap: Record<string, string> = {
       "Elgin Hill": "camp.png",
       "OEB Breakfast Co.": "food.png",
+      "Pages Bookstore": "books.png",
+      "Fish Creek Park": "hiking.png",
+      "Analog Coffee": "coffee.png",
+      "Crossroads Market": "farmers.png",
+      "TELUS Spark": "space.png",
+      "Calaway Park": "rides.png",
+      "Commonwealth Bar": "beer.png",
+      "Studio Bell": "music.png",
     };
     
     // Returns the mapped image or default image if no match found (brand logo)

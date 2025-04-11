@@ -271,16 +271,16 @@ const DetailScreen = () => {
       </View>
 
       <View style={styles.infoList}>
-        <InfoItem icon={<Entypo name="phone" size={20} />} text={phone} />
+        <InfoItem icon={<Entypo name="phone" size={20} color={Colors.coral} />} text={phone} />
         <InfoItem
-          icon={<Feather name="mail" size={20} />}
+          icon={<Feather name="mail" size={20} color={Colors.coral} />}
           text={email_friend}
         />
         <InfoItem
-          icon={<FontAwesome name="plane" size={20} />}
+          icon={<FontAwesome name="plane" size={20} color={Colors.coral} />}
           text={traveller_type}
         />
-        <InfoItem icon={<FontAwesome name="bars" size={20} />} text={bio} />
+        <InfoItem icon={<FontAwesome name="bars" size={20} color={Colors.coral} />} text={bio} />
       </View>
 
       <View style={styles.sendCard}>
@@ -290,12 +290,12 @@ const DetailScreen = () => {
         </View>
         <TouchableOpacity onPress={() => setModalVisible(true)}>
           {sent ? (
-            <Ionicons name="checkmark" size={24} style={styles.sendIcon} />
+            <Ionicons name="checkmark" size={24} color={Colors.coral} style={styles.sendIcon} />
           ) : (
             <Ionicons
               name="send"
               size={24}
-              color="black"
+              color={Colors.coral}
               style={styles.sendIcon}
             />
           )}
@@ -401,7 +401,7 @@ const styles = StyleSheet.create({
   },
   avatar: { width: 40, height: 40, borderRadius: 20, marginRight: 10 },
   musicInfo: { flex: 1 },
-  musicTitle: { fontSize: 18, fontFamily: "quicksand-bold" },
+  musicTitle: { fontSize: 18, fontFamily: "quicksand-bold", color: Colors.coral },
   itineraryText: { fontFamily: "quicksand-semibold", fontSize: 16 },
   unfriendButton: {
     alignSelf: "flex-end",
@@ -468,7 +468,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   shareButtonText: {
-    color: "white",
+    color: Colors.white,
     textAlign: "center",
     fontFamily: "quicksand-bold",
   },

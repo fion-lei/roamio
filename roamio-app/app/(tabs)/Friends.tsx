@@ -7,7 +7,7 @@ import {
   StyleSheet,
   FlatList,
   Image,
-  TouchableOpacity,
+  Pressable,
   Modal,
   Alert,
 } from "react-native";
@@ -49,6 +49,7 @@ export default function FriendsScreen() {
   const [activeTripTab, setActiveTripTab] = useState<"my" | "shared">("my");
   
   const router = useRouter();
+  
   // Trips State
   const [trips, setTrips] = useState<Itinerary[]>([]);
 
@@ -377,7 +378,7 @@ export default function FriendsScreen() {
       <View style={styles.headerRow}>
         <Text style={styles.sectionTitle}>Your Friends</Text>
         <View style={{ flexDirection: "row", gap: 10, alignItems: "center" }}>
-          <TouchableOpacity
+          <Pressable
             onPress={() => setShowDropdown(true)}
             style={styles.dropdownToggleMini}
           >
@@ -385,23 +386,24 @@ export default function FriendsScreen() {
               {filterType === "default" ? "Filter" : filterType}
             </Text>
             <FontAwesome name="filter" size={20} color="#d9534f" />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => setShowFriendRequestModal(true)}>
+          </Pressable>
+          <Pressable 
+            onPress={() => setShowFriendRequestModal(true)}
+          >
             <FontAwesome name="user-plus" size={24} color={Colors.coral} />
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </View>
 
       {/* Filter Dropdown Modal */}
       <Modal visible={showDropdown} transparent animationType="fade">
-        <TouchableOpacity
+        <Pressable
           style={styles.modalOverlay}
           onPress={() => setShowDropdown(false)}
-          activeOpacity={1}
         >
           <View style={styles.modalContent}>
             {["Favorites", "A-Z", "Z-A"].map((option) => (
-              <TouchableOpacity
+              <Pressable
                 key={option}
                 onPress={() => {
                   if (option === "A-Z") setFilterType("A-Z");
@@ -412,10 +414,10 @@ export default function FriendsScreen() {
                 style={styles.modalItem}
               >
                 <Text style={styles.modalText}>{option}</Text>
-              </TouchableOpacity>
+              </Pressable>
             ))}
           </View>
-        </TouchableOpacity>
+        </Pressable>
       </Modal>
 
       <Modal
@@ -424,16 +426,15 @@ export default function FriendsScreen() {
         animationType="fade"
         onRequestClose={() => setShowFriendRequestModal(false)}
       >
-        <TouchableOpacity
+        <Pressable
           style={modalStyles.modalOverlay}
-          activeOpacity={1}
           onPress={() => setShowFriendRequestModal(false)}
         >
           <TouchableWithoutFeedback>
             <View style={[modalStyles.modalContent]}>
               {/* Modal Tab Header */}
               <View style={modalStyles.modalTabContainer}>
-                <TouchableOpacity
+                <Pressable
                   style={[
                     modalStyles.modalTabButton,
                     friendModalTab === "add" && modalStyles.modalTabActive,
@@ -449,8 +450,8 @@ export default function FriendsScreen() {
                   >
                     Add Friend
                   </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
+                </Pressable>
+                <Pressable
                   style={[
                     modalStyles.modalTabButton,
                     friendModalTab === "requests" && modalStyles.modalTabActive,
@@ -466,13 +467,13 @@ export default function FriendsScreen() {
                   >
                     Friend Requests
                   </Text>
-                </TouchableOpacity>
+                </Pressable>
               </View>
 
               {friendModalTab === "add" ? (
                 <>
                   <View style={modalStyles.toggleContainer}>
-                    <TouchableOpacity
+                    <Pressable
                       style={[
                         modalStyles.toggleButton,
                         searchType === "phone" &&
@@ -481,8 +482,8 @@ export default function FriendsScreen() {
                       onPress={() => setSearchType("phone")}
                     >
                       <Text style={modalStyles.toggleText}>Phone</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
+                    </Pressable>
+                    <Pressable
                       style={[
                         modalStyles.toggleButton,
                         searchType === "email" &&
@@ -491,7 +492,7 @@ export default function FriendsScreen() {
                       onPress={() => setSearchType("email")}
                     >
                       <Text style={modalStyles.toggleText}>Email</Text>
-                    </TouchableOpacity>
+                    </Pressable>
                   </View>
                   {searchType === "phone" ? (
                     <View style={modalStyles.phoneInputRow}>
@@ -518,14 +519,14 @@ export default function FriendsScreen() {
                       keyboardType="email-address"
                     />
                   )}
-                  <TouchableOpacity
+                  <Pressable
                     style={modalStyles.addButton}
                     onPress={handleAddFriend}
                   >
                     <Text style={modalStyles.addButtonText}>
                       Send Friend Request
                     </Text>
-                  </TouchableOpacity>
+                  </Pressable>
                 </>
               ) : (
                 <>
@@ -559,7 +560,7 @@ export default function FriendsScreen() {
                           {request.name}
                         </Text>
                         <View style={{ flexDirection: "row", gap: 10 }}>
-                          <TouchableOpacity
+                          <Pressable
                             style={{
                               backgroundColor: "#ff8080",
                               padding: 8,
@@ -577,8 +578,8 @@ export default function FriendsScreen() {
                             >
                               Accept
                             </Text>
-                          </TouchableOpacity>
-                          <TouchableOpacity
+                          </Pressable>
+                          <Pressable
                             style={{
                               backgroundColor: "#ccc",
                               padding: 8,
@@ -596,7 +597,7 @@ export default function FriendsScreen() {
                             >
                               Decline
                             </Text>
-                          </TouchableOpacity>
+                          </Pressable>
                         </View>
                       </View>
                     ))
@@ -605,7 +606,7 @@ export default function FriendsScreen() {
               )}
             </View>
           </TouchableWithoutFeedback>
-        </TouchableOpacity>
+        </Pressable>
       </Modal>
 
       {unshareModalVisible && selectedItinerary && (
@@ -637,7 +638,7 @@ export default function FriendsScreen() {
                   }
                 }
                 return sharedWith.map((friend) => (
-                  <TouchableOpacity
+                  <Pressable
                     key={friend.email}
                     style={styles.friendUnshareOption}
                     onPress={async () => {
@@ -651,15 +652,15 @@ export default function FriendsScreen() {
                     <Text style={styles.requestUnshareText}>
                       {friend.friend_name}
                     </Text>
-                  </TouchableOpacity>
+                  </Pressable>
                 ));
               })()}
-              <TouchableOpacity
+              <Pressable
                 onPress={() => setUnshareModalVisible(false)}
                 style={styles.cancelButton}
               >
                 <Text style={styles.cancelButtonText}>Cancel</Text>
-              </TouchableOpacity>
+              </Pressable>
             </View>
           </View>
         </Modal>
@@ -682,7 +683,7 @@ export default function FriendsScreen() {
                 </Text>
                 <Text style={styles.friendPhone}>{item.phone}</Text>
               </View>
-              <TouchableOpacity
+              <Pressable
                 onPress={() =>
                   router.push({
                     pathname: "/screens/FriendsDetails",
@@ -700,14 +701,14 @@ export default function FriendsScreen() {
                 }
               >
                 <Text style={styles.menuDots}>⋯</Text>
-              </TouchableOpacity>
+              </Pressable>
             </View>
           )}
         />
       </View>
       {/* Segmented Control for Trips */}
       <View style={styles.segmentedControlContainer}>
-        <TouchableOpacity
+        <Pressable
           style={[
             styles.toggleButton,
             activeTripTab === "my" && styles.segmentButtonActive,
@@ -722,8 +723,8 @@ export default function FriendsScreen() {
           >
             My Trips Shared
           </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
+        </Pressable>
+        <Pressable
           style={[
             styles.toggleButton,
             activeTripTab === "shared" && styles.segmentButtonActive,
@@ -738,7 +739,7 @@ export default function FriendsScreen() {
           >
             Shared With Me
           </Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
 
       {/* Dynamic Trips With Friends Section */}
@@ -827,7 +828,7 @@ export default function FriendsScreen() {
 
               {isOwner ? (
                 // Owner: Unshare button to open modal for selective removal
-                <TouchableOpacity
+                <Pressable
                   style={styles.unshareButton}
                   onPress={() => {
                     setSelectedItinerary(item);
@@ -835,15 +836,15 @@ export default function FriendsScreen() {
                   }}
                 >
                   <FontAwesome name="trash-o" size={20} color="red" />
-                </TouchableOpacity>
+                </Pressable>
               ) : (
                 // Non-owner: Unadd button to remove self
-                <TouchableOpacity
+                <Pressable
                   style={styles.unaddButton}
                   onPress={() => handleUnadd(item.itinerary_id)}
                 >
                   <Feather name="x-circle" size={20} color="red" />
-                </TouchableOpacity>
+                </Pressable>
               )}
             </View>
           );
@@ -948,7 +949,6 @@ const styles = StyleSheet.create({
     color: "#d9534f",
     fontSize: 16,
     fontFamily: "quicksand-semibold",
-    // marginRight: 5,
   },
   toggleContainer: {
     flexDirection: "row",
@@ -1129,6 +1129,11 @@ const styles = StyleSheet.create({
     borderColor: Colors.coral,
     borderRadius: 10,
     backgroundColor: Colors.palestPink,
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 1.41,
+    elevation: 1,
   },
 
   requestUnshareText: {
@@ -1204,7 +1209,6 @@ const modalStyles = StyleSheet.create({
   modalTabContainer: {
     flexDirection: "row",
     justifyContent: "space-around",
-    // padding: 10,
     marginBottom: 20,
     width: "100%",
   },
@@ -1299,5 +1303,3 @@ const modalStyles = StyleSheet.create({
     width: "100%",
   },
 });
-
-//export default FriendsScreen;
