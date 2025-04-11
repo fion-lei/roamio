@@ -1177,7 +1177,6 @@ const styles = StyleSheet.create({
     color: Colors.coral,
   },
   sharedBadge: {
-    backgroundColor: "mediumseagreen", 
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 12,

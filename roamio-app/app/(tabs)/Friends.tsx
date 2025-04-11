@@ -47,9 +47,9 @@ export default function FriendsScreen() {
   const [emailSearch, setEmailSearch] = useState("");
   const [showFriendRequestModal, setShowFriendRequestModal] = useState(false);
   const [activeTripTab, setActiveTripTab] = useState<"my" | "shared">("my");
-  
+
   const router = useRouter();
-  
+
   // Trips State
   const [trips, setTrips] = useState<Itinerary[]>([]);
   // For prototyping, we define the current user email.
@@ -376,373 +376,376 @@ export default function FriendsScreen() {
           />
         </View>
 
-      {/* Header Row */}
-      <View style={styles.headerRow}>
-        <Text style={styles.sectionTitle}>Your Friends</Text>
-        <View style={{ flexDirection: "row", gap: 10, alignItems: "center" }}>
-          <Pressable
-            onPress={() => setShowDropdown(true)}
-            style={styles.dropdownToggleMini}
-          >
-            <Text style={styles.dropdownText}>
-              {filterType === "default" ? "Filter" : filterType}
-            </Text>
-            <FontAwesome name="filter" size={20} color="#d9534f" />
-          </Pressable>
-          <Pressable 
-            onPress={() => setShowFriendRequestModal(true)}
-          >
-            <FontAwesome name="user-plus" size={26} color={Colors.peachySalmon} />
-          </Pressable>
-        </View>
-      </View>
-
-      {/* Filter Dropdown Modal */}
-      <Modal visible={showDropdown} transparent animationType="fade">
-        <Pressable
-          style={styles.modalOverlay}
-          onPress={() => setShowDropdown(false)}
-        >
-          <View style={styles.modalContent}>
-            {["Favorites", "A-Z", "Z-A"].map((option) => (
-              <Pressable
-                key={option}
-                onPress={() => {
-                  if (option === "A-Z") setFilterType("A-Z");
-                  else if (option === "Z-A") setFilterType("Z-A");
-                  else setFilterType("Favorites");
-                  setShowDropdown(false);
-                }}
-                style={styles.modalItem}
-              >
-                <Text style={styles.modalText}>{option}</Text>
-              </Pressable>
-            ))}
+        {/* Header Row */}
+        <View style={styles.headerRow}>
+          <Text style={styles.sectionTitle}>Your Friends</Text>
+          <View style={{ flexDirection: "row", gap: 10, alignItems: "center" }}>
+            <Pressable
+              onPress={() => setShowDropdown(true)}
+              style={styles.dropdownToggleMini}
+            >
+              <Text style={styles.dropdownText}>
+                {filterType === "default" ? "Filter" : filterType}
+              </Text>
+              <FontAwesome name="filter" size={20} color="#d9534f" />
+            </Pressable>
+            <Pressable onPress={() => setShowFriendRequestModal(true)}>
+              <FontAwesome
+                name="user-plus"
+                size={26}
+                color={Colors.peachySalmon}
+              />
+            </Pressable>
           </View>
-        </Pressable>
-      </Modal>
+        </View>
 
-      <Modal
-        visible={showFriendRequestModal}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowFriendRequestModal(false)}
-      >
-        <Pressable
-          style={modalStyles.modalOverlay}
-          onPress={() => setShowFriendRequestModal(false)}
-        >
-          <TouchableWithoutFeedback>
-            <View style={[modalStyles.modalContent]}>
-              {/* Modal Tab Header */}
-              <View style={modalStyles.modalTabContainer}>
+        {/* Filter Dropdown Modal */}
+        <Modal visible={showDropdown} transparent animationType="fade">
+          <Pressable
+            style={styles.modalOverlay}
+            onPress={() => setShowDropdown(false)}
+          >
+            <View style={styles.modalContent}>
+              {["Favorites", "A-Z", "Z-A"].map((option) => (
                 <Pressable
-                  style={[
-                    modalStyles.modalTabButton,
-                    friendModalTab === "add" && modalStyles.modalTabActive,
-                  ]}
-                  onPress={() => setFriendModalTab("add")}
+                  key={option}
+                  onPress={() => {
+                    if (option === "A-Z") setFilterType("A-Z");
+                    else if (option === "Z-A") setFilterType("Z-A");
+                    else setFilterType("Favorites");
+                    setShowDropdown(false);
+                  }}
+                  style={styles.modalItem}
                 >
-                  <Text
-                    style={[
-                      modalStyles.modalTabText,
-                      friendModalTab === "add" &&
-                        modalStyles.modalTabTextActive,
-                    ]}
-                  >
-                    Add Friend
-                  </Text>
+                  <Text style={styles.modalText}>{option}</Text>
                 </Pressable>
-                <Pressable
-                  style={[
-                    modalStyles.modalTabButton,
-                    friendModalTab === "requests" && modalStyles.modalTabActive,
-                  ]}
-                  onPress={() => setFriendModalTab("requests")}
-                >
-                  <Text
-                    style={[
-                      modalStyles.modalTabText,
-                      friendModalTab === "requests" &&
-                        modalStyles.modalTabTextActive,
-                    ]}
-                  >
-                    Friend Requests
-                  </Text>
-                </Pressable>
-              </View>
-
-              {friendModalTab === "add" ? (
-                <>
-                  <View style={modalStyles.toggleContainer}>
-                    <Pressable
-                      style={[
-                        modalStyles.toggleButton,
-                        searchType === "phone" &&
-                          modalStyles.toggleButtonActive,
-                      ]}
-                      onPress={() => setSearchType("phone")}
-                    >
-                      <Text style={modalStyles.toggleText}>Phone</Text>
-                    </Pressable>
-                    <Pressable
-                      style={[
-                        modalStyles.toggleButton,
-                        searchType === "email" &&
-                          modalStyles.toggleButtonActive,
-                      ]}
-                      onPress={() => setSearchType("email")}
-                    >
-                      <Text style={modalStyles.toggleText}>Email</Text>
-                    </Pressable>
-                  </View>
-                  {searchType === "phone" ? (
-                    <View style={modalStyles.phoneInputRow}>
-                      <TextInput
-                        style={[
-                          modalStyles.modalInput,
-                          { flex: 1, fontSize: 20 },
-                        ]}
-                        value={phoneNumber}
-                        onChangeText={setPhoneNumber}
-                        placeholder="--- --- ---"
-                        placeholderTextColor="#4B5563"
-                        keyboardType="phone-pad"
-                      />
-                    </View>
-                  ) : (
-                    <TextInput
-                      style={modalStyles.modalInput}
-                      value={emailSearch}
-                      onChangeText={setEmailSearch}
-                      placeholder="abc@email.com"
-                      placeholderTextColor="#4B5563"
-                      autoCapitalize="none"
-                      keyboardType="email-address"
-                    />
-                  )}
-                  <Pressable
-                    style={modalStyles.addButton}
-                    onPress={handleAddFriend}
-                  >
-                    <Text style={modalStyles.addButtonText}>
-                      Send Friend Request
-                    </Text>
-                  </Pressable>
-                </>
-              ) : (
-                <>
-                  {friendRequests.length === 0 ? (
-                    <Text
-                      style={{
-                        fontFamily: "quicksand-medium",
-                        marginBottom: 10,
-                      }}
-                    >
-                      No friend requests at the moment.
-                    </Text>
-                  ) : (
-                    friendRequests.map((request) => (
-                      <View key={request.id} style={modalStyles.requestItem}>
-                        <Image
-                          source={request.avatar}
-                          style={{
-                            width: 40,
-                            height: 40,
-                            borderRadius: 20,
-                            marginBottom: 5,
-                          }}
-                        />
-                        <Text
-                          style={{
-                            fontFamily: "quicksand-bold",
-                            marginBottom: 5,
-                          }}
-                        >
-                          {request.name}
-                        </Text>
-                        <View style={{ flexDirection: "row", gap: 10 }}>
-                          <Pressable
-                            style={{
-                              backgroundColor: "#ff8080",
-                              padding: 8,
-                              borderRadius: 8,
-                            }}
-                            onPress={() =>
-                              handleAcceptFriendRequest(request.id)
-                            }
-                          >
-                            <Text
-                              style={{
-                                color: "#fff",
-                                fontFamily: "quicksand-bold",
-                              }}
-                            >
-                              Accept
-                            </Text>
-                          </Pressable>
-                          <Pressable
-                            style={{
-                              backgroundColor: "#ccc",
-                              padding: 8,
-                              borderRadius: 8,
-                            }}
-                            onPress={() =>
-                              handleDeclineFriendRequest(request.id)
-                            }
-                          >
-                            <Text
-                              style={{
-                                color: "#333",
-                                fontFamily: "quicksand-bold",
-                              }}
-                            >
-                              Decline
-                            </Text>
-                          </Pressable>
-                        </View>
-                      </View>
-                    ))
-                  )}
-                </>
-              )}
+              ))}
             </View>
-          </TouchableWithoutFeedback>
-        </Pressable>
-      </Modal>
+          </Pressable>
+        </Modal>
 
-      {unshareModalVisible && selectedItinerary && (
         <Modal
-          visible={unshareModalVisible}
+          visible={showFriendRequestModal}
           transparent
           animationType="fade"
-          onRequestClose={() => setUnshareModalVisible(false)}
+          onRequestClose={() => setShowFriendRequestModal(false)}
         >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Unshare Itinerary</Text>
-              <Text style={styles.modalSubtitle}>
-                Select a friend to unshare with
-              </Text>
-              {(() => {
-                // Parse shared_with again for the selected itinerary (or reuse from state if available)
-                let sharedWith: SharedFriend[] = [];
-                if (
-                  selectedItinerary.shared_with &&
-                  selectedItinerary.shared_with.trim() !== ""
-                ) {
-                  try {
-                    sharedWith = JSON.parse(
-                      selectedItinerary.shared_with
-                    ) as SharedFriend[];
-                  } catch (error) {
-                    console.error("Error parsing shared_with:", error);
-                  }
-                }
-                return sharedWith.map((friend) => (
+          <Pressable
+            style={modalStyles.modalOverlay}
+            onPress={() => setShowFriendRequestModal(false)}
+          >
+            <TouchableWithoutFeedback>
+              <View style={[modalStyles.modalContent]}>
+                {/* Modal Tab Header */}
+                <View style={modalStyles.modalTabContainer}>
                   <Pressable
-                    key={friend.email}
-                    style={styles.friendUnshareOption}
-                    onPress={async () => {
-                      await handleUnshare(
-                        selectedItinerary.itinerary_id,
-                        friend.email
-                      );
-                      setUnshareModalVisible(true);
-                    }}
+                    style={[
+                      modalStyles.modalTabButton,
+                      friendModalTab === "add" && modalStyles.modalTabActive,
+                    ]}
+                    onPress={() => setFriendModalTab("add")}
                   >
-                    <Text style={styles.requestUnshareText}>
-                      {friend.friend_name}
+                    <Text
+                      style={[
+                        modalStyles.modalTabText,
+                        friendModalTab === "add" &&
+                          modalStyles.modalTabTextActive,
+                      ]}
+                    >
+                      Add Friend
                     </Text>
                   </Pressable>
-                ));
-              })()}
-              <Pressable
-                onPress={() => setUnshareModalVisible(false)}
-                style={styles.cancelButton}
-              >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
-              </Pressable>
-            </View>
-          </View>
-        </Modal>
-      )}
+                  <Pressable
+                    style={[
+                      modalStyles.modalTabButton,
+                      friendModalTab === "requests" &&
+                        modalStyles.modalTabActive,
+                    ]}
+                    onPress={() => setFriendModalTab("requests")}
+                  >
+                    <Text
+                      style={[
+                        modalStyles.modalTabText,
+                        friendModalTab === "requests" &&
+                          modalStyles.modalTabTextActive,
+                      ]}
+                    >
+                      Friend Requests
+                    </Text>
+                  </Pressable>
+                </View>
 
-      {/* Friends List */}
-      <View style={styles.friendListContainer}>
-        <FlatList
-          data={filteredFriends}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <View style={styles.friendItem}>
-              <Image source={item.avatar} style={styles.avatar} />
-              <View style={styles.friendInfo}>
-                <Text style={styles.friendName}>
-                  {item.name}{" "}
-                  {item.favorited && (
-                    <FontAwesome name="star" size={16} color="#FFD700" />
-                  )}
-                </Text>
-                <Text style={styles.friendPhone}>{item.phone}</Text>
+                {friendModalTab === "add" ? (
+                  <>
+                    <View style={modalStyles.toggleContainer}>
+                      <Pressable
+                        style={[
+                          modalStyles.toggleButton,
+                          searchType === "phone" &&
+                            modalStyles.toggleButtonActive,
+                        ]}
+                        onPress={() => setSearchType("phone")}
+                      >
+                        <Text style={modalStyles.toggleText}>Phone</Text>
+                      </Pressable>
+                      <Pressable
+                        style={[
+                          modalStyles.toggleButton,
+                          searchType === "email" &&
+                            modalStyles.toggleButtonActive,
+                        ]}
+                        onPress={() => setSearchType("email")}
+                      >
+                        <Text style={modalStyles.toggleText}>Email</Text>
+                      </Pressable>
+                    </View>
+                    {searchType === "phone" ? (
+                      <View style={modalStyles.phoneInputRow}>
+                        <TextInput
+                          style={[
+                            modalStyles.modalInput,
+                            { flex: 1, fontSize: 20 },
+                          ]}
+                          value={phoneNumber}
+                          onChangeText={setPhoneNumber}
+                          placeholder="--- --- ---"
+                          placeholderTextColor="#4B5563"
+                          keyboardType="phone-pad"
+                        />
+                      </View>
+                    ) : (
+                      <TextInput
+                        style={modalStyles.modalInput}
+                        value={emailSearch}
+                        onChangeText={setEmailSearch}
+                        placeholder="abc@email.com"
+                        placeholderTextColor="#4B5563"
+                        autoCapitalize="none"
+                        keyboardType="email-address"
+                      />
+                    )}
+                    <Pressable
+                      style={modalStyles.addButton}
+                      onPress={handleAddFriend}
+                    >
+                      <Text style={modalStyles.addButtonText}>
+                        Send Friend Request
+                      </Text>
+                    </Pressable>
+                  </>
+                ) : (
+                  <>
+                    {friendRequests.length === 0 ? (
+                      <Text
+                        style={{
+                          fontFamily: "quicksand-medium",
+                          marginBottom: 10,
+                        }}
+                      >
+                        No friend requests at the moment.
+                      </Text>
+                    ) : (
+                      friendRequests.map((request) => (
+                        <View key={request.id} style={modalStyles.requestItem}>
+                          <Image
+                            source={request.avatar}
+                            style={{
+                              width: 40,
+                              height: 40,
+                              borderRadius: 20,
+                              marginBottom: 5,
+                            }}
+                          />
+                          <Text
+                            style={{
+                              fontFamily: "quicksand-bold",
+                              marginBottom: 5,
+                            }}
+                          >
+                            {request.name}
+                          </Text>
+                          <View style={{ flexDirection: "row", gap: 10 }}>
+                            <Pressable
+                              style={{
+                                backgroundColor: "#ff8080",
+                                padding: 8,
+                                borderRadius: 8,
+                              }}
+                              onPress={() =>
+                                handleAcceptFriendRequest(request.id)
+                              }
+                            >
+                              <Text
+                                style={{
+                                  color: "#fff",
+                                  fontFamily: "quicksand-bold",
+                                }}
+                              >
+                                Accept
+                              </Text>
+                            </Pressable>
+                            <Pressable
+                              style={{
+                                backgroundColor: "#ccc",
+                                padding: 8,
+                                borderRadius: 8,
+                              }}
+                              onPress={() =>
+                                handleDeclineFriendRequest(request.id)
+                              }
+                            >
+                              <Text
+                                style={{
+                                  color: "#333",
+                                  fontFamily: "quicksand-bold",
+                                }}
+                              >
+                                Decline
+                              </Text>
+                            </Pressable>
+                          </View>
+                        </View>
+                      ))
+                    )}
+                  </>
+                )}
               </View>
-              <Pressable
-                onPress={() =>
-                  router.push({
-                    pathname: "/screens/FriendsDetails",
-                    params: {
-                      name: item.name,
-                      phone: item.phone,
-                      email_friend: item.email_friend,
-                      avatar: item.avatar,
-                      first_name: item.first_name,
-                      owner_name: user.first_name,
-                      traveller_type: item.traveller_type,
-                      bio: item.bio,
-                    },
-                  })
-                }
-              >
-                <Text style={styles.menuDots}>⋯</Text>
-              </Pressable>
+            </TouchableWithoutFeedback>
+          </Pressable>
+        </Modal>
+
+        {unshareModalVisible && selectedItinerary && (
+          <Modal
+            visible={unshareModalVisible}
+            transparent
+            animationType="fade"
+            onRequestClose={() => setUnshareModalVisible(false)}
+          >
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContent}>
+                <Text style={styles.modalTitle}>Unshare Itinerary</Text>
+                <Text style={styles.modalSubtitle}>
+                  Select a friend to unshare with
+                </Text>
+                {(() => {
+                  // Parse shared_with again for the selected itinerary (or reuse from state if available)
+                  let sharedWith: SharedFriend[] = [];
+                  if (
+                    selectedItinerary.shared_with &&
+                    selectedItinerary.shared_with.trim() !== ""
+                  ) {
+                    try {
+                      sharedWith = JSON.parse(
+                        selectedItinerary.shared_with
+                      ) as SharedFriend[];
+                    } catch (error) {
+                      console.error("Error parsing shared_with:", error);
+                    }
+                  }
+                  return sharedWith.map((friend) => (
+                    <Pressable
+                      key={friend.email}
+                      style={styles.friendUnshareOption}
+                      onPress={async () => {
+                        await handleUnshare(
+                          selectedItinerary.itinerary_id,
+                          friend.email
+                        );
+                        setUnshareModalVisible(true);
+                      }}
+                    >
+                      <Text style={styles.requestUnshareText}>
+                        {friend.friend_name}
+                      </Text>
+                    </Pressable>
+                  ));
+                })()}
+                <Pressable
+                  onPress={() => setUnshareModalVisible(false)}
+                  style={styles.cancelButton}
+                >
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                </Pressable>
+              </View>
             </View>
-          )}
-        />
-      </View>
-      {/* Segmented Control for Trips */}
-      <View style={styles.segmentedControlContainer}>
-        <Pressable
-          style={[
-            styles.toggleButton,
-            activeTripTab === "my" && styles.segmentButtonActive,
-          ]}
-          onPress={() => setActiveTripTab("my")}
-        >
-          <Text
+          </Modal>
+        )}
+
+        {/* Friends List */}
+        <View style={styles.friendListContainer}>
+          <FlatList
+            data={filteredFriends}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
+              <View style={styles.friendItem}>
+                <Image source={item.avatar} style={styles.avatar} />
+                <View style={styles.friendInfo}>
+                  <Text style={styles.friendName}>
+                    {item.name}{" "}
+                    {item.favorited && (
+                      <FontAwesome name="star" size={16} color="#FFD700" />
+                    )}
+                  </Text>
+                  <Text style={styles.friendPhone}>{item.phone}</Text>
+                </View>
+                <Pressable
+                  onPress={() =>
+                    router.push({
+                      pathname: "/screens/FriendsDetails",
+                      params: {
+                        name: item.name,
+                        phone: item.phone,
+                        email_friend: item.email_friend,
+                        avatar: item.avatar,
+                        first_name: item.first_name,
+                        owner_name: user.first_name,
+                        traveller_type: item.traveller_type,
+                        bio: item.bio,
+                      },
+                    })
+                  }
+                >
+                  <Text style={styles.menuDots}>⋯</Text>
+                </Pressable>
+              </View>
+            )}
+          />
+        </View>
+        {/* Segmented Control for Trips */}
+        <View style={styles.segmentedControlContainer}>
+          <Pressable
             style={[
-              styles.segmentButtonText,
-              activeTripTab === "my" && styles.segmentButtonTextActive,
+              styles.toggleButton,
+              activeTripTab === "my" && styles.segmentButtonActive,
             ]}
+            onPress={() => setActiveTripTab("my")}
           >
-            My Trips Shared
-          </Text>
-        </Pressable>
-        <Pressable
-          style={[
-            styles.toggleButton,
-            activeTripTab === "shared" && styles.segmentButtonActive,
-          ]}
-          onPress={() => setActiveTripTab("shared")}
-        >
-          <Text
+            <Text
+              style={[
+                styles.segmentButtonText,
+                activeTripTab === "my" && styles.segmentButtonTextActive,
+              ]}
+            >
+              My Trips Shared
+            </Text>
+          </Pressable>
+          <Pressable
             style={[
-              styles.segmentButtonText,
-              activeTripTab === "shared" && styles.segmentButtonTextActive,
+              styles.toggleButton,
+              activeTripTab === "shared" && styles.segmentButtonActive,
             ]}
+            onPress={() => setActiveTripTab("shared")}
           >
-            Shared With Me
-          </Text>
-        </Pressable>
-      </View>
+            <Text
+              style={[
+                styles.segmentButtonText,
+                activeTripTab === "shared" && styles.segmentButtonTextActive,
+              ]}
+            >
+              Shared With Me
+            </Text>
+          </Pressable>
+        </View>
 
         {/* Dynamic Trips With Friends Section */}
         <FlatList
@@ -807,7 +810,6 @@ export default function FriendsScreen() {
                   source={require("../../assets/images/avatar1.png")}
                   style={styles.tripImage}
                 />
-
                 <View
                   style={{
                     alignSelf: "center",
@@ -816,17 +818,28 @@ export default function FriendsScreen() {
                     paddingVertical: 6,
                     borderRadius: 20,
                     marginBottom: 5,
-                    shadowColor: "#000",
-                    shadowOpacity: 0.05,
-                    shadowOffset: { width: 0, height: 2 },
-                    shadowRadius: 3,
-                    elevation: 2,
+                    width: "90%",
                   }}
                 >
                   <Text style={styles.friendTripName}>{item.trip_title}</Text>
                 </View>
                 <Text style={styles.friendName}>{displayName}</Text>
-                <Text style={styles.friendAccess}>{friendAccess}</Text>
+                <View
+                  style={{
+                    alignSelf: "center",
+                    backgroundColor:
+                      friendAccess === "Owner"
+                        ? "red"
+                        : friendAccess === "Viewer"
+                        ? "orange"
+                        : "green",
+                    paddingHorizontal: 8,
+                    paddingVertical: 2,
+                    borderRadius: 12,
+                  }}
+                >
+                  <Text style={[styles.friendAccess]}>{friendAccess}</Text>
+                </View>
 
                 {isOwner ? (
                   // Owner: Unshare button to open modal for selective removal
@@ -1075,11 +1088,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: "quicksand-semibold",
     color: Colors.primary,
+    marginBottom: 4,
   },
   friendAccess: {
-    fontSize: 16,
-    color: Colors.peachySalmon,
-    fontFamily: "quicksand-semibold",
+    fontSize: 13,
+    color: "#fff",
+    fontFamily: "quicksand-bold",
   },
   friendPhone: {
     color: "#333",
@@ -1094,7 +1108,7 @@ const styles = StyleSheet.create({
   },
   tripCard: {
     width: 180,
-    height: 180,
+    height: 190,
     borderRadius: 16,
     padding: 10,
     alignItems: "center",
@@ -1116,7 +1130,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "black",
     fontFamily: "quicksand-semibold",
-    textAlign:"center"
+    textAlign: "center",
   },
   requestItem: {
     marginBottom: 10,
