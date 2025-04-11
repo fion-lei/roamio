@@ -7,7 +7,7 @@ const csvFiles = [
     path.join(__dirname, "data", "itineraries.csv"),
     path.join(__dirname, "data", "events.csv"),
     path.join(__dirname, "data", "friend_requests.csv"),
-    path.join(__dirname, "data", "favourties.csv"),
+    path.join(__dirname, "data", "favourites.csv"),
     path.join(__dirname, "data", "events.csv"),
 ];
 

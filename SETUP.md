@@ -32,13 +32,15 @@ The project requires running the front-end and back-end simultaneously. The foll
 1. In the current project window, open a new terminal and execute the following commands:
 - Navigate to the backend directory in terminal ➡ `` cd .\backend\``
 - Install dependencies ➡ ``npm install`` 
-- Run the server ➡ ``npm run dev`` 
+- Run the server ➡ ``npm start`` 
 
+2. Resetting the data to default version
+- Run the server ➡ ``npm run reset-data`` 
 ---
 #### General Troubleshooting
 - Front-End & Back-End not connecting?
     - Enter in the front-end terminal ``r`` to reload the app 
-    - Enter in the back-end terminal ``rs`` to reload the server
+    - Run the development server `npm run dev` and type in `rs` to refresh the server
 
 #### Troubleshooting for Front-End
 - Issues with dependencies? Exit out of the Expo Go Server. Remove and reinstall the packages and dependencies
@@ -49,5 +51,7 @@ The project requires running the front-end and back-end simultaneously. The foll
     - ``npx expo start --clear``
 
 #### Troubleshooting for Back-End
+- Issues with the server? 
+    - Stop the server `Ctrl+C`, run the development server `npm run dev` and type in `rs` to restart the server 
 - Issues with connecting to Front-End?
     - Check IP / Gateway for emulator is correct
