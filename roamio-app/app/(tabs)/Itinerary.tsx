@@ -592,7 +592,7 @@ export default function Itinerary() {
           ) : (
             <View style={styles.emptyItineraryContainer}>
               <Text style={styles.emptyItineraryText}>
-                You have not created any trip itineraries yet. Tap the plus
+                You have not created any trip itineraries yet. Tap the plus (+)
                 button to add a new trip.
               </Text>
             </View>

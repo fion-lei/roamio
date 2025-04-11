@@ -86,7 +86,7 @@ export default function Profile() {
       {/* Edit Profile Button */}
       <Pressable
         style={styles.button}
-        onPress={() => router.push("../EditProfile")}
+        onPress={() => router.replace("../EditProfile")}
       >
         <Text style={styles.buttonText}>Edit Profile</Text>
       </Pressable>

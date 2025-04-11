@@ -17,6 +17,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useUser } from "@/contexts/UserContext";
 import { useNavigation } from "@react-navigation/native";
+import { Snackbar } from "react-native-paper";
 
 export default function EditProfile() {
   const router = useRouter();
@@ -35,6 +36,10 @@ export default function EditProfile() {
   const [initialData, setInitialData] = useState(null);
   // Use a ref to track if a save action has occurred
   const isNavigatingRef = useRef(false);
+  // State for Snackbar
+  const [snackVisible, setSnackVisible] = useState(false);
+  const [snackMessage, setSnackMessage] = useState("");
+
 
   const BIO_CHAR_LIMIT = 200;
 
@@ -121,7 +126,7 @@ export default function EditProfile() {
         "Discard changes?",
         "You have unsaved changes. Are you sure you want to discard them and leave?",
         [
-          { text: "Cancel", style: "cancel", onPress: () => {} },
+          { text: "Cancel", style: "cancel", onPress: () => { } },
           {
             text: "Discard",
             style: "destructive",
@@ -156,6 +161,11 @@ export default function EditProfile() {
   };
 
   const saveProfileData = async () => {
+    if (!hasUnsavedChanges()) {
+      setSnackMessage("No changes detected.");
+      setSnackVisible(true);
+      return;
+    }
     // Build payload using the current field values
     const payload = {
       email,
@@ -175,7 +185,6 @@ export default function EditProfile() {
       });
       const result = await response.json();
       if (response.ok) {
-        Alert.alert("Success", "Profile updated successfully!");
         // Optionally update global user state with changed details
         setUser({
           ...user,
@@ -194,9 +203,12 @@ export default function EditProfile() {
           travellerType,
           profileImage,
         });
+        setSnackMessage("Profile updated successfully!");
+        setSnackVisible(true);
         // Set the ref flag to bypass unsaved changes prompt
         isNavigatingRef.current = true;
-        router.back();
+        setTimeout(() => { router.replace("/Profile"); }, 1000); // Delay to allow Snackbar to show
+
       } else {
         Alert.alert(
           "Update Failed",
@@ -352,6 +364,18 @@ export default function EditProfile() {
           <Text style={styles.buttonText}>Save Changes</Text>
         </Pressable>
       </ScrollView>
+      <Snackbar
+        visible={snackVisible}
+        onDismiss={() => setSnackVisible(false)}
+        duration={3000}
+        wrapperStyle={styles.snackbarWrapper}
+        style={styles.snackbar}
+      >
+        <Text style={styles.snackbarText}>
+          {snackMessage}
+        </Text>
+      </Snackbar>
+	  
     </SafeAreaView>
   );
 }
@@ -498,5 +522,21 @@ const styles = StyleSheet.create({
     color: Colors.coral,
     fontSize: 18,
     fontFamily: "quicksand-bold",
+  },
+  snackbarWrapper: {
+    position: "absolute",
+    justifyContent: "center",
+    alignItems: "center",
+    bottom: "2%",
+  },
+  snackbar: {
+    width: "90%",
+    backgroundColor: Colors.white,
+    borderRadius: 10,
+  },
+  snackbarText: {
+    color: Colors.coral,
+    fontFamily: "quicksand-bold",
+    fontSize: 15,
   },
 });
