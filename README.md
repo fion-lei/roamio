@@ -1,7 +1,7 @@
 # roamio
 
 ## Project Description
-
+Roamio is a mobile app designed to make travel planning easy. Users can create trips, schedule events, and share their itineraries with others, all in one convenient place.
 
 ## Project Group
 - Fion Lei
