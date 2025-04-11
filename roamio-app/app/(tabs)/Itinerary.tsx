@@ -6,18 +6,16 @@ import {
   ScrollView,
   StyleSheet,
   SafeAreaView,
-  Dimensions,
   TextInput,
   Modal,
-  Platform,
   Alert,
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Colors } from "../../constants/Colors";
-import {FontAwesome } from "@expo/vector-icons";
+import { FontAwesome } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
-
 import { useUser } from "@/contexts/UserContext";
+import { Snackbar } from "react-native-paper";
 
 const TRIP_TITLE_LIMIT = 20; // New limit for trip title (20 characters)
 const tripLengthCharLimit = 50; // Existing limit for trip description
@@ -51,16 +49,15 @@ export default function Itinerary() {
   const [eventCounts, setEventCounts] = useState<{ [key: string]: number }>({});
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-
   const ongoingTrips = itineraryList.filter(
     (trip) => trip.fromDate <= today && trip.toDate >= today
   );
-
   const upcomingTrips = itineraryList.filter((trip) => trip.fromDate > today);
-
   const pastTrips = itineraryList.filter((trip) => trip.toDate < today);
+  // State for Snackbar
+  const [snackVisible, setSnackVisible] = useState(false);
+  const [snackMessage, setSnackMessage] = useState("");
 
-  // Define initial state
   const [newTrip, setNewTrip] = useState<{
     title: string;
     fromDate: Date | null;
@@ -72,7 +69,6 @@ export default function Itinerary() {
     toDate: null,
     description: "",
   });
-
   const parseDate = (dateStr: string) => {
     const [month, day, year] = dateStr.split("/");
     return new Date(Number(year), Number(month) - 1, Number(day));
@@ -198,7 +194,8 @@ export default function Itinerary() {
       !newTrip.toDate ||
       !newTrip.description
     ) {
-      Alert.alert("Error", "Please fill in all fields.");
+      setSnackMessage("Please fill in all fields.");
+      setSnackVisible(true);
       return;
     }
 
@@ -695,6 +692,17 @@ export default function Itinerary() {
               </View>
             </View>
           </View>
+          <Snackbar
+            visible={snackVisible}
+            onDismiss={() => setSnackVisible(false)}
+            duration={3000}
+            wrapperStyle={styles.snackbarWrapper}
+            style={styles.snackbar}
+          >
+            <Text style={styles.snackbarText}>
+              {snackMessage}
+            </Text>
+          </Snackbar>
         </Modal>
       </View>
     </SafeAreaView>
@@ -1011,5 +1019,21 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: "quicksand-regular",
     color: Colors.grey,
+  },
+  snackbarWrapper: {
+    position: "absolute",
+    justifyContent: "center",
+    alignItems: "center",
+    bottom: "2%",
+  },
+  snackbar: {
+    width: "90%",
+    backgroundColor: Colors.coral,
+    borderRadius: 10,
+  },
+  snackbarText: {
+    color: Colors.white,
+    fontFamily: "quicksand-bold",
+    fontSize: 14,
   },
 });

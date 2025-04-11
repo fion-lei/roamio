@@ -1,18 +1,19 @@
 import React, { useState } from "react";
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  Pressable, 
-  SafeAreaView, 
-  StyleSheet, 
-  Alert 
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  SafeAreaView,
+  StyleSheet,
+  Alert
 } from "react-native";
 import { Dropdown } from "react-native-element-dropdown";
 import { Colors } from "@/constants/Colors";
 import { FontAwesome } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useUser } from "@/contexts/UserContext"; // Adjust path if needed
+import { Snackbar } from "react-native-paper";
 
 export default function SignUpDetails() {
   const router = useRouter();
@@ -23,6 +24,9 @@ export default function SignUpDetails() {
   const [lastName, setLastName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [travellerType, setTravellerType] = useState(null);
+  // State for Snackbar
+  const [snackVisible, setSnackVisible] = useState(false);
+  const [snackMessage, setSnackMessage] = useState("");
 
   // Traveller options
   const travellerOptions = [
@@ -78,8 +82,9 @@ export default function SignUpDetails() {
       });
       const result = await response.json();
       if (response.ok) {
-        Alert.alert("Success", "User details updated successfully!");
-        // Update global user state with new details
+        setSnackMessage("Account created successfully!");
+        setSnackVisible(true);
+
         setUser((prev) => ({
           ...prev,
           first_name: firstName,
@@ -87,7 +92,11 @@ export default function SignUpDetails() {
           phone_number: phoneNumber,
           traveller_type: travellerType || "",
         }));
+          // Update global user state with new details
+        setTimeout(() => {
         router.replace("../(tabs)/Trip");
+        }, 2000); // Delay for Snackbar to show
+   
       } else {
         Alert.alert("Update Failed", result.error || "An error occurred while updating details.");
       }
@@ -160,6 +169,15 @@ export default function SignUpDetails() {
           <Text style={styles.buttonText}>Continue</Text>
           <FontAwesome name="arrow-right" size={18} color="white" style={styles.arrowIcon} />
         </Pressable>
+        {/* Snackbar Component */}
+        <Snackbar
+          visible={snackVisible}
+          onDismiss={() => setSnackVisible(false)}
+          duration={2000}
+          style={styles.snackbar}
+        >
+          {snackMessage}
+        </Snackbar>
       </View>
     </SafeAreaView>
   );
@@ -266,5 +284,9 @@ const styles = StyleSheet.create({
   arrowIcon: {
     marginLeft: 8,
     color: Colors.coral,
+  },
+  snackbar: {
+    backgroundColor: Colors.coral,
+
   },
 });

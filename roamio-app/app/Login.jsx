@@ -1,19 +1,20 @@
 import React, { useState } from "react";
-import { 
-  View, 
-  Text, 
-  Image, 
-  StyleSheet, 
-  TextInput, 
-  Pressable, 
-  SafeAreaView, 
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  TextInput,
+  Pressable,
+  SafeAreaView,
   Alert,
-  Modal 
+  Modal
 } from "react-native";
 import { Colors } from "@/constants/Colors"; // Ensure Colors file exists
 import { FontAwesome } from "@expo/vector-icons"; // For icons
 import { useRouter } from "expo-router";
-import { useUser } from "@/contexts/UserContext"; 
+import { useUser } from "@/contexts/UserContext";
+import { Snackbar } from "react-native-paper";
 
 export default function Login() {
   const router = useRouter();
@@ -28,37 +29,47 @@ export default function Login() {
   const [resetEmail, setResetEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [showNewPasswordRegex, setShowNewPasswordRegex] = useState(false);
 
+  // State for Snackbar
+  const [snackVisible, setSnackVisible] = useState(false);
+  const [snackMessage, setSnackMessage] = useState("");
   // Handle main login action
   const handleLogin = async () => {
 
     if (!email || !password) {
-      Alert.alert("Error", "Please fill in both email and password.");
+      setSnackMessage("Please fill in both email and password.");
+      setSnackVisible(true);
       return;
     }
 
     // Email format validation using regex
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      Alert.alert("Error", "Enter a valid email address.");
+      setSnackMessage("Enter a valid email address.");
+      setSnackVisible(true);
       return;
     }
 
     try {
       //const response = await fetch("http://10.0.2.2:3000/login", {
       const response = await fetch("http://10.0.2.2:3000/login", {
-          method: "POST",
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password })
       });
       const result = await response.json();
       if (response.ok) {
-        Alert.alert("Success", "Login successful!");
+        setSnackMessage("Login successful!");
+        setSnackVisible(true);
         // Update global user state with the email and any other data returned from backend.
         setUser({ email, ...result.user });
-        router.replace("../(tabs)/Trip");
+        setTimeout(() => { router.replace("../(tabs)/Trip"); }, 600); // Delay for Snackbar to show
+
       } else {
-        Alert.alert("Login Failed", result.error || "An error occurred during login.");
+        setSnackMessage(result.error || "Login failed. An error occurred during login.");
+        setSnackVisible(true);
       }
     } catch (error) {
       console.error("Login error:", error);
@@ -68,8 +79,12 @@ export default function Login() {
 
   // Handle password reset submission from the modal
   const handleResetPassword = async () => {
-    if (!resetEmail || !newPassword) {
-      Alert.alert("Error", "Please fill in both email and new password.");
+    if (!resetEmail || !currentPassword || !newPassword) {
+      Alert.alert("Error", "Please fill in your email, current password, and new password.");
+      return;
+    }
+    if (currentPassword === newPassword) {
+      Alert.alert("Error", "New password cannot be the same as the current password.");
       return;
     }
 
@@ -83,7 +98,6 @@ export default function Login() {
     }
 
     try {
-      //const response = await fetch("http://10.0.2.2:3000/login", {
       const response = await fetch("http://10.0.2.2:3000/resetPassword", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -91,8 +105,13 @@ export default function Login() {
       });
       const result = await response.json();
       if (response.ok) {
-        Alert.alert("Success", "Password reset successful!");
+        setSnackMessage("Password reset successful!");
+        setSnackVisible(true);
         setModalVisible(false);
+        // Optionally clear the password fields after success:
+        setCurrentPassword("");
+        setNewPassword("");
+        setResetEmail("");
       } else {
         Alert.alert("Reset Failed", result.error || "An error occurred during reset.");
       }
@@ -111,7 +130,7 @@ export default function Login() {
     <SafeAreaView style={styles.container}>
       {/* Forgot Password Modal */}
       <Modal
-        animationType="slide"
+        animationType="fade"
         transparent={true}
         visible={modalVisible}
         onRequestClose={() => setModalVisible(false)}
@@ -120,14 +139,28 @@ export default function Login() {
           <View style={styles.modalContainer}>
             <Text style={styles.modalTitle}>Reset Password</Text>
             <View style={styles.modalInputContainer}>
-            <TextInput
-              placeholder="Email"
-              style={styles.modalInputField}
-              value={resetEmail}
-              onChangeText={setResetEmail}
-              keyboardType="email-address"
-            />
+              <TextInput
+                placeholder="Email"
+                style={styles.modalInputField}
+                value={resetEmail}
+                onChangeText={setResetEmail}
+                keyboardType="email-address"
+              />
             </View>
+            <View style={styles.modalInputContainer}>
+              <TextInput
+                placeholder="Current Password"
+                style={styles.modalInputField}
+                secureTextEntry={true}
+                value={currentPassword}
+                onChangeText={setCurrentPassword}
+              />
+            </View>
+            {showNewPasswordRegex && (
+              <Text style={styles.passwordRegexText}>
+                Password must be at least 6 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&).
+              </Text>
+            )}
             <View style={styles.modalInputContainer}>
               <TextInput
                 placeholder="New Password"
@@ -135,23 +168,26 @@ export default function Login() {
                 secureTextEntry={!showPassword}
                 value={newPassword}
                 onChangeText={setNewPassword}
+                onFocus={() => setShowNewPasswordRegex(true)}
+                onBlur={() => setShowNewPasswordRegex(false)}
               />
               <Pressable onPress={() => setShowPassword(!showPassword)}>
-                <FontAwesome 
-                  name={showPassword ? "eye-slash" : "eye"} 
-                  size={20} 
-                  color={Colors.peachySalmon} 
+                <FontAwesome
+                  name={showPassword ? "eye-slash" : "eye"}
+                  size={20}
+                  color={Colors.peachySalmon}
                   style={styles.icon}
                 />
               </Pressable>
             </View>
             <View style={styles.modalButtons}>
-              <Pressable style={styles.modalButton} onPress={handleResetPassword}>
-                <Text style={styles.modalButtonText}>Reset Password</Text>
-              </Pressable>
               <Pressable style={[styles.modalButton, styles.modalCancel]} onPress={() => setModalVisible(false)}>
                 <Text style={styles.modalButtonText}>Cancel</Text>
               </Pressable>
+              <Pressable style={styles.modalButton} onPress={handleResetPassword}>
+                <Text style={styles.modalButtonText}>Reset Password</Text>
+              </Pressable>
+
             </View>
           </View>
         </View>
@@ -159,9 +195,9 @@ export default function Login() {
 
       {/* Logo */}
       <View style={styles.logoContainer}>
-        <Image 
-          source={require("../assets/images/logo_coral.png")} 
-          style={styles.logo} 
+        <Image
+          source={require("../assets/images/logo_coral.png")}
+          style={styles.logo}
         />
       </View>
 
@@ -169,19 +205,19 @@ export default function Login() {
       <View style={styles.loginContainer}>
         <Text style={styles.loginTitle}>Login</Text>
         <View style={styles.inputContainer}>
-          <TextInput 
-            placeholder="Email" 
-            style={styles.input} 
+          <TextInput
+            placeholder="Email"
+            style={styles.input}
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
           />
         </View>
         <View style={styles.inputContainer}>
-          <TextInput 
-            placeholder="Password" 
-            style={styles.input} 
-            secureTextEntry 
+          <TextInput
+            placeholder="Password"
+            style={styles.input}
+            secureTextEntry
             value={password}
             onChangeText={setPassword}
           />
@@ -204,6 +240,17 @@ export default function Login() {
           </Pressable>
         </View>
       </View>
+      <Snackbar
+        visible={snackVisible}
+        onDismiss={() => setSnackVisible(false)}
+        duration={3000}
+        wrapperStyle={styles.snackbarWrapper}
+        style={styles.snackbar}
+      >
+        <Text style={styles.snackbarText}>
+          {snackMessage}
+        </Text>
+      </Snackbar>
     </SafeAreaView>
   );
 }
@@ -367,4 +414,29 @@ const styles = StyleSheet.create({
     fontFamily: "quicksand-semibold",
     color: Colors.black,
   },
+  snackbarWrapper: {
+    position: "absolute",
+    justifyContent: "center",
+    alignItems: "center",
+    bottom: "2%",
+  },
+  snackbar: {
+    width: "90%",
+    backgroundColor: Colors.white,
+    borderRadius: 10,
+  },
+  snackbarText: {
+    color: Colors.coral,
+    fontFamily: "quicksand-bold",
+    fontSize: 14,
+  },
+  passwordRegexText: {
+    color: Colors.grey,
+    fontSize: 12,
+    marginBottom: 10,
+    fontFamily: "quicksand-semibold",
+    textAlign: "left",
+    paddingHorizontal: 5,
+  }
+  ,
 });

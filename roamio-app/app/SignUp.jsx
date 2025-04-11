@@ -1,13 +1,13 @@
 import React, { useState } from "react";
-import { 
-  View, 
-  Text, 
-  Image, 
-  StyleSheet, 
-  TextInput, 
-  Pressable, 
-  SafeAreaView, 
-  Alert 
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  TextInput,
+  Pressable,
+  SafeAreaView,
+  Alert
 } from "react-native";
 import { Colors } from "@/constants/Colors";
 import { FontAwesome } from "@expo/vector-icons";
@@ -23,6 +23,7 @@ export default function SignUp() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordRequirements, setShowPasswordRequirements] = useState(false);
 
   const handleSignUp = async () => {
     // General error check
@@ -72,7 +73,6 @@ export default function SignUp() {
       const result = await response.json();
 
       if (response.ok) {
-        Alert.alert("Success", "Account created successfully!");
         // Save the email (and any other returned user data) in global context
         setUser({ email, ...result.user });
         // Navigate to SignUpDetails screen
@@ -90,44 +90,52 @@ export default function SignUp() {
     <SafeAreaView style={styles.container}>
       {/* Logo Section */}
       <View style={styles.logoContainer}>
-        <Image 
-          source={require("../assets/images/logo_white.png")} 
-          style={styles.logo} 
+        <Image
+          source={require("../assets/images/logo_white.png")}
+          style={styles.logo}
         />
       </View>
       {/* Sign up Section */}
       <View style={styles.signUpContainer}>
         <Text style={styles.signUpTitle}>Sign up</Text>
         <View style={styles.inputContainer}>
-          <TextInput 
-            placeholder="Email" 
-            style={styles.input} 
+          <TextInput
+            placeholder="Email"
+            style={styles.input}
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
           />
         </View>
+        {/* Render password requirements above the password input */}
+        {showPasswordRequirements && (
+          <Text style={styles.passwordRequirements}>
+            Password must be at least 6 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&).
+          </Text>
+        )}
         <View style={styles.inputContainer}>
-          <TextInput 
-            placeholder="Password" 
-            style={styles.input} 
+          <TextInput
+            placeholder="Password"
+            style={styles.input}
             secureTextEntry={!showPassword}
             value={password}
             onChangeText={setPassword}
+            onFocus={() => setShowPasswordRequirements(true)}
+            onBlur={() => setShowPasswordRequirements(false)}
           />
           <Pressable onPress={() => setShowPassword(!showPassword)}>
-            <FontAwesome 
-              name={showPassword ? "eye-slash" : "eye"} 
-              size={20} 
-              color={Colors.coral} 
+            <FontAwesome
+              name={showPassword ? "eye-slash" : "eye"}
+              size={20}
+              color={Colors.coral}
             />
           </Pressable>
         </View>
         <View style={styles.inputContainer}>
-          <TextInput 
-            placeholder="Confirm Password" 
-            style={styles.input} 
-            secureTextEntry 
+          <TextInput
+            placeholder="Confirm Password"
+            style={styles.input}
+            secureTextEntry
             value={confirmPassword}
             onChangeText={setConfirmPassword}
           />
@@ -215,5 +223,13 @@ const styles = StyleSheet.create({
   arrowIcon: {
     marginLeft: 8,
     color: Colors.coral,
+  },
+  passwordRequirements: {
+    color: Colors.grey,
+    fontSize: 12,
+    marginBottom: 10,
+    fontFamily: "quicksand-semibold",
+    textAlign: "left",
+    paddingHorizontal: 5,
   },
 });

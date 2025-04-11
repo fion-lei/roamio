@@ -3,7 +3,7 @@ import { ThemeProvider } from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import { useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Appearance, useColorScheme } from "react-native";
+import { Alert, Appearance, useColorScheme } from "react-native";
 import { LightTheme, DarkTheme } from "@/utilities/themeOptions";
 import { Colors } from "@/constants/Colors";
 import { Pressable } from "react-native";
@@ -122,7 +122,35 @@ export default function RootLayout() {
             ),
           }}
           />
-          
+          <Stack.Screen
+          name = "settings/Settings"
+          options={{
+            headerTitle: "",
+            headerRight: () => (
+                <Pressable
+                onPress={() => {
+                  Alert.alert(
+                    "Sign Out",
+                    "Are you sure you want to sign out?",
+                    [
+                      { text: "Cancel", style: "cancel" },
+                      { text: "OK", onPress: () => router.push("../Intro") }
+                    ]
+                  );
+                  }
+                }
+                >
+                <FontAwesome
+                  name="sign-out"
+                  size={24}
+                  color={Colors.coral}
+                  style={{ marginRight: 15 }}
+                />
+                </Pressable>
+            ),
+          }}
+          />
+
         </Stack>
       </ThemeProvider>
     </UserProvider>

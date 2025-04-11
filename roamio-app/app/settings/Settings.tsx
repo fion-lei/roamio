@@ -5,15 +5,6 @@ import { useRouter } from "expo-router";
 export default function Settings() {
   const router = useRouter();
 
-  // Handle the sign-out action
-  const handleSignOut = async () => {
-    try {
-      router.replace("../Intro"); 
-    } catch (error) {
-      console.error("Error during sign-out:", error);
-    }
-  };
-
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Settings</Text>
@@ -34,10 +25,6 @@ export default function Settings() {
         <Text style={styles.optionText}>Help & FAQs</Text>
       </Pressable>
 
-      {/* Sign Out Option placed at the bottom */}
-      <Pressable style={[styles.signOutButton, { marginTop: "auto" }]} onPress={handleSignOut}>
-        <Text style={styles.signOutButtonText}>Sign Out</Text>
-      </Pressable>
     </View>
   );
 }
