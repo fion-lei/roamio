@@ -98,7 +98,7 @@ export default function RootLayout() {
                 <Pressable onPress={() => router.push("/Profile")}>
                   <FontAwesome
                     name="user"
-                    size={24}
+                    size={26}
                     color={Colors.coral}
                     style={{ marginRight: 15 }}
                   />

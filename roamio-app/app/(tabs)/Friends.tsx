@@ -390,7 +390,7 @@ export default function FriendsScreen() {
           <Pressable 
             onPress={() => setShowFriendRequestModal(true)}
           >
-            <FontAwesome name="user-plus" size={24} color={Colors.coral} />
+            <FontAwesome name="user-plus" size={26} color={Colors.peachySalmon} />
           </Pressable>
         </View>
       </View>

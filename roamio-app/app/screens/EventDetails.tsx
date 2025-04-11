@@ -606,7 +606,8 @@ const styles = StyleSheet.create({
     },
     shareIcon: {
         marginHorizontal: 10,
-        color: Colors.coral, 
+        color: Colors.coral,
+        marginBottom: 2,
     },
     modalOverlay: {
         flex: 1,
