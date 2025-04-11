@@ -22,6 +22,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useRouter } from 'expo-router';
 
 interface RouteParams {
+    userRole: string;
     activity: string;
     time: string;
     duration: number;
@@ -135,6 +136,7 @@ const EventDetails = () => {
     const router = useRouter();
     // Get displayed parameters from the route
     const { 
+        userRole,
         activity,
         time, 
         duration, 
@@ -393,7 +395,7 @@ const EventDetails = () => {
                 <InfoItem
                     icon={<FontAwesome name="clock-o" size={20} color={Colors.coral} />}
                     text={`${formatTimeToAMPM(displayStartTime)} - ${formatTimeToAMPM(displayEndTime)}`}
-                    showEditButton={true}
+                    showEditButton={userRole!=="viewer"}
                     onEditPress={handleEditTime}
                 />
                 <InfoItem
