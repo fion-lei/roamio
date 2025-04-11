@@ -43,7 +43,7 @@ const DetailedItinerary = () => {
   const dailyEventCount = allItineraryItems.reduce((acc, event) => {
     if (event.start_date) {
       let dateKey = event.start_date.trim(); // Ensure no extra spaces
-  
+
       // Handle non-standard date formats (e.g., MM/DD/YYYY)
       if (dateKey.includes("/")) {
         const [month, day, year] = dateKey.split("/").map(Number);
@@ -53,7 +53,7 @@ const DetailedItinerary = () => {
           year: "numeric",
         });
       }
-  
+
       acc[dateKey] = (acc[dateKey] || 0) + 1;
     } else {
       console.log(`Event ID: ${event.eventId} does not have a start_date`);
@@ -503,13 +503,13 @@ const DetailedItinerary = () => {
     } catch (error) {
       console.error("Error fetching itinerary items:", error);
       setItineraryItems([]);
-      setAllItineraryItems([]); 
+      setAllItineraryItems([]);
     } finally {
       setLoading(false);
     }
   };
 
-    useEffect(() => {
+  useEffect(() => {
     fetchItineraryDates();
     if (userRole === "viewer") {
       setIsEditMode(false);
@@ -625,7 +625,6 @@ const DetailedItinerary = () => {
                     style={[
                       styles.calendarDateItem,
                       isSelected && styles.selectedCalendarDateItem,
-
                     ]}
                   >
                     <Text
@@ -649,9 +648,7 @@ const DetailedItinerary = () => {
                         <View style={styles.dot} />
                         <Text style={styles.eventCounter}>{eventCount}</Text>
                       </View>
-
-                    )
-                    }
+                    )}
                   </View>
                 </Pressable>
               );
@@ -1014,8 +1011,8 @@ const styles = StyleSheet.create({
   eventIndicator: {
     flexDirection: "row",
     justifyContent: "flex-end",
-    position: 'relative',
-    alignItems: 'center',
+    position: "relative",
+    alignItems: "center",
   },
   dot: {
     width: 6,

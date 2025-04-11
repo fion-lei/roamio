@@ -376,7 +376,7 @@ export default function Itinerary() {
                             gap: 8,
                           }}
                         >
-                            {(() => {
+                          {(() => {
                             let userRole = "none";
                             if (item.user_email === user.email) {
                               userRole = "owner";
@@ -386,62 +386,64 @@ export default function Itinerary() {
                               item.shared_with.trim() !== "[]"
                             ) {
                               if (item.shared_with.includes("viewer")) {
-                              userRole = "viewer";
-                              } else if (item.shared_with.includes("trip-mate")) {
-                              userRole = "trip-mate";
+                                userRole = "viewer";
+                              } else if (
+                                item.shared_with.includes("trip-mate")
+                              ) {
+                                userRole = "trip-mate";
                               }
                             }
 
                             return userRole === "owner" ? (
                               <View
-                              style={[
-                                styles.sharedBadge,
-                                { backgroundColor: "red" },
-                              ]}
-                              >
-                              <Text
                                 style={[
-                                styles.sharedBadgeText,
-                                { color: "#fff" },
+                                  styles.sharedBadge,
+                                  { backgroundColor: "red" },
                                 ]}
                               >
-                                Owner
-                              </Text>
+                                <Text
+                                  style={[
+                                    styles.sharedBadgeText,
+                                    { color: "#fff" },
+                                  ]}
+                                >
+                                  Owner
+                                </Text>
                               </View>
                             ) : userRole === "viewer" ? (
                               <View
-                              style={[
-                                styles.sharedBadge,
-                                { backgroundColor: "orange" },
-                              ]}
-                              >
-                              <Text
                                 style={[
-                                styles.sharedBadgeText,
-                                { color: "#fff" },
+                                  styles.sharedBadge,
+                                  { backgroundColor: "orange" },
                                 ]}
                               >
-                                Viewer
-                              </Text>
+                                <Text
+                                  style={[
+                                    styles.sharedBadgeText,
+                                    { color: "#fff" },
+                                  ]}
+                                >
+                                  Viewer
+                                </Text>
                               </View>
                             ) : userRole === "trip-mate" ? (
                               <View
-                              style={[
-                                styles.sharedBadge,
-                                { backgroundColor: "green" },
-                              ]}
-                              >
-                              <Text
                                 style={[
-                                styles.sharedBadgeText,
-                                { color: "#fff" },
+                                  styles.sharedBadge,
+                                  { backgroundColor: "green" },
                                 ]}
                               >
-                                Trip-Mate
-                              </Text>
+                                <Text
+                                  style={[
+                                    styles.sharedBadgeText,
+                                    { color: "#fff" },
+                                  ]}
+                                >
+                                  Trip-Mate
+                                </Text>
                               </View>
                             ) : null;
-                            })()}
+                          })()}
 
                           <Pressable
                             onPress={() => handleDeleteItinerary(item.id)}
@@ -477,40 +479,42 @@ export default function Itinerary() {
                           {formatEventCountText(item.id)}
                         </Text>
                       )}
-                        <Pressable
+                      <Pressable
                         style={styles.viewButtonOngoing}
                         onPress={() =>
                           router.push({
-                          pathname: "/screens/DetailedItinerary",
-                          params: {
-                            id: item.id,
-                            title: item.title,
-                            date: `${formatDate(
-                            item.fromDate
-                            )} - ${formatDate(item.toDate)}`,
-                            userRole: (() => {
-                            let role = "none";
-                            if (item.user_email === user.email) {
-                              role = "owner";
-                            } else if (
-                              item.shared_with &&
-                              item.shared_with.trim() !== "" &&
-                              item.shared_with.trim() !== "[]"
-                            ) {
-                              if (item.shared_with.includes("viewer")) {
-                              role = "viewer";
-                              } else if (item.shared_with.includes("trip-mate")) {
-                              role = "trip-mate";
-                              }
-                            }
-                            return role;
-                            })(),
-                          },
+                            pathname: "/screens/DetailedItinerary",
+                            params: {
+                              id: item.id,
+                              title: item.title,
+                              date: `${formatDate(
+                                item.fromDate
+                              )} - ${formatDate(item.toDate)}`,
+                              userRole: (() => {
+                                let role = "none";
+                                if (item.user_email === user.email) {
+                                  role = "owner";
+                                } else if (
+                                  item.shared_with &&
+                                  item.shared_with.trim() !== "" &&
+                                  item.shared_with.trim() !== "[]"
+                                ) {
+                                  if (item.shared_with.includes("viewer")) {
+                                    role = "viewer";
+                                  } else if (
+                                    item.shared_with.includes("trip-mate")
+                                  ) {
+                                    role = "trip-mate";
+                                  }
+                                }
+                                return role;
+                              })(),
+                            },
                           })
                         }
-                        >
+                      >
                         <Text style={styles.buttonText}>View Details</Text>
-                        </Pressable>
+                      </Pressable>
                     </View>
                   ))}
                 </>
@@ -555,7 +559,7 @@ export default function Itinerary() {
                             gap: 8,
                           }}
                         >
-                                                      {(() => {
+                          {(() => {
                             let userRole = "none";
                             if (item.user_email === user.email) {
                               userRole = "owner";
@@ -565,62 +569,64 @@ export default function Itinerary() {
                               item.shared_with.trim() !== "[]"
                             ) {
                               if (item.shared_with.includes("viewer")) {
-                              userRole = "viewer";
-                              } else if (item.shared_with.includes("trip-mate")) {
-                              userRole = "trip-mate";
+                                userRole = "viewer";
+                              } else if (
+                                item.shared_with.includes("trip-mate")
+                              ) {
+                                userRole = "trip-mate";
                               }
                             }
 
                             return userRole === "owner" ? (
                               <View
-                              style={[
-                                styles.sharedBadge,
-                                { backgroundColor: "red" },
-                              ]}
-                              >
-                              <Text
                                 style={[
-                                styles.sharedBadgeText,
-                                { color: "#fff" },
+                                  styles.sharedBadge,
+                                  { backgroundColor: "red" },
                                 ]}
                               >
-                                Owner
-                              </Text>
+                                <Text
+                                  style={[
+                                    styles.sharedBadgeText,
+                                    { color: "#fff" },
+                                  ]}
+                                >
+                                  Owner
+                                </Text>
                               </View>
                             ) : userRole === "viewer" ? (
                               <View
-                              style={[
-                                styles.sharedBadge,
-                                { backgroundColor: "orange" },
-                              ]}
-                              >
-                              <Text
                                 style={[
-                                styles.sharedBadgeText,
-                                { color: "#fff" },
+                                  styles.sharedBadge,
+                                  { backgroundColor: "orange" },
                                 ]}
                               >
-                                Viewer
-                              </Text>
+                                <Text
+                                  style={[
+                                    styles.sharedBadgeText,
+                                    { color: "#fff" },
+                                  ]}
+                                >
+                                  Viewer
+                                </Text>
                               </View>
                             ) : userRole === "trip-mate" ? (
                               <View
-                              style={[
-                                styles.sharedBadge,
-                                { backgroundColor: "green" },
-                              ]}
-                              >
-                              <Text
                                 style={[
-                                styles.sharedBadgeText,
-                                { color: "#fff" },
+                                  styles.sharedBadge,
+                                  { backgroundColor: "green" },
                                 ]}
                               >
-                                Trip-Mate
-                              </Text>
+                                <Text
+                                  style={[
+                                    styles.sharedBadgeText,
+                                    { color: "#fff" },
+                                  ]}
+                                >
+                                  Trip-Mate
+                                </Text>
                               </View>
                             ) : null;
-                            })()}
+                          })()}
                           <Pressable
                             onPress={() => handleDeleteItinerary(item.id)}
                           >
@@ -667,6 +673,25 @@ export default function Itinerary() {
                               date: `${formatDate(
                                 item.fromDate
                               )} - ${formatDate(item.toDate)}`,
+                              userRole: (() => {
+                                let role = "none";
+                                if (item.user_email === user.email) {
+                                  role = "owner";
+                                } else if (
+                                  item.shared_with &&
+                                  item.shared_with.trim() !== "" &&
+                                  item.shared_with.trim() !== "[]"
+                                ) {
+                                  if (item.shared_with.includes("viewer")) {
+                                    role = "viewer";
+                                  } else if (
+                                    item.shared_with.includes("trip-mate")
+                                  ) {
+                                    role = "trip-mate";
+                                  }
+                                }
+                                return role;
+                              })(),
                             },
                           })
                         }
@@ -714,7 +739,7 @@ export default function Itinerary() {
                             gap: 8,
                           }}
                         >
-                                                      {(() => {
+                          {(() => {
                             let userRole = "none";
                             if (item.user_email === user.email) {
                               userRole = "owner";
@@ -724,62 +749,64 @@ export default function Itinerary() {
                               item.shared_with.trim() !== "[]"
                             ) {
                               if (item.shared_with.includes("viewer")) {
-                              userRole = "viewer";
-                              } else if (item.shared_with.includes("trip-mate")) {
-                              userRole = "trip-mate";
+                                userRole = "viewer";
+                              } else if (
+                                item.shared_with.includes("trip-mate")
+                              ) {
+                                userRole = "trip-mate";
                               }
                             }
 
                             return userRole === "owner" ? (
                               <View
-                              style={[
-                                styles.sharedBadge,
-                                { backgroundColor: "red" },
-                              ]}
-                              >
-                              <Text
                                 style={[
-                                styles.sharedBadgeText,
-                                { color: "#fff" },
+                                  styles.sharedBadge,
+                                  { backgroundColor: "red" },
                                 ]}
                               >
-                                Owner
-                              </Text>
+                                <Text
+                                  style={[
+                                    styles.sharedBadgeText,
+                                    { color: "#fff" },
+                                  ]}
+                                >
+                                  Owner
+                                </Text>
                               </View>
                             ) : userRole === "viewer" ? (
                               <View
-                              style={[
-                                styles.sharedBadge,
-                                { backgroundColor: "orange" },
-                              ]}
-                              >
-                              <Text
                                 style={[
-                                styles.sharedBadgeText,
-                                { color: "#fff" },
+                                  styles.sharedBadge,
+                                  { backgroundColor: "orange" },
                                 ]}
                               >
-                                Viewer
-                              </Text>
+                                <Text
+                                  style={[
+                                    styles.sharedBadgeText,
+                                    { color: "#fff" },
+                                  ]}
+                                >
+                                  Viewer
+                                </Text>
                               </View>
                             ) : userRole === "trip-mate" ? (
                               <View
-                              style={[
-                                styles.sharedBadge,
-                                { backgroundColor: "green" },
-                              ]}
-                              >
-                              <Text
                                 style={[
-                                styles.sharedBadgeText,
-                                { color: "#fff" },
+                                  styles.sharedBadge,
+                                  { backgroundColor: "green" },
                                 ]}
                               >
-                                Trip-Mate
-                              </Text>
+                                <Text
+                                  style={[
+                                    styles.sharedBadgeText,
+                                    { color: "#fff" },
+                                  ]}
+                                >
+                                  Trip-Mate
+                                </Text>
                               </View>
                             ) : null;
-                            })()}
+                          })()}
                           <Pressable
                             onPress={() => handleDeleteItinerary(item.id)}
                           >
@@ -808,6 +835,25 @@ export default function Itinerary() {
                               date: `${formatDate(
                                 item.fromDate
                               )} - ${formatDate(item.toDate)}`,
+                              userRole: (() => {
+                                let role = "none";
+                                if (item.user_email === user.email) {
+                                  role = "owner";
+                                } else if (
+                                  item.shared_with &&
+                                  item.shared_with.trim() !== "" &&
+                                  item.shared_with.trim() !== "[]"
+                                ) {
+                                  if (item.shared_with.includes("viewer")) {
+                                    role = "viewer";
+                                  } else if (
+                                    item.shared_with.includes("trip-mate")
+                                  ) {
+                                    role = "trip-mate";
+                                  }
+                                }
+                                return role;
+                              })(),
                             },
                           })
                         }

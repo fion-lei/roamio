@@ -1,6 +1,6 @@
 id,email,password,first_name,last_name,phone_number,traveller_type,bio,friends
-1,wendy@gmail.com,Wendy123!,Wendy,Wanderer,123-456-7890,Solo Traveler,I love spontaneous and adventurous trips!,"[{""email"":""alex@gmail.com"",""favorite"":false},{""email"":""nick@gmail.com"",""favorite"":true}]"
+1744403417977,wendy@gmail.com,Wendy123!,Wendy,Wanderer,123-456-7890,Solo Traveler,,"[{""email"":""omar@gmail.com"",""favorite"":false},{""email"":""nick@gmail.com"",""favorite"":true}]"
 2,nick@gmail.com,Nick123!,Nick,Niche,403-123-4567,Local Traveler,I love finding hidden gems in Calgary!,
 3,alex@gmail.com,Alex123!,Alex,Analyst,098-765-4321,International Traveler,"Hey, I'm Alex! Looking for international travel buddies!","[{""email"":""wendy@gmail.com"",""favorite"":false}, {""email"":""omar@gmail.com"",""favorite"":false}]"
 4,omar@gmail.com,Omar123!,Omar,Organizer,888-123-4567,Group Traveler,I love organizing group trips!,"[{""email"":""wendy@gmail.com"",""favorite"":false}]"
-"
+,,,,,,,,

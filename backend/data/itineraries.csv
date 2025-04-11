@@ -1,6 +1,6 @@
 itinerary_id,user_email,trip_title,trip_description,start_date,end_date,destinations,shared_with
 1,wendy@gmail.com,Calgary,"Explore downtown Calgary, visit the best local spots, explore music.",04/12/2025,04/14/2025,,"[{""email"":""nick@gmail.com"",""access"":""trip-mate"",""friend_name"":""Nick"",""owner_name"":""Wendy""}]"
-2,alex@gmail.com,Banff,"Take the Banff Gondola for stunning mountain views and soak in the Banff Hot Springs. Hike through Johnston Canyon and spot wildlife along the scenic trails.",04/21/2025,04/28/2025,,"[{""email"":""wendy@gmail.com"",""access"":""viewer"",""friend_name"":""Wendy"",""owner_name"":""Alex""}]"
+2,omar@gmail.com,Banff,"Take the Banff Gondola for stunning mountain views and soak in the Banff Hot Springs. Hike through Johnston Canyon and spot wildlife along the scenic trails.",04/21/2025,04/28/2025,,"[{""email"":""wendy@gmail.com"",""access"":""viewer"",""friend_name"":""Wendy"",""owner_name"":""Omar""}]"
 3,nick@gmail.com,Canmore,"Enjoy breathtaking views at Grassi Lakes and explore Quarry Lake. Discover local cafés, art galleries, and scenic biking trails around the town.",03/28/2025,03/30/2025,,"[{""email"":""wendy@gmail.com"",""access"":""trip-mate"",""friend_name"":""Wendy"",""owner_name"":""Nick""}]"
 4,nick@gmail.com,Brunch & Books,"Just a couple besties going to grab brunch and book shop!",04/11/2025,04/11/2025,,"[{""email"":""wendy@gmail.com"",""access"":""trip-mate"",""friend_name"":""Wendy"",""owner_name"":""Nick""}]"
 
