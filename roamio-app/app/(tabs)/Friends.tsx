@@ -709,7 +709,7 @@ export default function FriendsScreen() {
               )}
             />
           ) : (
-            // In the case that no matching friends search results are found 
+            // In the case that no matching friends search results are found or user has not added friends yet 
             <View style={styles.invalidSearchContainer}>
               <Text style={styles.invalidSearchText}>
                 {searchText ? "No friend results found." : "No friends added yet."}

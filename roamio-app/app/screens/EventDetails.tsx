@@ -261,6 +261,22 @@ const EventDetails = () => {
         }
     };
 
+    // Resets time states on cancel 
+    const handleCancelTime = () => {
+        // Reset time states to current event times
+        if (time) {
+            const [hours, minutes] = time.split(':').map(Number);
+            const startDate = new Date();
+            startDate.setHours(hours, minutes, 0, 0);
+            setStartTime(startDate);
+            
+            const endDate = new Date(startDate);
+            endDate.setTime(startDate.getTime() + duration * 60 * 60 * 1000);
+            setEndTime(endDate);
+        }
+        setIsModalVisible(false);
+    };
+
     // Function to save the time changes
     const handleSaveTime = async () => {
         if (!startTime || !endTime) {
@@ -481,7 +497,7 @@ const EventDetails = () => {
                                 <View style={styles.buttonsContainer}>
                                     <Pressable
                                         style={[styles.modalButtons, styles.cancelButton]}
-                                        onPress={() => setIsModalVisible(false)}
+                                        onPress={handleCancelTime}
                                     >
                                         <Text style={styles.modalButtonsText}>Cancel</Text>
                                     </Pressable>
