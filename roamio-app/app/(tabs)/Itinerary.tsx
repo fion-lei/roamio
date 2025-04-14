@@ -329,7 +329,7 @@ export default function Itinerary() {
             onPress={() => setModalVisible(true)}
             style={styles.addButton}
           >
-            <FontAwesome name="plus-circle" size={30} color={Colors.coral} />
+            <FontAwesome name="plus-circle" size={30} color={Colors.coral} style= {{left: 4}} />
           </Pressable>
         </View>
 
@@ -468,7 +468,6 @@ export default function Itinerary() {
                             name="check-square-o"
                             size={16}
                             color={Colors.coral}
-                            style={{ top: 2 }}
                           />
                           <Text style={styles.eventCountText}>
                             {formatEventCountText(item.id)}
@@ -651,7 +650,6 @@ export default function Itinerary() {
                             name="check-square-o"
                             size={16}
                             color={Colors.coral}
-                            styles={{ top: 2 }}
                           />
                           <Text style={styles.eventCountText}>
                             {formatEventCountText(item.id)}
@@ -824,6 +822,22 @@ export default function Itinerary() {
                         )}`}
                       </Text>
                       <Text style={styles.description}>{item.description}</Text>
+                      {getEventCount(item.id) > 0 ? (
+                        <View style={styles.eventCountContainer}>
+                          <FontAwesome
+                            name="check-square-o"
+                            size={16}
+                            color={Colors.coral}
+                          />
+                          <Text style={styles.eventCountText}>
+                            {formatEventCountText(item.id)}
+                          </Text>
+                        </View>
+                      ) : (
+                        <Text style={styles.emptyEventText}>
+                          {formatEventCountText(item.id)}
+                        </Text>
+                      )}
                       <Pressable
                         style={styles.viewButtonPast}
                         onPress={() =>
@@ -1090,6 +1104,8 @@ const styles = StyleSheet.create({
   description: {
     fontSize: 14,
     fontFamily: "quicksand-semibold",
+    marginBottom: 8,
+    minHeight: 20,
   },
   descriptionView: {
     flexDirection: "row",
@@ -1295,7 +1311,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.palePink,
     borderRadius: 6,
     paddingHorizontal: 14,
-    paddingVertical: 6,
+    paddingVertical: 8,
   },
   emptyEventText: {
     fontSize: 14,
@@ -1307,6 +1323,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: "quicksand-bold",
     color: Colors.coral,
+    lineHeight: 14,
   },
   sharedBadge: {
     paddingHorizontal: 8,

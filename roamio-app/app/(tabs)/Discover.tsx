@@ -289,7 +289,7 @@ const activityCards: ActivityCard[] = [
     
       {/* Search Bar Section */}
       <View style={styles.searchContainer}>
-        <FontAwesome name="search" size={18} color="grey" style={styles.searchIcon}/>
+        <FontAwesome name="search" size={18} color={Colors.grey} style={styles.searchIcon}/>
         <TextInput 
           placeholder="Search Activity..." 
           style={styles.searchInput}
@@ -420,7 +420,7 @@ const activityCards: ActivityCard[] = [
         ) : (
           // In the case search does not yield activity results 
           <View style={styles.invalidSearchContainer}>
-            <Text style={styles.invalidSearchText}>No activities found...</Text>
+            <Text style={styles.invalidSearchText}>No activities found.</Text>
           </View>
         )}
       </ScrollView>

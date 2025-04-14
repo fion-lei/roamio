@@ -100,7 +100,7 @@ export default function RootLayout() {
                     name="user"
                     size={26}
                     color={Colors.coral}
-                    style={{ marginRight: 15 }}
+                    style={{ marginRight: 8 }}
                   />
                 </Pressable>
               ),
@@ -116,7 +116,7 @@ export default function RootLayout() {
                     name="gear"
                     size={24}
                     color={Colors.coral}
-                    style={{ marginRight: 15 }}
+                    style={{ marginRight: 4 }}
                   />
                 </Pressable>
               ),
@@ -146,7 +146,7 @@ export default function RootLayout() {
                     name="sign-out"
                     size={24}
                     color={Colors.coral}
-                    style={{ marginRight: 15 }}
+                    style={{ marginRight: 4 }}
                   />
                 </Pressable>
               ),

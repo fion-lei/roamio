@@ -487,9 +487,18 @@ export default function AddItinerary() {
           </View>
         </View>
         <View style={styles.detailsContainer}>
-          <Text style={styles.activityDetails}><FontAwesome name="map-pin" size={14} color={Colors.coral}></FontAwesome>{" "}{activity.address}</Text>
-          <Text style={styles.activityDetails}><FontAwesome name="calendar-check-o" size={14} color={Colors.coral}></FontAwesome>{" "}{activity.hours}</Text>
-          <Text style={styles.activityDetails}><FontAwesome name="phone" size={14} color={Colors.coral}></FontAwesome>{" "}{activity.contact}</Text>
+          <View style={styles.detailRow}>
+            <FontAwesome name="map-pin" size={14} color={Colors.coral} style={styles.iconContainer} />
+            <Text style={styles.activityDetails}>{activity.address}</Text>
+          </View>
+          <View style={styles.detailRow}>
+            <FontAwesome name="calendar-check-o" size={14} color={Colors.coral} style={styles.iconContainer} />
+            <Text style={styles.activityDetails}>{activity.hours}</Text>
+          </View>
+          <View style={styles.detailRow}>
+            <FontAwesome name="phone" size={14} color={Colors.coral} style={styles.iconContainer} />
+            <Text style={styles.activityDetails}>{activity.contact}</Text>
+          </View>
         </View>
         <Text style={styles.activityDescription}>{activity.description}</Text>
       </View>
@@ -753,15 +762,25 @@ const styles = StyleSheet.create({
     gap: 8,
     marginBottom: 6,
   },
+  detailRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  iconContainer: {
+    width: 24,
+    marginRight: -2,
+    marginTop: 4,
+  },
   activityDetails: {
     fontSize: 14,
-    fontFamily: "quicksand-semibold",
+    fontFamily: "quicksand-bold",
     color: Colors.grey,
   },
   activityDescription: {
     fontSize: 14,
-    fontFamily: "quicksand-regular",
+    fontFamily: "quicksand-medium",
     lineHeight: 24,
+    color: "#333",
   },
   tagsContainer: {
     paddingHorizontal: 16,
