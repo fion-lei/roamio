@@ -369,7 +369,7 @@ export default function FriendsScreen() {
             style={styles.searchIcon}
           />
           <TextInput
-            placeholder="Search Friends"
+            placeholder="Search Friends..."
             value={searchText}
             onChangeText={setSearchText}
             style={styles.searchInput}
@@ -670,43 +670,54 @@ export default function FriendsScreen() {
 
         {/* Friends List */}
         <View style={styles.friendListContainer}>
-          <FlatList
-            data={filteredFriends}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <View style={styles.friendItem}>
-                <Image source={item.avatar} style={styles.avatar} />
-                <View style={styles.friendInfo}>
-                  <Text style={styles.friendName}>
-                    {item.name}{" "}
-                    {item.favorited && (
-                      <FontAwesome name="star" size={16} color="#FFD700" />
-                    )}
-                  </Text>
-                  <Text style={styles.friendPhone}>{item.phone}</Text>
+          {filteredFriends.length > 0 ? (
+            <FlatList
+              data={filteredFriends}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => (
+                <View style={styles.friendItem}>
+                  <Image source={item.avatar} style={styles.avatar} />
+                  <View style={styles.friendInfo}>
+                    <Text style={styles.friendName}>
+                      {item.name}{" "}
+                      {item.favorited && (
+                        <FontAwesome name="star" size={16} color="#FFD700" />
+                      )}
+                    </Text>
+                    <Text style={styles.friendPhone}>{item.phone}</Text>
+                  </View>
+                  <Pressable
+                    onPress={() =>
+                      router.push({
+                        pathname: "/screens/FriendsDetails",
+                        params: {
+                          name: item.name,
+                          phone: item.phone,
+                          email_friend: item.email_friend,
+                          avatar: item.avatar,
+                          first_name: item.first_name,
+                          owner_name: user.first_name,
+                          traveller_type: item.traveller_type,
+                          bio: item.bio,
+                        },
+                      })
+                    }
+                  >
+                    <Text style={styles.menuDots}>⋯</Text>
+                  </Pressable>
                 </View>
-                <Pressable
-                  onPress={() =>
-                    router.push({
-                      pathname: "/screens/FriendsDetails",
-                      params: {
-                        name: item.name,
-                        phone: item.phone,
-                        email_friend: item.email_friend,
-                        avatar: item.avatar,
-                        first_name: item.first_name,
-                        owner_name: user.first_name,
-                        traveller_type: item.traveller_type,
-                        bio: item.bio,
-                      },
-                    })
-                  }
-                >
-                  <Text style={styles.menuDots}>⋯</Text>
-                </Pressable>
-              </View>
-            )}
-          />
+              )}
+            />
+          ) : (
+            // In the case that no matching friends search results are found 
+            <View style={styles.invalidSearchContainer}>
+              <Text style={styles.invalidSearchText}>No friend results found.</Text>
+            </View>
+          )}
+        </View>
+        {/* Your Trips Section */}
+        <View style={styles.headerRow}>
+          <Text style={styles.sectionTitle}>Your Trips</Text>
         </View>
         {/* Segmented Control for Trips */}
         <View style={styles.segmentedControlContainer}>
@@ -896,8 +907,8 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     backgroundColor: "#F9F9F9", // Off-white
     borderColor: Colors.grey,
-    marginTop: 20,
-    marginBottom: 20,
+    marginTop: 1,
+    marginBottom: 18,
   },
   searchInput: {
     flex: 1,
@@ -907,13 +918,23 @@ const styles = StyleSheet.create({
   },
   searchIcon: {
     marginRight: 10,
+  },  
+  invalidSearchContainer: {
+    flex: 1,
+    alignItems: "center", 
+    justifyContent: "center",
+    marginBottom: 28,  
+  },
+  invalidSearchText: {
+    fontSize: 16,
+    fontFamily: "quicksand-semibold",
+    color: Colors.grey, 
   },
   headerRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 10,
-    gap: 10,
+    marginBottom: 10, 
   },
   sectionTitle: {
     fontSize: 22,
@@ -981,7 +1002,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   emptyMessage: {
-    color: "#FF4444",
+    color: Colors.grey,
     fontFamily: "quicksand-semibold",
     fontSize: 16,
     marginHorizontal: 10,
@@ -1045,7 +1066,7 @@ const styles = StyleSheet.create({
     fontFamily: "quicksand-bold",
   },
   friendListContainer: {
-    height: 300,
+    height: 280,
   },
   friendItem: {
     flexDirection: "row",
@@ -1187,7 +1208,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.palePink,
   },
   segmentButtonText: {
-    fontFamily: "quicksand-regular",
+    fontFamily: "quicksand-medium",
     fontSize: 16,
     color: "#333",
   },

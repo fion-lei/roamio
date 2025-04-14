@@ -245,14 +245,14 @@ const DetailScreen = () => {
                 name="star"
                 size={25}
                 color="#FFD700"
-                style={{ marginLeft: 20, marginBottom: 15 }}
+                style={{ marginLeft: 20, marginBottom: 14 }}
               />
             ) : (
               <Feather
                 name="star"
                 size={25}
                 color="#999"
-                style={{ marginLeft: 20, marginBottom: 15 }}
+                style={{ marginLeft: 20, marginBottom: 14 }}
               />
             )}
           </Pressable>
@@ -278,8 +278,19 @@ const DetailScreen = () => {
           icon={<FontAwesome name="plane" size={20} color={Colors.coral} />}
           text={traveller_type}
         />
-        <InfoItem icon={<FontAwesome name="bars" size={20} color={Colors.coral} />} text={bio} />
       </View>
+
+      {bio && (
+        <View style={styles.bioContainer}>
+          <View style={styles.bioHeaderContainer}>
+            <Text style={styles.bioHeader}>Bio</Text>
+            <FontAwesome name="bars" size={20} color={Colors.coral} style={styles.bioIcon} />
+          </View>
+          <Text style={styles.bioText}>
+            {bio}
+          </Text>
+        </View>
+      )}
 
       <View style={styles.sendCard}>
         <Image source={avatar} style={styles.avatar} />
@@ -368,7 +379,7 @@ const DetailScreen = () => {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    flex: 1,
+    flexGrow: 1,
     backgroundColor: "#fffff",
   },
   image: { width: "100%", height: 200, borderRadius: 16, marginBottom: 20 },
@@ -399,13 +410,44 @@ const styles = StyleSheet.create({
     width: 30, 
     alignItems: "center",
     justifyContent: "center",
+    marginTop: 4,
   },
   infoText: { 
-    marginLeft: 12, 
+    marginLeft: 10, 
     fontSize: 18, 
     fontFamily: "quicksand-semibold", 
     color: Colors.primary,
     flex: 1,
+  },
+  bioContainer: {
+    marginTop: 16,
+    marginBottom: 30,
+    backgroundColor: Colors.palestPink,
+    borderRadius: 12,
+    padding: 16,
+  },
+  bioHeader: {
+    fontSize: 20,
+    fontFamily: "quicksand-bold",
+    color: Colors.primary,
+    flexWrap: "wrap", 
+    flexShrink: 1, 
+  },
+  bioHeaderContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  bioIcon: {
+    marginLeft: 8,
+    marginTop: 4,
+  },
+  bioText: {
+    fontSize: 18,
+    fontFamily: "quicksand-medium",
+    color: Colors.primary,
+    lineHeight: 22,
+    flexWrap: "wrap",
   },
   sendCard: {
     flexDirection: "row",
@@ -421,7 +463,7 @@ const styles = StyleSheet.create({
     height: 40, 
     borderRadius: 20, 
     marginRight: 12,
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.white, 
   },
   musicInfo: { flex: 1 },
   musicTitle: { 

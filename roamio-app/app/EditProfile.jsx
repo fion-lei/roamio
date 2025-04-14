@@ -44,12 +44,12 @@ export default function EditProfile() {
   const BIO_CHAR_LIMIT = 200;
 
   const travellerOptions = [
-    { label: "Solo Traveler", value: "Solo Traveler" },
-    { label: "Group Traveler", value: "Group Traveler" },
-    { label: "Local Traveler", value: "Local Traveler" },
-    { label: "International Traveler", value: "International Traveler" },
-    { label: "Business Traveler", value: "Business Traveler" },
-    { label: "Retiree Traveler", value: "Retiree Traveler" },
+    { label: "Solo Traveller", value: "Solo Traveller" },
+    { label: "Group Traveller", value: "Group Traveller" },
+    { label: "Local Traveller", value: "Local Traveller" },
+    { label: "International Traveller", value: "International Traveller" },
+    { label: "Business Traveller", value: "Business Traveller" },
+    { label: "Retiree Traveller", value: "Retiree Traveller" },
   ];
 
   useEffect(() => {
@@ -314,7 +314,7 @@ export default function EditProfile() {
           <Text style={styles.label}>Bio</Text>
           <View style={styles.bioContainer}>
             <TextInput
-              placeholder="Bio"
+              placeholder="Enter bio here..."
               value={bio}
               onChangeText={(text) =>
                 text.length <= BIO_CHAR_LIMIT && setBio(text)
@@ -441,9 +441,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: Colors.black,
     fontFamily: "quicksand-semibold",
-  },
-  icon: {
-    marginLeft: 10,
   },
   bioContainer: {
     backgroundColor: Colors.white,

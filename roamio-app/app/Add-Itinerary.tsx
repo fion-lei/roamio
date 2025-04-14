@@ -333,7 +333,7 @@ export default function AddItinerary() {
       }
       
       Alert.alert(
-        "Success!",
+        "Success",
         `${activity.title} has been added to: ${selectedItinerary}`,
         [
           {

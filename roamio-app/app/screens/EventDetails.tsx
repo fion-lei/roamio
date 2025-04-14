@@ -454,7 +454,7 @@ const EventDetails = () => {
                     <View style={styles.modalOverlay}>
                         <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
                             <View style={styles.modalView}>
-                                <Text style={styles.modalTitle}>Edit Time</Text>
+                                <Text style={styles.modalTitle}>Edit Event Time</Text>
                                 
                                 {/* Time Selection Section */}
                                 <View style={styles.timeContainer}>
@@ -538,6 +538,7 @@ const styles = StyleSheet.create({
     },
     infoText: {
         marginLeft: 12,
+        marginBottom: 2,
         fontSize: 18,
         fontFamily: 'quicksand-semibold',
         color: Colors.primary,
@@ -597,6 +598,7 @@ const styles = StyleSheet.create({
     },
     avatar: {
         alignSelf: 'center',
+        marginLeft: 2,
     },
     shareInfo: {
         flex: 1,
@@ -622,7 +624,7 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.white,
         borderRadius: 20,
         borderWidth: 3,      
-        borderColor: Colors.coral, 
+        borderColor: Colors.peachySalmon, 
         padding: 20,
         elevation: 5,
     },

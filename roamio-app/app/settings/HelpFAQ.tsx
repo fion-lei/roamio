@@ -50,7 +50,7 @@ export default function HelpFAQ() {
         <View style={styles.faqItem}>
           <Text style={styles.question}>Q: How do I share my travel itinerary?</Text>
           <Text style={styles.answer}>
-            A: Go to the Friends section in the app, select the friend, and press the "Share Itinerary" option to send it to your friends or family.
+            A: Go to the friends section in the app, select the friend, and press the "Share Itinerary" option to send it to your friends or family.
           </Text>
         </View>
 
@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     borderRadius: 8,
     alignItems: "center",
-    marginBottom: 20,
+    marginTop: 14,
   },
   supportButtonText: {
     fontSize: 18,

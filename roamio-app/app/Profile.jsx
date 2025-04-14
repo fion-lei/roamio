@@ -132,17 +132,17 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 14,
-    fontFamily: "quicksand-semibold",
+    fontFamily: "quicksand-bold",
     color: Colors.grey,
   },
   email: {
     fontSize: 14,
-    fontFamily: "quicksand-semibold",
+    fontFamily: "quicksand-bold",
     color: Colors.grey,
   },
   phoneNumber: {
     fontSize: 14,
-    fontFamily: "quicksand-semibold",
+    fontFamily: "quicksand-bold",
     color: Colors.grey,
   },
   bioContainer: {
@@ -166,6 +166,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: "center",
     width: "60%",
+    marginTop: 8,
   },
   buttonText: {
     color: Colors.white,
