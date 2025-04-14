@@ -464,7 +464,7 @@ const styles = StyleSheet.create({
   },
   invalidSearchText: {
     fontSize: 16,
-    fontFamily: "quicksand-semibold",
+    fontFamily: "quicksand-bold",
     color: Colors.grey, 
   },
   header: {

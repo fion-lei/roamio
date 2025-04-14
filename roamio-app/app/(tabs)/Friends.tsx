@@ -506,7 +506,7 @@ export default function FriendsScreen() {
                           value={phoneNumber}
                           onChangeText={setPhoneNumber}
                           placeholder="--- --- ---"
-                          placeholderTextColor="#4B5563"
+                          placeholderTextColor="#333"
                           keyboardType="phone-pad"
                         />
                       </View>
@@ -516,7 +516,7 @@ export default function FriendsScreen() {
                         value={emailSearch}
                         onChangeText={setEmailSearch}
                         placeholder="abc@email.com"
-                        placeholderTextColor="#4B5563"
+                        placeholderTextColor="#333"
                         autoCapitalize="none"
                         keyboardType="email-address"
                       />
@@ -711,7 +711,9 @@ export default function FriendsScreen() {
           ) : (
             // In the case that no matching friends search results are found 
             <View style={styles.invalidSearchContainer}>
-              <Text style={styles.invalidSearchText}>No friend results found.</Text>
+              <Text style={styles.invalidSearchText}>
+                {searchText ? "No friend results found." : "No friends added yet."}
+              </Text>
             </View>
           )}
         </View>
@@ -866,7 +868,7 @@ export default function FriendsScreen() {
             <Text style={styles.emptyMessage}>
               {activeTripTab === "my"
                 ? "You haven't shared any trips yet."
-                : "No trips have been shared with you."}
+                : "No trips have been shared with you yet."}
             </Text>
           }
           showsHorizontalScrollIndicator={true}
@@ -927,7 +929,7 @@ const styles = StyleSheet.create({
   },
   invalidSearchText: {
     fontSize: 16,
-    fontFamily: "quicksand-semibold",
+    fontFamily: "quicksand-bold",
     color: Colors.grey, 
   },
   headerRow: {
@@ -1003,7 +1005,7 @@ const styles = StyleSheet.create({
   },
   emptyMessage: {
     color: Colors.grey,
-    fontFamily: "quicksand-semibold",
+    fontFamily: "quicksand-bold",
     fontSize: 16,
     marginHorizontal: 10,
     marginVertical: 20,
@@ -1053,6 +1055,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     width: "100%",
     fontFamily: "quicksand-regular",
+    color: "#333",
   },
   addButton: {
     backgroundColor: "#ff8080",
@@ -1105,7 +1108,7 @@ const styles = StyleSheet.create({
   friendPhone: {
     color: "#333",
     marginTop: 2,
-    fontFamily: "quicksand-regular",
+    fontFamily: "quicksand-medium",
     fontSize: 16,
   },
   menuDots: {
@@ -1208,7 +1211,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.palePink,
   },
   segmentButtonText: {
-    fontFamily: "quicksand-medium",
+    fontFamily: "quicksand-semibold",
     fontSize: 16,
     color: "#333",
   },
@@ -1321,9 +1324,10 @@ const modalStyles = StyleSheet.create({
     borderColor: "#ccc",
     borderRadius: 8,
     padding: 10,
-    marginBottom: 20,
+    marginBottom: 10,
     width: "100%",
-    fontFamily: "quicksand-regular",
+    fontFamily: "quicksand-medium",
+    color: "#333",
   },
   addButton: {
     backgroundColor: "#ff8080",
