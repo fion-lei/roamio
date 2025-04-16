@@ -13,7 +13,7 @@ The project requires running the front-end and back-end simultaneously. The foll
     - When choosing an emulator device, select 'Medium Phone'.
 3. Clone the repository in Visual Studio Code
     ```bash
-    git clone https://github.com/fion-lei/roamio
+    git clone https://github.com/fion-lei/roamio.git
     ```
 4. Open the terminal in the current project window, and enter in the following commands:
 - Navigate to the project directory
